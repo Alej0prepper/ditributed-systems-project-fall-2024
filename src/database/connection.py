@@ -1,7 +1,13 @@
 from neo4j import GraphDatabase
+from dotenv import load_dotenv
+import os
+# Cargar el archivo .env
+load_dotenv()
+
+PASS = os.getenv('PASS')
 
 URI = "neo4j://localhost:7687"
-AUTH = ("neo4j", "root")
+AUTH = ("neo4j", PASS)
 driver = None
 session = None
 
