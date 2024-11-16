@@ -1,6 +1,5 @@
 from datetime import datetime
 
-# Users and follows
 def add_user(driver, name, username, email, password):
     existing_user = driver.execute_query(
         "MATCH (u:User {username: $username}) RETURN u", {"username": username}
@@ -9,14 +8,33 @@ def add_user(driver, name, username, email, password):
     if len(existing_user) == 0:
         driver.execute_query(
             """
-                CREATE (u:User {name: $name, email: $email, username: $username, password: $password}) 
+                CREATE (u:User {name: $name, email: $email, username: $username, password: $password})
             """,
             {"name": name, "email": email, "username": username, "password": password},
         )
-        print(f"User {username} created.")
-        return username
+        return driver.execute_query(
+        "MATCH (u:User {username: $username}) RETURN id(u) as user_id", {"username": username}
+        ).records[0]["user_id"], True, None
     else:
-        return Exception("Error: username already exists.")
+        return None, False, Exception("Username already exists.")
+
+def get_user_by_email(driver, email):
+    user = driver.execute_query(
+        """
+            Match (u:User {email: $email}) return u as User
+        """,
+        {"email": email},
+    ).records[0]["User"]
+    return user._properties
+
+def get_user_by_username(driver, username):
+    user = driver.execute_query(
+        """
+            Match (u:User {username: $username}) return u as User
+        """,
+        {"username": username},
+    ).records[0]["User"]
+    return user._properties
 
 def create_follow_relation(driver, user_1, user_2):
     existing_user_1 = driver.execute_query(
