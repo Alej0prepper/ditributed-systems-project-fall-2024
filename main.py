@@ -26,5 +26,6 @@ answer_comment(driver, "Hello 2 u 2", [], user_name_ale, comment_id)
 react_comment(driver,"sad face",user_name_frank,comment_id)
 react_post(driver,"neutral face",user_name_ale,post_id)
 react_comment(driver,"happy",user_name_frank,comment_id)
+
 # Close connection
 close_db_connection()

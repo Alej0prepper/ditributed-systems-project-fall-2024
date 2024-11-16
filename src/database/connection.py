@@ -1,7 +1,6 @@
 from neo4j import GraphDatabase
 from dotenv import load_dotenv
 import os
-# Cargar el archivo .env
 load_dotenv()
 
 PASS = os.getenv('PASS')
