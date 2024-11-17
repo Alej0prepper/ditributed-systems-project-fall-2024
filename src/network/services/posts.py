@@ -34,11 +34,11 @@ def update_post(driver, post_id, media: list[str], caption: str, quoted_post_id:
         query = """
             MATCH (p:Post)
                 WHERE id(p) = $post_id
-                SET p.media = $media,
-                    p.caption = $caption
             MATCH (q:Post)
                 WHERE id(q) = $quoted_post_id
-            CREATE (p) -[:Quotes]-> (q:Post)
+            SET p.media = $media,
+                p.caption = $caption
+            CREATE (p) -[:Quotes]-> (q)
                 RETURN p
         """
 
@@ -69,7 +69,7 @@ def add_post(driver, media: list[str], caption: str):
 
 def post(driver, media, caption, username):
     if not media and not caption:
-        return Exception("Error: media and caption can't be None at the same time.")    
+        return None, False, "media and caption can't be None at the same time."    
     post_id = add_post(driver, media, caption)
     now = datetime.now()
     driver.execute_query(
@@ -84,29 +84,45 @@ def post(driver, media, caption, username):
     )
 
     print("Posted!")
-    return post_id
+    return post_id, True, None
 
-def quote(driver, media, caption, quoted_post_id):
-    new_post_id = create_post_node(driver)
+def quote(driver, media, caption, username, quoted_post_id):
+    new_post_id, _, _ = post(driver, media, caption, username)
     update_post(driver, new_post_id, media, caption, quoted_post_id)
     return new_post_id
 
-def repost(driver, quoted_post_id, username, media=None, caption=None):
+def repost(driver, reposted_post_id:int, username, media=None, caption=None):
+
+    if get_post_by_id(driver, reposted_post_id) == None: return None, False, "Non existing post"
     now = datetime.now()
 
     if media or caption:
-        return quote(driver, media, caption, quoted_post_id)
+        return quote(driver, media, caption, username, reposted_post_id), True, None
 
     driver.execute_query(
         """
         MATCH (p:Post)
-            WHERE id(p) = $quoted_post_id
+            WHERE id(p) = $reposted_post_id
         MATCH (u:User {username: $username})
         CREATE (u) -[r:Reposts {datetime: $now}]->  (p)
-        RETURN r
+        RETURN u, p
         """,
-        {"quoted_post_id": quoted_post_id, "username": username, "now": now}
+        {"reposted_post_id": reposted_post_id, "username": username, "now": now}
     )
+    
 
-    print("Reposted!")
-    return quoted_post_id
+    print(f"User {username} reposted post with ID: {reposted_post_id}")
+    return reposted_post_id, True, None
+
+
+def get_post_by_id(driver, post_id):
+    post = driver.execute_query(
+        """
+        MATCH (p:Post)
+            WHERE id(p) = $post_id
+        RETURN p
+        """,
+        {"post_id": post_id}
+    ).records
+
+    return post[0] if post else None
