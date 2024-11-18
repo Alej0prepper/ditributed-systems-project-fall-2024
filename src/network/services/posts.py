@@ -1,7 +1,5 @@
 from datetime import datetime
 
-
-# Posts and reposts
 def create_post_node(driver):
     post = driver.execute_query(
         """
@@ -93,7 +91,7 @@ def quote(driver, media, caption, username, quoted_post_id):
 
 def repost(driver, reposted_post_id:int, username, media=None, caption=None):
 
-    if get_post_by_id(driver, reposted_post_id) == None: return None, False, "Non existing post"
+    if get_post_by_id(driver, reposted_post_id) == None: return None, False, "Post not found."
     now = datetime.now()
 
     if media or caption:
@@ -114,7 +112,6 @@ def repost(driver, reposted_post_id:int, username, media=None, caption=None):
     print(f"User {username} reposted post with ID: {reposted_post_id}")
     return reposted_post_id, True, None
 
-
 def get_post_by_id(driver, post_id):
     post = driver.execute_query(
         """
@@ -126,3 +123,46 @@ def get_post_by_id(driver, post_id):
     ).records
 
     return post[0] if post else None
+
+def delete_post_service(driver, post_id, username):
+    if get_post_by_id(driver, post_id) == None: return None, False, "Post not found."
+      
+    user_is_owner = len(driver.execute_query(
+            """
+            MATCH (n:Post)
+                WHERE id(n) = $post_id
+            MATCH (s:User {username: $username}) -[r:Posts]-> (n)  
+            RETURN r
+            """,
+            {"post_id": post_id, "username": username}
+    ).records) > 0
+
+    if user_is_owner:
+        driver.execute_query(
+            """
+            MATCH (n:Post)
+                WHERE id(n) = $post_id
+            MATCH (n) -[r]-> (s)
+            DELETE r
+            """,
+            {"post_id": post_id}
+        )
+        driver.execute_query(
+            """
+            MATCH (n:Post)
+                WHERE id(n) = $post_id
+            MATCH (s) -[r]-> (n)
+            DELETE r
+            """,
+            {"post_id": post_id}
+        )
+        driver.execute_query(
+            """
+            MATCH (p:Post)
+                WHERE id(p) = $post_id
+            DELETE p
+            """,
+            {"post_id": post_id}
+        )
+        return None, True, None
+    return None, False, "Action not allowed, must be post's owner"
