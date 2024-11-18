@@ -1,0 +1,1107 @@
+[
+    {
+        "label": "GraphDatabase",
+        "importPath": "neo4j",
+        "description": "neo4j",
+        "isExtraImport": true,
+        "detail": "neo4j",
+        "documentation": {}
+    },
+    {
+        "label": "load_dotenv",
+        "importPath": "dotenv",
+        "description": "dotenv",
+        "isExtraImport": true,
+        "detail": "dotenv",
+        "documentation": {}
+    },
+    {
+        "label": "os",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "os",
+        "description": "os",
+        "detail": "os",
+        "documentation": {}
+    },
+    {
+        "label": "session",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
+        "label": "session",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
+        "label": "session",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
+        "label": "session",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
+        "label": "session",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
+        "label": "jsonify",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
+        "label": "Flask",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
+        "label": "request",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
+        "label": "jsonify",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
+        "label": "session",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
+        "label": "use_db_connection",
+        "importPath": "network.middlewares.use_db_connection",
+        "description": "network.middlewares.use_db_connection",
+        "isExtraImport": true,
+        "detail": "network.middlewares.use_db_connection",
+        "documentation": {}
+    },
+    {
+        "label": "use_db_connection",
+        "importPath": "network.middlewares.use_db_connection",
+        "description": "network.middlewares.use_db_connection",
+        "isExtraImport": true,
+        "detail": "network.middlewares.use_db_connection",
+        "documentation": {}
+    },
+    {
+        "label": "use_db_connection",
+        "importPath": "network.middlewares.use_db_connection",
+        "description": "network.middlewares.use_db_connection",
+        "isExtraImport": true,
+        "detail": "network.middlewares.use_db_connection",
+        "documentation": {}
+    },
+    {
+        "label": "use_db_connection",
+        "importPath": "network.middlewares.use_db_connection",
+        "description": "network.middlewares.use_db_connection",
+        "isExtraImport": true,
+        "detail": "network.middlewares.use_db_connection",
+        "documentation": {}
+    },
+    {
+        "label": "needs_authentication",
+        "importPath": "network.middlewares.auth",
+        "description": "network.middlewares.auth",
+        "isExtraImport": true,
+        "detail": "network.middlewares.auth",
+        "documentation": {}
+    },
+    {
+        "label": "needs_authentication",
+        "importPath": "network.middlewares.auth",
+        "description": "network.middlewares.auth",
+        "isExtraImport": true,
+        "detail": "network.middlewares.auth",
+        "documentation": {}
+    },
+    {
+        "label": "needs_authentication",
+        "importPath": "network.middlewares.auth",
+        "description": "network.middlewares.auth",
+        "isExtraImport": true,
+        "detail": "network.middlewares.auth",
+        "documentation": {}
+    },
+    {
+        "label": "needs_authentication",
+        "importPath": "network.middlewares.auth",
+        "description": "network.middlewares.auth",
+        "isExtraImport": true,
+        "detail": "network.middlewares.auth",
+        "documentation": {}
+    },
+    {
+        "label": "comment_post",
+        "importPath": "network.services.comments",
+        "description": "network.services.comments",
+        "isExtraImport": true,
+        "detail": "network.services.comments",
+        "documentation": {}
+    },
+    {
+        "label": "answer_comment",
+        "importPath": "network.services.comments",
+        "description": "network.services.comments",
+        "isExtraImport": true,
+        "detail": "network.services.comments",
+        "documentation": {}
+    },
+    {
+        "label": "post",
+        "importPath": "network.services.posts",
+        "description": "network.services.posts",
+        "isExtraImport": true,
+        "detail": "network.services.posts",
+        "documentation": {}
+    },
+    {
+        "label": "repost",
+        "importPath": "network.services.posts",
+        "description": "network.services.posts",
+        "isExtraImport": true,
+        "detail": "network.services.posts",
+        "documentation": {}
+    },
+    {
+        "label": "delete_post_service",
+        "importPath": "network.services.posts",
+        "description": "network.services.posts",
+        "isExtraImport": true,
+        "detail": "network.services.posts",
+        "documentation": {}
+    },
+    {
+        "label": "driver",
+        "importPath": "database.connection",
+        "description": "database.connection",
+        "isExtraImport": true,
+        "detail": "database.connection",
+        "documentation": {}
+    },
+    {
+        "label": "driver",
+        "importPath": "database.connection",
+        "description": "database.connection",
+        "isExtraImport": true,
+        "detail": "database.connection",
+        "documentation": {}
+    },
+    {
+        "label": "open_db_connection",
+        "importPath": "database.connection",
+        "description": "database.connection",
+        "isExtraImport": true,
+        "detail": "database.connection",
+        "documentation": {}
+    },
+    {
+        "label": "close_db_connection",
+        "importPath": "database.connection",
+        "description": "database.connection",
+        "isExtraImport": true,
+        "detail": "database.connection",
+        "documentation": {}
+    },
+    {
+        "label": "react_to_a_comment_service",
+        "importPath": "network.services.reactions",
+        "description": "network.services.reactions",
+        "isExtraImport": true,
+        "detail": "network.services.reactions",
+        "documentation": {}
+    },
+    {
+        "label": "react_to_a_post_service",
+        "importPath": "network.services.reactions",
+        "description": "network.services.reactions",
+        "isExtraImport": true,
+        "detail": "network.services.reactions",
+        "documentation": {}
+    },
+    {
+        "label": "bcrypt",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "bcrypt",
+        "description": "bcrypt",
+        "detail": "bcrypt",
+        "documentation": {}
+    },
+    {
+        "label": "add_user",
+        "importPath": "network.services.users",
+        "description": "network.services.users",
+        "isExtraImport": true,
+        "detail": "network.services.users",
+        "documentation": {}
+    },
+    {
+        "label": "get_user_by_email",
+        "importPath": "network.services.users",
+        "description": "network.services.users",
+        "isExtraImport": true,
+        "detail": "network.services.users",
+        "documentation": {}
+    },
+    {
+        "label": "get_user_by_username",
+        "importPath": "network.services.users",
+        "description": "network.services.users",
+        "isExtraImport": true,
+        "detail": "network.services.users",
+        "documentation": {}
+    },
+    {
+        "label": "create_follow_relation",
+        "importPath": "network.services.users",
+        "description": "network.services.users",
+        "isExtraImport": true,
+        "detail": "network.services.users",
+        "documentation": {}
+    },
+    {
+        "label": "remove_follow_relation",
+        "importPath": "network.services.users",
+        "description": "network.services.users",
+        "isExtraImport": true,
+        "detail": "network.services.users",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "secrets",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "secrets",
+        "description": "secrets",
+        "detail": "secrets",
+        "documentation": {}
+    },
+    {
+        "label": "login_user",
+        "importPath": "network.controllers.users",
+        "description": "network.controllers.users",
+        "isExtraImport": true,
+        "detail": "network.controllers.users",
+        "documentation": {}
+    },
+    {
+        "label": "register_user",
+        "importPath": "network.controllers.users",
+        "description": "network.controllers.users",
+        "isExtraImport": true,
+        "detail": "network.controllers.users",
+        "documentation": {}
+    },
+    {
+        "label": "follow_user",
+        "importPath": "network.controllers.users",
+        "description": "network.controllers.users",
+        "isExtraImport": true,
+        "detail": "network.controllers.users",
+        "documentation": {}
+    },
+    {
+        "label": "unfollow_user",
+        "importPath": "network.controllers.users",
+        "description": "network.controllers.users",
+        "isExtraImport": true,
+        "detail": "network.controllers.users",
+        "documentation": {}
+    },
+    {
+        "label": "create_post",
+        "importPath": "network.controllers.posts",
+        "description": "network.controllers.posts",
+        "isExtraImport": true,
+        "detail": "network.controllers.posts",
+        "documentation": {}
+    },
+    {
+        "label": "repost_existing_post",
+        "importPath": "network.controllers.posts",
+        "description": "network.controllers.posts",
+        "isExtraImport": true,
+        "detail": "network.controllers.posts",
+        "documentation": {}
+    },
+    {
+        "label": "quote_existing_post",
+        "importPath": "network.controllers.posts",
+        "description": "network.controllers.posts",
+        "isExtraImport": true,
+        "detail": "network.controllers.posts",
+        "documentation": {}
+    },
+    {
+        "label": "delete_post",
+        "importPath": "network.controllers.posts",
+        "description": "network.controllers.posts",
+        "isExtraImport": true,
+        "detail": "network.controllers.posts",
+        "documentation": {}
+    },
+    {
+        "label": "CORS",
+        "importPath": "flask_cors",
+        "description": "flask_cors",
+        "isExtraImport": true,
+        "detail": "flask_cors",
+        "documentation": {}
+    },
+    {
+        "label": "create_comment_answer",
+        "importPath": "network.controllers.comments",
+        "description": "network.controllers.comments",
+        "isExtraImport": true,
+        "detail": "network.controllers.comments",
+        "documentation": {}
+    },
+    {
+        "label": "create_post_comment",
+        "importPath": "network.controllers.comments",
+        "description": "network.controllers.comments",
+        "isExtraImport": true,
+        "detail": "network.controllers.comments",
+        "documentation": {}
+    },
+    {
+        "label": "react_to_a_comment",
+        "importPath": "network.controllers.reactions",
+        "description": "network.controllers.reactions",
+        "isExtraImport": true,
+        "detail": "network.controllers.reactions",
+        "documentation": {}
+    },
+    {
+        "label": "react_to_a_post",
+        "importPath": "network.controllers.reactions",
+        "description": "network.controllers.reactions",
+        "isExtraImport": true,
+        "detail": "network.controllers.reactions",
+        "documentation": {}
+    },
+    {
+        "label": "open_db_connection",
+        "importPath": "src.database.connection",
+        "description": "src.database.connection",
+        "isExtraImport": true,
+        "detail": "src.database.connection",
+        "documentation": {}
+    },
+    {
+        "label": "close_db_connection",
+        "importPath": "src.database.connection",
+        "description": "src.database.connection",
+        "isExtraImport": true,
+        "detail": "src.database.connection",
+        "documentation": {}
+    },
+    {
+        "label": "open_db_connection",
+        "importPath": "src.database.connection",
+        "description": "src.database.connection",
+        "isExtraImport": true,
+        "detail": "src.database.connection",
+        "documentation": {}
+    },
+    {
+        "label": "close_db_connection",
+        "importPath": "src.database.connection",
+        "description": "src.database.connection",
+        "isExtraImport": true,
+        "detail": "src.database.connection",
+        "documentation": {}
+    },
+    {
+        "label": "remove_old_data",
+        "importPath": "clean_db",
+        "description": "clean_db",
+        "isExtraImport": true,
+        "detail": "clean_db",
+        "documentation": {}
+    },
+    {
+        "label": "add_user",
+        "importPath": "src.network.services.users",
+        "description": "src.network.services.users",
+        "isExtraImport": true,
+        "detail": "src.network.services.users",
+        "documentation": {}
+    },
+    {
+        "label": "create_follow_relation",
+        "importPath": "src.network.services.users",
+        "description": "src.network.services.users",
+        "isExtraImport": true,
+        "detail": "src.network.services.users",
+        "documentation": {}
+    },
+    {
+        "label": "post",
+        "importPath": "src.network.services.posts",
+        "description": "src.network.services.posts",
+        "isExtraImport": true,
+        "detail": "src.network.services.posts",
+        "documentation": {}
+    },
+    {
+        "label": "repost",
+        "importPath": "src.network.services.posts",
+        "description": "src.network.services.posts",
+        "isExtraImport": true,
+        "detail": "src.network.services.posts",
+        "documentation": {}
+    },
+    {
+        "label": "comment_post",
+        "importPath": "src.network.services.comments",
+        "description": "src.network.services.comments",
+        "isExtraImport": true,
+        "detail": "src.network.services.comments",
+        "documentation": {}
+    },
+    {
+        "label": "answer_comment",
+        "importPath": "src.network.services.comments",
+        "description": "src.network.services.comments",
+        "isExtraImport": true,
+        "detail": "src.network.services.comments",
+        "documentation": {}
+    },
+    {
+        "label": "react_comment",
+        "importPath": "src.network.services.reactions",
+        "description": "src.network.services.reactions",
+        "isExtraImport": true,
+        "detail": "src.network.services.reactions",
+        "documentation": {}
+    },
+    {
+        "label": "react_post",
+        "importPath": "src.network.services.reactions",
+        "description": "src.network.services.reactions",
+        "isExtraImport": true,
+        "detail": "src.network.services.reactions",
+        "documentation": {}
+    },
+    {
+        "label": "open_db_connection",
+        "kind": 2,
+        "importPath": "src.database.connection",
+        "description": "src.database.connection",
+        "peekOfCode": "def open_db_connection():\n    global driver, session\n    driver = GraphDatabase.driver(URI, auth=AUTH)\n    session = driver.session(database=\"neo4j\")\n    return session, driver\ndef close_db_connection():\n    global driver, session\n    if session is not None:\n        session.close()\n    if driver is not None:",
+        "detail": "src.database.connection",
+        "documentation": {}
+    },
+    {
+        "label": "close_db_connection",
+        "kind": 2,
+        "importPath": "src.database.connection",
+        "description": "src.database.connection",
+        "peekOfCode": "def close_db_connection():\n    global driver, session\n    if session is not None:\n        session.close()\n    if driver is not None:\n        driver.close()",
+        "detail": "src.database.connection",
+        "documentation": {}
+    },
+    {
+        "label": "PASS",
+        "kind": 5,
+        "importPath": "src.database.connection",
+        "description": "src.database.connection",
+        "peekOfCode": "PASS = os.getenv('PASS')\nURI = \"neo4j://localhost:7687\"\nAUTH = (\"neo4j\", PASS)\ndriver = None\nsession = None\ndef open_db_connection():\n    global driver, session\n    driver = GraphDatabase.driver(URI, auth=AUTH)\n    session = driver.session(database=\"neo4j\")\n    return session, driver",
+        "detail": "src.database.connection",
+        "documentation": {}
+    },
+    {
+        "label": "URI",
+        "kind": 5,
+        "importPath": "src.database.connection",
+        "description": "src.database.connection",
+        "peekOfCode": "URI = \"neo4j://localhost:7687\"\nAUTH = (\"neo4j\", PASS)\ndriver = None\nsession = None\ndef open_db_connection():\n    global driver, session\n    driver = GraphDatabase.driver(URI, auth=AUTH)\n    session = driver.session(database=\"neo4j\")\n    return session, driver\ndef close_db_connection():",
+        "detail": "src.database.connection",
+        "documentation": {}
+    },
+    {
+        "label": "AUTH",
+        "kind": 5,
+        "importPath": "src.database.connection",
+        "description": "src.database.connection",
+        "peekOfCode": "AUTH = (\"neo4j\", PASS)\ndriver = None\nsession = None\ndef open_db_connection():\n    global driver, session\n    driver = GraphDatabase.driver(URI, auth=AUTH)\n    session = driver.session(database=\"neo4j\")\n    return session, driver\ndef close_db_connection():\n    global driver, session",
+        "detail": "src.database.connection",
+        "documentation": {}
+    },
+    {
+        "label": "driver",
+        "kind": 5,
+        "importPath": "src.database.connection",
+        "description": "src.database.connection",
+        "peekOfCode": "driver = None\nsession = None\ndef open_db_connection():\n    global driver, session\n    driver = GraphDatabase.driver(URI, auth=AUTH)\n    session = driver.session(database=\"neo4j\")\n    return session, driver\ndef close_db_connection():\n    global driver, session\n    if session is not None:",
+        "detail": "src.database.connection",
+        "documentation": {}
+    },
+    {
+        "label": "session",
+        "kind": 5,
+        "importPath": "src.database.connection",
+        "description": "src.database.connection",
+        "peekOfCode": "session = None\ndef open_db_connection():\n    global driver, session\n    driver = GraphDatabase.driver(URI, auth=AUTH)\n    session = driver.session(database=\"neo4j\")\n    return session, driver\ndef close_db_connection():\n    global driver, session\n    if session is not None:\n        session.close()",
+        "detail": "src.database.connection",
+        "documentation": {}
+    },
+    {
+        "label": "create_post_comment",
+        "kind": 2,
+        "importPath": "src.network.controllers.comments",
+        "description": "src.network.controllers.comments",
+        "peekOfCode": "def create_post_comment(caption, media, commentend_post_id, driver=None):\n    return comment_post(driver, caption, media, session[\"username\"], commentend_post_id)\n@use_db_connection\n@needs_authentication\ndef create_comment_answer(caption, media, answered_comment_id, driver=None):\n    return answer_comment(driver, caption, media, session[\"username\"], answered_comment_id)",
+        "detail": "src.network.controllers.comments",
+        "documentation": {}
+    },
+    {
+        "label": "create_comment_answer",
+        "kind": 2,
+        "importPath": "src.network.controllers.comments",
+        "description": "src.network.controllers.comments",
+        "peekOfCode": "def create_comment_answer(caption, media, answered_comment_id, driver=None):\n    return answer_comment(driver, caption, media, session[\"username\"], answered_comment_id)",
+        "detail": "src.network.controllers.comments",
+        "documentation": {}
+    },
+    {
+        "label": "create_post",
+        "kind": 2,
+        "importPath": "src.network.controllers.posts",
+        "description": "src.network.controllers.posts",
+        "peekOfCode": "def create_post(media, caption, driver=None):\n    return post(driver, media, caption, session[\"username\"])\n@use_db_connection\n@needs_authentication\ndef repost_existing_post(reposted_post_id:int, driver=None):\n    return repost(driver, reposted_post_id, session[\"username\"])\n@use_db_connection\n@needs_authentication\ndef quote_existing_post(reposted_post_id:id, media, caption, driver=None):\n    return repost(driver, reposted_post_id, session[\"username\"], media, caption)",
+        "detail": "src.network.controllers.posts",
+        "documentation": {}
+    },
+    {
+        "label": "repost_existing_post",
+        "kind": 2,
+        "importPath": "src.network.controllers.posts",
+        "description": "src.network.controllers.posts",
+        "peekOfCode": "def repost_existing_post(reposted_post_id:int, driver=None):\n    return repost(driver, reposted_post_id, session[\"username\"])\n@use_db_connection\n@needs_authentication\ndef quote_existing_post(reposted_post_id:id, media, caption, driver=None):\n    return repost(driver, reposted_post_id, session[\"username\"], media, caption)\n@use_db_connection\ndef delete_post(post_id, driver=None):\n    return delete_post_service(driver, post_id, session[\"username\"])",
+        "detail": "src.network.controllers.posts",
+        "documentation": {}
+    },
+    {
+        "label": "quote_existing_post",
+        "kind": 2,
+        "importPath": "src.network.controllers.posts",
+        "description": "src.network.controllers.posts",
+        "peekOfCode": "def quote_existing_post(reposted_post_id:id, media, caption, driver=None):\n    return repost(driver, reposted_post_id, session[\"username\"], media, caption)\n@use_db_connection\ndef delete_post(post_id, driver=None):\n    return delete_post_service(driver, post_id, session[\"username\"])",
+        "detail": "src.network.controllers.posts",
+        "documentation": {}
+    },
+    {
+        "label": "delete_post",
+        "kind": 2,
+        "importPath": "src.network.controllers.posts",
+        "description": "src.network.controllers.posts",
+        "peekOfCode": "def delete_post(post_id, driver=None):\n    return delete_post_service(driver, post_id, session[\"username\"])",
+        "detail": "src.network.controllers.posts",
+        "documentation": {}
+    },
+    {
+        "label": "react_to_a_post",
+        "kind": 2,
+        "importPath": "src.network.controllers.reactions",
+        "description": "src.network.controllers.reactions",
+        "peekOfCode": "def react_to_a_post(reaction, post_id, driver=None):\n    return react_to_a_post_service(driver, reaction, session[\"username\"], post_id)\n@use_db_connection\n@needs_authentication\ndef react_to_a_comment(reaction, comment_id, driver=None):\n    return react_to_a_comment_service(driver, reaction, session[\"username\"], comment_id)",
+        "detail": "src.network.controllers.reactions",
+        "documentation": {}
+    },
+    {
+        "label": "react_to_a_comment",
+        "kind": 2,
+        "importPath": "src.network.controllers.reactions",
+        "description": "src.network.controllers.reactions",
+        "peekOfCode": "def react_to_a_comment(reaction, comment_id, driver=None):\n    return react_to_a_comment_service(driver, reaction, session[\"username\"], comment_id)",
+        "detail": "src.network.controllers.reactions",
+        "documentation": {}
+    },
+    {
+        "label": "register_user",
+        "kind": 2,
+        "importPath": "src.network.controllers.users",
+        "description": "src.network.controllers.users",
+        "peekOfCode": "def register_user(name, username, email, password, driver=None):\n    user_id, ok, error = add_user(driver, name, username, email, hash_password(password))\n    if ok:\n        print(f\"User with name: {name} created successfully. (ID: {user_id})\")\n        return user_id, None\n    else:\n        print(\"Error registering user\")\n        return None, error\n@use_db_connection\ndef login_user(password, username=None, email=None, driver=None):",
+        "detail": "src.network.controllers.users",
+        "documentation": {}
+    },
+    {
+        "label": "login_user",
+        "kind": 2,
+        "importPath": "src.network.controllers.users",
+        "description": "src.network.controllers.users",
+        "peekOfCode": "def login_user(password, username=None, email=None, driver=None):\n    if username:\n        user = get_user_by_username(driver, username)\n    elif email:\n        user = get_user_by_email(driver, email)\n    if user == None: \n        return None, False, \"User not found.\"\n    session[\"username\"] = user[\"username\"]\n    session[\"email\"] = user[\"email\"]\n    if not verify_password(password, user[\"password\"]):",
+        "detail": "src.network.controllers.users",
+        "documentation": {}
+    },
+    {
+        "label": "hash_password",
+        "kind": 2,
+        "importPath": "src.network.controllers.users",
+        "description": "src.network.controllers.users",
+        "peekOfCode": "def hash_password(password: str) -> bytes:\n    salt = bcrypt.gensalt()\n    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)\n    return hashed\ndef verify_password(plain_password: str, hashed_password: bytes) -> bool:\n    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password)\n@use_db_connection\n@needs_authentication\ndef follow_user(followed_username, driver=None):\n    return create_follow_relation(driver, session[\"username\"], followed_username)",
+        "detail": "src.network.controllers.users",
+        "documentation": {}
+    },
+    {
+        "label": "verify_password",
+        "kind": 2,
+        "importPath": "src.network.controllers.users",
+        "description": "src.network.controllers.users",
+        "peekOfCode": "def verify_password(plain_password: str, hashed_password: bytes) -> bool:\n    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password)\n@use_db_connection\n@needs_authentication\ndef follow_user(followed_username, driver=None):\n    return create_follow_relation(driver, session[\"username\"], followed_username)\n@use_db_connection\n@needs_authentication\ndef unfollow_user(followed_username, driver=None):\n    return remove_follow_relation(driver, session[\"username\"], followed_username)",
+        "detail": "src.network.controllers.users",
+        "documentation": {}
+    },
+    {
+        "label": "follow_user",
+        "kind": 2,
+        "importPath": "src.network.controllers.users",
+        "description": "src.network.controllers.users",
+        "peekOfCode": "def follow_user(followed_username, driver=None):\n    return create_follow_relation(driver, session[\"username\"], followed_username)\n@use_db_connection\n@needs_authentication\ndef unfollow_user(followed_username, driver=None):\n    return remove_follow_relation(driver, session[\"username\"], followed_username)",
+        "detail": "src.network.controllers.users",
+        "documentation": {}
+    },
+    {
+        "label": "unfollow_user",
+        "kind": 2,
+        "importPath": "src.network.controllers.users",
+        "description": "src.network.controllers.users",
+        "peekOfCode": "def unfollow_user(followed_username, driver=None):\n    return remove_follow_relation(driver, session[\"username\"], followed_username)",
+        "detail": "src.network.controllers.users",
+        "documentation": {}
+    },
+    {
+        "label": "needs_authentication",
+        "kind": 2,
+        "importPath": "src.network.middlewares.auth",
+        "description": "src.network.middlewares.auth",
+        "peekOfCode": "def needs_authentication(func):\n    def wrapper(*args, **kwargs):\n        if not session.get(\"username\"): \n            return None, False, \"Acces denied, authentication is required.\"\n        return func(*args, **kwargs)\n    return wrapper",
+        "detail": "src.network.middlewares.auth",
+        "documentation": {}
+    },
+    {
+        "label": "use_db_connection",
+        "kind": 2,
+        "importPath": "src.network.middlewares.use_db_connection",
+        "description": "src.network.middlewares.use_db_connection",
+        "peekOfCode": "def use_db_connection(func):\n    def wrapper(*args, **kwargs):\n        _, driver = open_db_connection()\n        result = func(driver=driver,*args, **kwargs)\n        close_db_connection()\n        return result\n    return wrapper",
+        "detail": "src.network.middlewares.use_db_connection",
+        "documentation": {}
+    },
+    {
+        "label": "create_comment_node",
+        "kind": 2,
+        "importPath": "src.network.services.comments",
+        "description": "src.network.services.comments",
+        "peekOfCode": "def create_comment_node(driver, caption, media):\n    now = datetime.now()\n    query = \"\"\"\n        CREATE (c:Comment {datetime: $now, caption: $caption, media: $media}) \n        RETURN id(c) as comment_id\n    \"\"\"\n    params = {\n        \"now\": now,\n        \"caption\": caption,\n        \"media\": media",
+        "detail": "src.network.services.comments",
+        "documentation": {}
+    },
+    {
+        "label": "comment",
+        "kind": 2,
+        "importPath": "src.network.services.comments",
+        "description": "src.network.services.comments",
+        "peekOfCode": "def comment(driver, caption, media, username, answered_comment_id=None, commented_post_id=None):\n    if answered_comment_id:\n        query = \"\"\"\n            MATCH (c: Comment)\n                WHERE id(c) = $answered_comment_id \n            RETURN c\n        \"\"\"\n        params = {\n            \"answered_comment_id\": answered_comment_id\n        }",
+        "detail": "src.network.services.comments",
+        "documentation": {}
+    },
+    {
+        "label": "answer_comment",
+        "kind": 2,
+        "importPath": "src.network.services.comments",
+        "description": "src.network.services.comments",
+        "peekOfCode": "def answer_comment(driver, caption, media, username, answered_comment_id):\n    return comment(driver, caption, media, username, answered_comment_id=answered_comment_id)\ndef comment_post(driver, caption, media, username, commented_post_id):\n    return comment(driver, caption, media, username, commented_post_id=commented_post_id)",
+        "detail": "src.network.services.comments",
+        "documentation": {}
+    },
+    {
+        "label": "comment_post",
+        "kind": 2,
+        "importPath": "src.network.services.comments",
+        "description": "src.network.services.comments",
+        "peekOfCode": "def comment_post(driver, caption, media, username, commented_post_id):\n    return comment(driver, caption, media, username, commented_post_id=commented_post_id)",
+        "detail": "src.network.services.comments",
+        "documentation": {}
+    },
+    {
+        "label": "create_post_node",
+        "kind": 2,
+        "importPath": "src.network.services.posts",
+        "description": "src.network.services.posts",
+        "peekOfCode": "def create_post_node(driver):\n    post = driver.execute_query(\n        \"\"\"\n        CREATE (p:Post)\n        RETURN id(p) AS post_id\n        \"\"\"\n    ).records[0]\n    return post[\"post_id\"]\ndef update_post(driver, post_id, media: list[str], caption: str, quoted_post_id: str = None):\n    \"\"\"",
+        "detail": "src.network.services.posts",
+        "documentation": {}
+    },
+    {
+        "label": "update_post",
+        "kind": 2,
+        "importPath": "src.network.services.posts",
+        "description": "src.network.services.posts",
+        "peekOfCode": "def update_post(driver, post_id, media: list[str], caption: str, quoted_post_id: str = None):\n    \"\"\"\n    Updates a Post node with the specified post_id in the Neo4j database.\n    :param driver: Neo4j driver for executing queries.\n    :param post_id: Unique identifier of the Post node to update.\n    :param media: Updated list of media URLs for the Post.\n    :param caption: Updated caption for the Post.\n    :param quoted_post_id: Quoted post id.\n    \"\"\"\n    if not quoted_post_id:",
+        "detail": "src.network.services.posts",
+        "documentation": {}
+    },
+    {
+        "label": "add_post",
+        "kind": 2,
+        "importPath": "src.network.services.posts",
+        "description": "src.network.services.posts",
+        "peekOfCode": "def add_post(driver, media: list[str], caption: str):\n    post_id = create_post_node(driver)\n    update_post(\n        driver, \n        post_id, \n        media=media if media else None, \n        caption=caption if caption else None, \n    )\n    return post_id\ndef post(driver, media, caption, username):",
+        "detail": "src.network.services.posts",
+        "documentation": {}
+    },
+    {
+        "label": "post",
+        "kind": 2,
+        "importPath": "src.network.services.posts",
+        "description": "src.network.services.posts",
+        "peekOfCode": "def post(driver, media, caption, username):\n    if not media and not caption:\n        return None, False, \"media and caption can't be None at the same time.\"    \n    post_id = add_post(driver, media, caption)\n    now = datetime.now()\n    driver.execute_query(\n        \"\"\"\n        MATCH (p:Post)\n            WHERE id(p) = $post_id\n        MATCH (u:User {username: $username})",
+        "detail": "src.network.services.posts",
+        "documentation": {}
+    },
+    {
+        "label": "quote",
+        "kind": 2,
+        "importPath": "src.network.services.posts",
+        "description": "src.network.services.posts",
+        "peekOfCode": "def quote(driver, media, caption, username, quoted_post_id):\n    new_post_id, _, _ = post(driver, media, caption, username)\n    update_post(driver, new_post_id, media, caption, quoted_post_id)\n    return new_post_id\ndef repost(driver, reposted_post_id:int, username, media=None, caption=None):\n    if get_post_by_id(driver, reposted_post_id) == None: return None, False, \"Post not found.\"\n    now = datetime.now()\n    if media or caption:\n        return quote(driver, media, caption, username, reposted_post_id), True, None\n    driver.execute_query(",
+        "detail": "src.network.services.posts",
+        "documentation": {}
+    },
+    {
+        "label": "repost",
+        "kind": 2,
+        "importPath": "src.network.services.posts",
+        "description": "src.network.services.posts",
+        "peekOfCode": "def repost(driver, reposted_post_id:int, username, media=None, caption=None):\n    if get_post_by_id(driver, reposted_post_id) == None: return None, False, \"Post not found.\"\n    now = datetime.now()\n    if media or caption:\n        return quote(driver, media, caption, username, reposted_post_id), True, None\n    driver.execute_query(\n        \"\"\"\n        MATCH (p:Post)\n            WHERE id(p) = $reposted_post_id\n        MATCH (u:User {username: $username})",
+        "detail": "src.network.services.posts",
+        "documentation": {}
+    },
+    {
+        "label": "get_post_by_id",
+        "kind": 2,
+        "importPath": "src.network.services.posts",
+        "description": "src.network.services.posts",
+        "peekOfCode": "def get_post_by_id(driver, post_id):\n    post = driver.execute_query(\n        \"\"\"\n        MATCH (p:Post)\n            WHERE id(p) = $post_id\n        RETURN p\n        \"\"\",\n        {\"post_id\": post_id}\n    ).records\n    return post[0] if post else None",
+        "detail": "src.network.services.posts",
+        "documentation": {}
+    },
+    {
+        "label": "delete_post_service",
+        "kind": 2,
+        "importPath": "src.network.services.posts",
+        "description": "src.network.services.posts",
+        "peekOfCode": "def delete_post_service(driver, post_id, username):\n    if get_post_by_id(driver, post_id) == None: return None, False, \"Post not found.\"\n    user_is_owner = len(driver.execute_query(\n            \"\"\"\n            MATCH (n:Post)\n                WHERE id(n) = $post_id\n            MATCH (s:User {username: $username}) -[r:Posts]-> (n)  \n            RETURN r\n            \"\"\",\n            {\"post_id\": post_id, \"username\": username}",
+        "detail": "src.network.services.posts",
+        "documentation": {}
+    },
+    {
+        "label": "react",
+        "kind": 2,
+        "importPath": "src.network.services.reactions",
+        "description": "src.network.services.reactions",
+        "peekOfCode": "def react(driver, reaction_type,username , reacted_comment_id = None, reacted_post_id = None) :\n    if(reacted_comment_id):\n        react_comment(driver,reaction_type,username,reacted_comment_id)\n    elif(react_post):\n        react_post(driver,reaction_type,username,reacted_post_id)\n    else:\n        raise Exception(\"ERROR: Reacted_comment_id and Reacted_post_id can't be None at the same time\")\ndef reaction_exist(driver,username, reacted_comment_id=None, reacted_post_id = None):\n    if(reacted_comment_id):\n        query = \"\"\"",
+        "detail": "src.network.services.reactions",
+        "documentation": {}
+    },
+    {
+        "label": "reaction_exist",
+        "kind": 2,
+        "importPath": "src.network.services.reactions",
+        "description": "src.network.services.reactions",
+        "peekOfCode": "def reaction_exist(driver,username, reacted_comment_id=None, reacted_post_id = None):\n    if(reacted_comment_id):\n        query = \"\"\"\n                MATCH (u:User{username: $username})\n                MATCH (c:Comment)\n                    WHERE id(c) = $reacted_comment_id\n                    MATCH (c) -[r:Reacted_by]-> (u)\n                    RETURN r\n            \"\"\"\n        params = {",
+        "detail": "src.network.services.reactions",
+        "documentation": {}
+    },
+    {
+        "label": "delete_reaction",
+        "kind": 2,
+        "importPath": "src.network.services.reactions",
+        "description": "src.network.services.reactions",
+        "peekOfCode": "def delete_reaction(driver, username, reacted_comment_id=  None, reacted_post_id = None):\n    if(reacted_comment_id):\n        query = \"\"\"\n                MATCH (u:User{username: $username})\n                MATCH (c:Comment)\n                    WHERE id(c) = $reacted_comment_id\n                    MATCH (p) -[r:Reacted_by]-> (u)\n                    DELETE r\n            \"\"\"\n        params = {",
+        "detail": "src.network.services.reactions",
+        "documentation": {}
+    },
+    {
+        "label": "react_to_a_comment_service",
+        "kind": 2,
+        "importPath": "src.network.services.reactions",
+        "description": "src.network.services.reactions",
+        "peekOfCode": "def react_to_a_comment_service(driver, reaction_type,username , reacted_comment_id):\n    query = \"\"\"\n        MATCH (c:Comment)\n            WHERE id(c) = $reacted_comment_id\n        RETURN c\n    \"\"\"\n    params = {\n        \"reacted_comment_id\": reacted_comment_id\n    }\n    if len(driver.execute_query(query,params).records) == 0:",
+        "detail": "src.network.services.reactions",
+        "documentation": {}
+    },
+    {
+        "label": "react_to_a_post_service",
+        "kind": 2,
+        "importPath": "src.network.services.reactions",
+        "description": "src.network.services.reactions",
+        "peekOfCode": "def react_to_a_post_service(driver, reaction_type,username,reacted_post_id):\n    query = \"\"\"\n        MATCH (p:Post)\n            WHERE id(p) = $reacted_post_id\n        RETURN p\n    \"\"\"\n    params = {\n        \"reacted_post_id\": reacted_post_id\n    }\n    if len(driver.execute_query(query,params).records) == 0:",
+        "detail": "src.network.services.reactions",
+        "documentation": {}
+    },
+    {
+        "label": "add_user",
+        "kind": 2,
+        "importPath": "src.network.services.users",
+        "description": "src.network.services.users",
+        "peekOfCode": "def add_user(driver, name, username, email, password):\n    existing_user = driver.execute_query(\n        \"MATCH (u:User {username: $username}) RETURN u\", {\"username\": username}\n    ).records\n    if len(existing_user) == 0:\n        driver.execute_query(\n            \"\"\"\n                CREATE (u:User {name: $name, email: $email, username: $username, password: $password})\n            \"\"\",\n            {\"name\": name, \"email\": email, \"username\": username, \"password\": password},",
+        "detail": "src.network.services.users",
+        "documentation": {}
+    },
+    {
+        "label": "get_user_by_email",
+        "kind": 2,
+        "importPath": "src.network.services.users",
+        "description": "src.network.services.users",
+        "peekOfCode": "def get_user_by_email(driver, email):\n    user = driver.execute_query(\n        \"\"\"\n            Match (u:User {email: $email}) return u as User\n        \"\"\",\n        {\"email\": email},\n    )\n    return user.records[0][\"User\"]._properties if len(user.records)!=0 else None\ndef get_user_by_username(driver, username):\n    user = driver.execute_query(",
+        "detail": "src.network.services.users",
+        "documentation": {}
+    },
+    {
+        "label": "get_user_by_username",
+        "kind": 2,
+        "importPath": "src.network.services.users",
+        "description": "src.network.services.users",
+        "peekOfCode": "def get_user_by_username(driver, username):\n    user = driver.execute_query(\n        \"\"\"\n            Match (u:User {username: $username}) return u as User\n        \"\"\",\n        {\"username\": username},\n    )\n    return user.records[0][\"User\"]._properties if len(user.records)!=0 else None\ndef create_follow_relation(driver, user_1, user_2):\n    existing_user_1 = driver.execute_query(",
+        "detail": "src.network.services.users",
+        "documentation": {}
+    },
+    {
+        "label": "create_follow_relation",
+        "kind": 2,
+        "importPath": "src.network.services.users",
+        "description": "src.network.services.users",
+        "peekOfCode": "def create_follow_relation(driver, user_1, user_2):\n    existing_user_1 = driver.execute_query(\n        \"MATCH (u:User {username: $user_1}) RETURN u LIMIT 1\", {\"user_1\": user_1}\n    ).records\n    existing_user_2 = driver.execute_query(\n        \"MATCH (u:User {username: $user_2}) RETURN u LIMIT 1\", {\"user_2\": user_2}\n    ).records\n    if existing_user_1 and existing_user_2:\n        now = datetime.now()\n        driver.execute_query(",
+        "detail": "src.network.services.users",
+        "documentation": {}
+    },
+    {
+        "label": "remove_follow_relation",
+        "kind": 2,
+        "importPath": "src.network.services.users",
+        "description": "src.network.services.users",
+        "peekOfCode": "def remove_follow_relation(driver, user_1, user_2):\n    existing_user_1 = driver.execute_query(\n        \"MATCH (u:User {username: $user_1}) RETURN u LIMIT 1\", {\"user_1\": user_1}\n    ).records\n    existing_user_2 = driver.execute_query(\n        \"MATCH (u:User {username: $user_2}) RETURN u LIMIT 1\", {\"user_2\": user_2}\n    ).records\n    if existing_user_1 and existing_user_2:\n        now = datetime.now()\n        relation_exists = len(driver.execute_query(",
+        "detail": "src.network.services.users",
+        "documentation": {}
+    },
+    {
+        "label": "register",
+        "kind": 2,
+        "importPath": "src.app",
+        "description": "src.app",
+        "peekOfCode": "def register():\n    data = request.form\n    email = data.get(\"email\")\n    name = data.get(\"name\")\n    username = data.get(\"username\")\n    password = data.get(\"password\")\n    if not email or not username or not password:\n        return jsonify({\"message\": f\"Email, username and password are required.\"}), 500\n    user_id, error = register_user(name, username, email, password)\n    if error == None:",
+        "detail": "src.app",
+        "documentation": {}
+    },
+    {
+        "label": "login",
+        "kind": 2,
+        "importPath": "src.app",
+        "description": "src.app",
+        "peekOfCode": "def login():\n    data = request.form\n    _, ok, error = login_user(data.get(\"password\"), data.get(\"username\"), data.get(\"email\")) \n    if ok:\n        return jsonify({\"message\": \"User logged in.\"}), 201\n    else:\n        return jsonify({\"error\": error}), 500\n# Endpoint to log out a user\n@app.route('/logout', methods=['POST'])\ndef logout():",
+        "detail": "src.app",
+        "documentation": {}
+    },
+    {
+        "label": "logout",
+        "kind": 2,
+        "importPath": "src.app",
+        "description": "src.app",
+        "peekOfCode": "def logout():\n    session[\"username\"] = \"\"\n    session[\"email\"] = \"\"\n    return jsonify({\"message\": \"Logged out.\"}), 201\n# Endpoint to create a new post\n@app.route('/post', methods=['POST'])\ndef post():\n    data = request.form\n    media = data.get(\"media\")\n    caption = data.get(\"caption\")",
+        "detail": "src.app",
+        "documentation": {}
+    },
+    {
+        "label": "post",
+        "kind": 2,
+        "importPath": "src.app",
+        "description": "src.app",
+        "peekOfCode": "def post():\n    data = request.form\n    media = data.get(\"media\")\n    caption = data.get(\"caption\")\n    if not media or not caption:\n        return jsonify({\"message\": f\"Media or caption are required.\"}), 500\n    response, ok, error = create_post(data[\"media\"], data[\"caption\"])\n    if ok:\n        return jsonify({\"message\": f\"Post created successfully. ID: {response}\"}), 201\n    else:",
+        "detail": "src.app",
+        "documentation": {}
+    },
+    {
+        "label": "repost",
+        "kind": 2,
+        "importPath": "src.app",
+        "description": "src.app",
+        "peekOfCode": "def repost():\n    data = request.form\n    _, ok, error = repost_existing_post(int(data[\"reposted_post_id\"]))\n    if ok:\n        return jsonify({\"message\": f\"Post reposted successfully.\"}), 201\n    else:\n        return jsonify({\"error\": error})\n# Endpoint to quote an existing post\n@app.route('/quote', methods=['POST'])\ndef quote():",
+        "detail": "src.app",
+        "documentation": {}
+    },
+    {
+        "label": "quote",
+        "kind": 2,
+        "importPath": "src.app",
+        "description": "src.app",
+        "peekOfCode": "def quote():\n    data = request.form\n    quoted_post_id = int(data.get(\"quoted_post_id\"))\n    media = data.get(\"media\")\n    caption = data.get(\"caption\")\n    _, ok, error = quote_existing_post(quoted_post_id, media, caption)\n    if ok:\n        return jsonify({\"message\": f\"Post quoted successfully.\"}), 201\n    else:\n        return jsonify({\"error\": error})",
+        "detail": "src.app",
+        "documentation": {}
+    },
+    {
+        "label": "remove_post",
+        "kind": 2,
+        "importPath": "src.app",
+        "description": "src.app",
+        "peekOfCode": "def remove_post():\n    data = request.form\n    post_id = int(data.get(\"post_id\"))\n    _, ok, error = delete_post(post_id)\n    if not ok:\n        return jsonify({\"error\": error}), 500 \n    return jsonify({\"message\": \"Post deleted successfully\"}), 200\n# Endpoint to follow a user\n@app.route('/follow', methods=['POST'])\ndef follow():",
+        "detail": "src.app",
+        "documentation": {}
+    },
+    {
+        "label": "follow",
+        "kind": 2,
+        "importPath": "src.app",
+        "description": "src.app",
+        "peekOfCode": "def follow():\n    data = request.form\n    followed_username = data.get(\"followed\")\n    _, ok, error = follow_user(followed_username)\n    if ok:\n        return jsonify({\"message\": f\"Now following user {followed_username}\"}), 200\n    return jsonify({\"error\": error}), 500\n# Endpoint to unfollow a user\n@app.route('/unfollow', methods=['POST'])\ndef unfollow():",
+        "detail": "src.app",
+        "documentation": {}
+    },
+    {
+        "label": "unfollow",
+        "kind": 2,
+        "importPath": "src.app",
+        "description": "src.app",
+        "peekOfCode": "def unfollow():\n    data = request.form\n    followed_username = data.get(\"followed\")\n    _, ok, error = unfollow_user(followed_username)\n    if ok:\n        return jsonify({\"message\": f\"Unfollowed user {followed_username}\"}), 200\n    return jsonify({\"error\": error}), 500\n# Endpoint to react to a post\n@app.route('/react-post', methods=['POST'])\ndef react_post():",
+        "detail": "src.app",
+        "documentation": {}
+    },
+    {
+        "label": "react_post",
+        "kind": 2,
+        "importPath": "src.app",
+        "description": "src.app",
+        "peekOfCode": "def react_post():\n    data = request.form\n    reaction = data.get(\"reaction\")\n    post_id = int(data.get(\"post_id\"))\n    _, ok, error = react_to_a_post(reaction, post_id)\n    if ok:\n        return jsonify({\"message\": \"Reaction sent\"}), 201\n    return jsonify({\"error\": error}), 500\n# Endpoint to react to a comment\n@app.route('/react-comment', methods=['POST'])",
+        "detail": "src.app",
+        "documentation": {}
+    },
+    {
+        "label": "react_comment",
+        "kind": 2,
+        "importPath": "src.app",
+        "description": "src.app",
+        "peekOfCode": "def react_comment():\n    data = request.form\n    reaction = data.get(\"reaction\")\n    comment_id = int(data.get(\"comment_id\"))\n    _, ok, error = react_to_a_comment(reaction, comment_id)\n    if ok:\n        return jsonify({\"message\": \"Reaction sent\"}), 201\n    return jsonify({\"error\": error}), 500\n# Endpoint to comment a post\n@app.route('/comment-post', methods=['POST'])",
+        "detail": "src.app",
+        "documentation": {}
+    },
+    {
+        "label": "comment",
+        "kind": 2,
+        "importPath": "src.app",
+        "description": "src.app",
+        "peekOfCode": "def comment():\n    data = request.form\n    caption = data.get(\"caption\")\n    media = data.get(\"media\")\n    post_id = int(data.get(\"post_id\"))\n    comment_id, ok, error = create_post_comment(caption, media, post_id)\n    if ok:\n        return jsonify({\"message\": f\"Comment sent. ID: {comment_id}\"}), 201\n    return jsonify({\"error\": error}), 500\n# Endpoint to answer a comment",
+        "detail": "src.app",
+        "documentation": {}
+    },
+    {
+        "label": "answer",
+        "kind": 2,
+        "importPath": "src.app",
+        "description": "src.app",
+        "peekOfCode": "def answer():\n    data = request.form\n    caption = data.get(\"caption\")\n    media = data.get(\"media\")\n    comment_id = int(data.get(\"comment_id\"))\n    new_comment_id, ok, error = create_comment_answer(caption, media, comment_id)\n    if ok:\n        return jsonify({\"message\": f\"Comment sent. ID: {new_comment_id}\"}), 201\n    return jsonify({\"error\": error}), 500\nif __name__ == '__main__':",
+        "detail": "src.app",
+        "documentation": {}
+    },
+    {
+        "label": "app",
+        "kind": 5,
+        "importPath": "src.app",
+        "description": "src.app",
+        "peekOfCode": "app = Flask(__name__)\nCORS(app)\napp.secret_key = secrets.token_hex(16) \n# Endpoint to register a new user\n@app.route('/register', methods=['POST'])\ndef register():\n    data = request.form\n    email = data.get(\"email\")\n    name = data.get(\"name\")\n    username = data.get(\"username\")",
+        "detail": "src.app",
+        "documentation": {}
+    },
+    {
+        "label": "app.secret_key",
+        "kind": 5,
+        "importPath": "src.app",
+        "description": "src.app",
+        "peekOfCode": "app.secret_key = secrets.token_hex(16) \n# Endpoint to register a new user\n@app.route('/register', methods=['POST'])\ndef register():\n    data = request.form\n    email = data.get(\"email\")\n    name = data.get(\"name\")\n    username = data.get(\"username\")\n    password = data.get(\"password\")\n    if not email or not username or not password:",
+        "detail": "src.app",
+        "documentation": {}
+    },
+    {
+        "label": "remove_old_data",
+        "kind": 2,
+        "importPath": "clean_db",
+        "description": "clean_db",
+        "peekOfCode": "def remove_old_data(driver):\n    driver.execute_query(\"match (n:User) -[r:Posts]-> (n1:Post) delete r\")\n    driver.execute_query(\"match (n:User) -[r:Reposts]-> (n1:Post) delete r\")\n    driver.execute_query(\"match (n:User) -[r:Follows]-> (n1:User) delete r\")\n    driver.execute_query(\"match (c:Comment) -[r:Has]-> (c1:Comment) delete r\")\n    driver.execute_query(\"match (p:Post) -[r:Has]-> (c1:Comment) delete r\")\n    driver.execute_query(\"match (u:User) -[r:Comments]-> (c1:Comment) delete r\")\n    driver.execute_query(\"match (p:Post) -[r:Reacted_by]-> (n1:User) delete r\")\n    driver.execute_query(\"match (c:Comment) -[r:Reacted_by]-> (n1:User) delete r\")\n    driver.execute_query(\"match (n) delete n\")",
+        "detail": "clean_db",
+        "documentation": {}
+    },
+    {
+        "label": "comment_id",
+        "kind": 5,
+        "importPath": "tests",
+        "description": "tests",
+        "peekOfCode": "comment_id = comment_post(driver, \"Hellooooo!\", [], user_name_frank, post_id)\nanswer_comment(driver, \"Hello 2 u 2\", [], user_name_ale, comment_id)\n#test reactions\nreact_comment(driver,\"sad face\",user_name_frank,comment_id)\nreact_post(driver,\"neutral face\",user_name_ale,post_id)\nreact_comment(driver,\"happy\",user_name_frank,comment_id)\n# Close connection\nclose_db_connection()",
+        "detail": "tests",
+        "documentation": {}
+    }
+]

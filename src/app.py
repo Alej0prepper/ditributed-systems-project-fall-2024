@@ -1,8 +1,12 @@
 import secrets
 from flask import Flask, request, jsonify, session
 from network.controllers.users import login_user, register_user
-from network.controllers.posts import create_post, repost_existing_post, quote_existing_post
+from network.controllers.posts import create_post, repost_existing_post, quote_existing_post, delete_post
 from flask_cors import CORS
+from network.controllers.users import follow_user
+from network.controllers.users import unfollow_user
+from network.controllers.comments import create_comment_answer, create_post_comment
+from network.controllers.reactions import react_to_a_comment, react_to_a_post
 
 app = Flask(__name__)
 CORS(app)
@@ -19,21 +23,22 @@ def register():
     password = data.get("password")
 
     if not email or not username or not password:
-        return jsonify({"message": f"Email, username and password are required."}), 400
+        return jsonify({"message": f"Email, username and password are required."}), 500
 
     user_id, error = register_user(name, username, email, password)
     if error == None:
         return jsonify({"message": f"User registered successfully. ID: {user_id}"}), 201
-    return jsonify({"Error": f"{error}"}), 400
+    return jsonify({"Error": f"{error}"}), 500
 
 # Endpoint to log in a user
 @app.route('/login', methods=['POST'])
 def login():
     data = request.form
-    if login_user(data.get("password"), data.get("username"), data.get("email")):
+    _, ok, error = login_user(data.get("password"), data.get("username"), data.get("email")) 
+    if ok:
         return jsonify({"message": "User logged in."}), 201
     else:
-        return jsonify({"message": "Invalid credentials"}), 400
+        return jsonify({"error": error}), 500
 
 # Endpoint to log out a user
 @app.route('/logout', methods=['POST'])
@@ -50,7 +55,7 @@ def post():
     caption = data.get("caption")
 
     if not media or not caption:
-        return jsonify({"message": f"Media or caption are required."}), 400
+        return jsonify({"message": f"Media or caption are required."}), 500
     
     response, ok, error = create_post(data["media"], data["caption"])
     if ok:
@@ -83,33 +88,80 @@ def quote():
 
 # Endpoint to delete a post
 @app.route('/delete-post', methods=['DELETE'])
-def delete_post():
+def remove_post():
     data = request.form
+    post_id = int(data.get("post_id"))
+    _, ok, error = delete_post(post_id)
+    if not ok:
+        return jsonify({"error": error}), 500 
     return jsonify({"message": "Post deleted successfully"}), 200
 
 # Endpoint to follow a user
 @app.route('/follow', methods=['POST'])
 def follow():
     data = request.form
-    return jsonify({"message": "Now following user"}), 200
+    followed_username = data.get("followed")
+    _, ok, error = follow_user(followed_username)
+    if ok:
+        return jsonify({"message": f"Now following user {followed_username}"}), 200
+    return jsonify({"error": error}), 500
 
 # Endpoint to unfollow a user
 @app.route('/unfollow', methods=['POST'])
 def unfollow():
     data = request.form
-    return jsonify({"message": "User unfollowed"}), 200
+    followed_username = data.get("followed")
+    _, ok, error = unfollow_user(followed_username)
+    if ok:
+        return jsonify({"message": f"Unfollowed user {followed_username}"}), 200
+    return jsonify({"error": error}), 500
 
 # Endpoint to react to a post
-@app.route('/react', methods=['POST'])
-def react():
+@app.route('/react-post', methods=['POST'])
+def react_post():
     data = request.form
-    return jsonify({"message": "Reaction sent"}), 201
+    reaction = data.get("reaction")
+    post_id = int(data.get("post_id"))
+    _, ok, error = react_to_a_post(reaction, post_id)
+    if ok:
+        return jsonify({"message": "Reaction sent"}), 201
+    return jsonify({"error": error}), 500
+
+# Endpoint to react to a comment
+@app.route('/react-comment', methods=['POST'])
+def react_comment():
+    data = request.form
+    reaction = data.get("reaction")
+    comment_id = int(data.get("comment_id"))
+    _, ok, error = react_to_a_comment(reaction, comment_id)
+    if ok:
+        return jsonify({"message": "Reaction sent"}), 201
+    return jsonify({"error": error}), 500
 
 # Endpoint to comment a post
-@app.route('/comment', methods=['POST'])
+@app.route('/comment-post', methods=['POST'])
 def comment():
     data = request.form
-    return jsonify({"message": "Comment sent"}), 201
+    caption = data.get("caption")
+    media = data.get("media")
+    post_id = int(data.get("post_id"))
+    comment_id, ok, error = create_post_comment(caption, media, post_id)
+    if ok:
+        return jsonify({"message": f"Comment sent. ID: {comment_id}"}), 201
+    return jsonify({"error": error}), 500
+
+# Endpoint to answer a comment
+@app.route('/answer-comment', methods=['POST'])
+def answer():
+    data = request.form
+    caption = data.get("caption")
+    media = data.get("media")
+    comment_id = int(data.get("comment_id"))
+    new_comment_id, ok, error = create_comment_answer(caption, media, comment_id)
+    if ok:
+        return jsonify({"message": f"Comment sent. ID: {new_comment_id}"}), 201
+    return jsonify({"error": error}), 500
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
