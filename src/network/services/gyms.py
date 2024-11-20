@@ -5,8 +5,9 @@ def create_gym_node(driver):
         '''
         CREATE (g:Gym)
         RETURN id(g) AS gym_id
-     ''')
+    ''').records[0]
 
+    return gym['gym_id']
 def update_gym(driver, gym_id, name, email,location,address,styles, phone_number=None, ig_profile = None):
 
     phone = phone_number if(phone_number) else ""
@@ -14,7 +15,7 @@ def update_gym(driver, gym_id, name, email,location,address,styles, phone_number
 
     query = '''
     MATCH (g:Gym)
-        WHERE id(g) = gym_id
+        WHERE id(g) = $gym_id
         SET g.name = $name,
             g.email = $email,
             g.location = $location,
@@ -27,6 +28,7 @@ def update_gym(driver, gym_id, name, email,location,address,styles, phone_number
     '''
 
     parameters = {
+        "gym_id" : gym_id,
         "name" : name,
         "email" : email,
         "location": location,
@@ -43,7 +45,7 @@ def update_gym(driver, gym_id, name, email,location,address,styles, phone_number
     else:
         print(f"Gym with ID {gym_id} not found or update failed")
 
-    def add_gym(driver,name, email,location,address,styles, phone_number=None, ig_profile = None):
+def add_gym(driver,name, email,location,address,styles, phone_number=None, ig_profile = None):
         gym_id = create_gym_node(driver)
 
         update_gym(
@@ -59,7 +61,7 @@ def update_gym(driver, gym_id, name, email,location,address,styles, phone_number
         )
         return gym_id
 
-    def get_gym_info(driver,gym_id):
+def get_gym_info(driver,gym_id):
        
         result = driver.execute_query(
         """
