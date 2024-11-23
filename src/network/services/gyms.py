@@ -77,12 +77,34 @@ def get_gym_info(driver,gym_id):
         query,
         {"gym_id": gym_id}
     )
-    print(gym_id)
+    
     if result:
         gym_node_info = result[0][0][0]
-        print(result)
-        print(gym_node._properties)
-        return dict(gym_node._properties),True,None  # Convierte el nodo en un diccionario de propiedades
+        return dict(gym_node._properties),True,None  
     return None,False,f"cannot find gym with ID {gym_id} "
 
-        
+def delete_gym(driver,gym_id):
+
+    query = """
+    MATCH (g:Gym)
+        WHERE id(g) = $gym_id
+        DELETE g
+    """
+    driver.execute_query(
+        query,
+        {"gym_id": gym_id}
+    )
+
+    query = """
+    MATCH (g:Gym)
+        WHERE id(g) = $gym_id
+        RETURN g
+    """
+    result = driver.execute_query(
+        query,
+        {"gym_id": gym_id}
+    )
+
+    if result[0] == []:
+        return None,True,None
+    return None,False,f"Error: the gym {gym_id}, could not be delete succesfully"

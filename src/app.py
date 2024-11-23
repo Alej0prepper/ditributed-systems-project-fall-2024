@@ -7,7 +7,7 @@ from network.controllers.users import follow_user
 from network.controllers.users import unfollow_user
 from network.controllers.comments import create_comment_answer, create_post_comment
 from network.controllers.reactions import react_to_a_comment, react_to_a_post
-from network.controllers.gyms import add_gym_controller, update_gym_controller, get_gym_info_controller
+from network.controllers.gyms import add_gym_controller, update_gym_controller, get_gym_info_controller,delete_gym_controller
 app = Flask(__name__)
 CORS(app)
 app.secret_key = secrets.token_hex(16) 
@@ -208,5 +208,15 @@ def get_gym_info():
     if ok:
         return jsonify(info),201
     return jsonify({"error": error}), 500
+
+@app.route('/delete-gym',  methods=['POST'])  
+def delete_gym():
+    data = request.form
+    gym_id = data.get("gym_id")
+    info,ok,error = delete_gym_controller(gym_id)
+
+    if ok:
+        return jsonify({"message": f"deleted succesfully gym with ID {gym_id}" })
+    return jsonify({"error": error})
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
