@@ -661,11 +661,11 @@
         "documentation": {}
     },
     {
-        "label": "PASS",
+        "label": "AUTH_CREDS",
         "kind": 5,
         "importPath": "src.database.connection",
         "description": "src.database.connection",
-        "peekOfCode": "PASS = os.getenv('PASS')\nURI = \"neo4j://localhost:7687\"\nAUTH = (\"neo4j\", PASS)\ndriver = None\nsession = None\ndef open_db_connection():\n    global driver, session\n    driver = GraphDatabase.driver(URI, auth=AUTH)\n    session = driver.session(database=\"neo4j\")\n    return session, driver",
+        "peekOfCode": "AUTH_CREDS = os.getenv('NEO4J_AUTH')\nURI = \"neo4j://neo4j:7687\"\nprint(AUTH_CREDS.split(\"/\")[0], AUTH_CREDS.split(\"/\")[1])\nAUTH = (AUTH_CREDS.split(\"/\")[0], AUTH_CREDS.split(\"/\")[1])\ndriver = None\nsession = None\ndef open_db_connection():\n    global driver, session\n    driver = GraphDatabase.driver(URI, auth=AUTH)\n    session = driver.session(database=\"neo4j\")",
         "detail": "src.database.connection",
         "documentation": {}
     },
@@ -674,7 +674,7 @@
         "kind": 5,
         "importPath": "src.database.connection",
         "description": "src.database.connection",
-        "peekOfCode": "URI = \"neo4j://localhost:7687\"\nAUTH = (\"neo4j\", PASS)\ndriver = None\nsession = None\ndef open_db_connection():\n    global driver, session\n    driver = GraphDatabase.driver(URI, auth=AUTH)\n    session = driver.session(database=\"neo4j\")\n    return session, driver\ndef close_db_connection():",
+        "peekOfCode": "URI = \"neo4j://neo4j:7687\"\nprint(AUTH_CREDS.split(\"/\")[0], AUTH_CREDS.split(\"/\")[1])\nAUTH = (AUTH_CREDS.split(\"/\")[0], AUTH_CREDS.split(\"/\")[1])\ndriver = None\nsession = None\ndef open_db_connection():\n    global driver, session\n    driver = GraphDatabase.driver(URI, auth=AUTH)\n    session = driver.session(database=\"neo4j\")\n    return session, driver",
         "detail": "src.database.connection",
         "documentation": {}
     },
@@ -683,7 +683,7 @@
         "kind": 5,
         "importPath": "src.database.connection",
         "description": "src.database.connection",
-        "peekOfCode": "AUTH = (\"neo4j\", PASS)\ndriver = None\nsession = None\ndef open_db_connection():\n    global driver, session\n    driver = GraphDatabase.driver(URI, auth=AUTH)\n    session = driver.session(database=\"neo4j\")\n    return session, driver\ndef close_db_connection():\n    global driver, session",
+        "peekOfCode": "AUTH = (AUTH_CREDS.split(\"/\")[0], AUTH_CREDS.split(\"/\")[1])\ndriver = None\nsession = None\ndef open_db_connection():\n    global driver, session\n    driver = GraphDatabase.driver(URI, auth=AUTH)\n    session = driver.session(database=\"neo4j\")\n    return session, driver\ndef close_db_connection():\n    global driver, session",
         "detail": "src.database.connection",
         "documentation": {}
     },
@@ -935,7 +935,7 @@
         "kind": 2,
         "importPath": "src.network.services.gyms",
         "description": "src.network.services.gyms",
-        "peekOfCode": "def update_gym(driver, gym_id, name , email,location,address,styles, phone_number=None, ig_profile = None):\n    phone = phone_number if(phone_number) else \"\"\n    ig = ig_profile if(ig_profile) else \"\"\n    gym_id = int(gym_id)\n    print(gym_id)\n    print(type(gym_id))\n    query = '''\n    MATCH (g:Gym)\n        WHERE id(g) = $gym_id  \n        SET g.name = $name,",
+        "peekOfCode": "def update_gym(driver, gym_id, name , email,location,address,styles, phone_number=None, ig_profile = None):\n    phone = phone_number if(phone_number) else \"\"\n    ig = ig_profile if(ig_profile) else \"\"\n    gym_id = int(gym_id)\n    query = '''\n    MATCH (g:Gym)\n        WHERE id(g) = $gym_id  \n        SET g.name = $name,\n            g.email = $email,\n            g.location = $location,",
         "detail": "src.network.services.gyms",
         "documentation": {}
     },
@@ -944,7 +944,7 @@
         "kind": 2,
         "importPath": "src.network.services.gyms",
         "description": "src.network.services.gyms",
-        "peekOfCode": "def add_gym(driver,name, email,location,address,styles, phone_number=None, ig_profile = None):\n        gym_id = create_gym_node(driver)\n        update_gym(\n            driver,\n            gym_id,\n            name,\n            email,\n            location,\n            address,\n            styles,",
+        "peekOfCode": "def add_gym(driver,name, email,location,address,styles, phone_number=None, ig_profile = None):\n        gym_id = create_gym_node(driver)\n        return update_gym(\n            driver,\n            gym_id,\n            name,\n            email,\n            location,\n            address,\n            styles,",
         "detail": "src.network.services.gyms",
         "documentation": {}
     },
@@ -998,7 +998,7 @@
         "kind": 2,
         "importPath": "src.network.services.posts",
         "description": "src.network.services.posts",
-        "peekOfCode": "def post(driver, media, caption, username):\n    if not media and not caption:\n        return None, False, \"media and caption can't be None at the same time.\"    \n    post_id = add_post(driver, media, caption)\n    now = datetime.now()\n    driver.execute_query(\n        \"\"\"\n        MATCH (p:Post)\n            WHERE id(p) = $post_id\n        MATCH (u:User {username: $username})",
+        "peekOfCode": "def post(driver, media, caption, username):\n    if not media and not caption:\n        return None, False, \"media and caption can't be None at the same time.\"    \n    post_id = add_post(driver, media, caption)\n    now = datetime.now()\n    query = \"\"\"\n        MATCH (p:Post)\n            WHERE id(p) = $post_id\n        MATCH (u:User {username: $username})\n        CREATE (u)-[r:Posts {datetime: $now}]->(p)",
         "detail": "src.network.services.posts",
         "documentation": {}
     },
@@ -1250,7 +1250,7 @@
         "kind": 2,
         "importPath": "src.app",
         "description": "src.app",
-        "peekOfCode": "def create_gym():\n    data = request.form\n    name = data.get(\"name\")\n    email = data.get(\"email\")\n    location = data.get(\"location\")\n    address = data.get(\"address\")\n    styles = data.get(\"styles\")\n    phone_number = data.get(\"phone_number\") if data.get(\"phone_number\") else None\n    ig_profile = data.get(\"ig_profile\") if data.get(\"ig_profile\") else None\n    gym_id= add_gym_controller(name,email,location,address,styles,phone_number,ig_profile)",
+        "peekOfCode": "def create_gym():\n    data = request.form\n    name = data.get(\"name\")\n    email = data.get(\"email\")\n    location = data.get(\"location\")\n    address = data.get(\"address\")\n    styles = data.get(\"styles\")\n    phone_number = data.get(\"phone_number\") if data.get(\"phone_number\") else None\n    ig_profile = data.get(\"ig_profile\") if data.get(\"ig_profile\") else None\n    gym_id, ok, error = add_gym_controller(name,email,location,address,styles,phone_number,ig_profile)",
         "detail": "src.app",
         "documentation": {}
     },
@@ -1277,7 +1277,7 @@
         "kind": 2,
         "importPath": "src.app",
         "description": "src.app",
-        "peekOfCode": "def delete_gym():\n    data = request.form\n    gym_id = data.get(\"gym_id\")\n    info,ok,error = delete_gym_controller(gym_id)\n    if ok:\n        return jsonify({\"message\": f\"deleted succesfully gym with ID {gym_id}\" })\n    return jsonify({\"error\": error})\nif __name__ == '__main__':\n    app.run(host=\"0.0.0.0\", port=5000, debug=True)",
+        "peekOfCode": "def delete_gym():\n    data = request.form\n    gym_id = data.get(\"gym_id\")\n    _,ok,error = delete_gym_controller(gym_id)\n    if ok:\n        return jsonify({\"message\": f\"deleted succesfully gym with ID {gym_id}\" })\n    return jsonify({\"error\": error})\nif __name__ == '__main__':\n    app.run(host=\"0.0.0.0\", port=5000, debug=True)",
         "detail": "src.app",
         "documentation": {}
     },

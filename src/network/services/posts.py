@@ -70,19 +70,22 @@ def post(driver, media, caption, username):
         return None, False, "media and caption can't be None at the same time."    
     post_id = add_post(driver, media, caption)
     now = datetime.now()
-    driver.execute_query(
-        """
+    query = """
         MATCH (p:Post)
             WHERE id(p) = $post_id
         MATCH (u:User {username: $username})
-        CREATE (u) -[r:Posts {datetime: $now}]->  (p)
+        CREATE (u)-[r:Posts {datetime: $now}]->(p)
         RETURN r
-        """,
-        {"post_id": post_id, "username": username, "now": now}
-    )
+    """
+    parameters = {"post_id": post_id, "username": username, "now": now}
+    
+    with driver.session() as session:
+        result = session.run(query, parameters)
+        if result != None: 
+            print("Posted!")
+            return post_id, True, None
+        return None, False, "There was a DB related error."
 
-    print("Posted!")
-    return post_id, True, None
 
 def quote(driver, media, caption, username, quoted_post_id):
     new_post_id, _, _ = post(driver, media, caption, username)

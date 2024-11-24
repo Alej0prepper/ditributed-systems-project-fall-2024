@@ -3,10 +3,11 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-PASS = os.getenv('PASS')
+AUTH_CREDS = os.getenv('NEO4J_AUTH')
 
-URI = "neo4j://localhost:7687"
-AUTH = ("neo4j", PASS)
+URI = "neo4j://neo4j:7687"
+print(AUTH_CREDS.split("/")[0], AUTH_CREDS.split("/")[1])
+AUTH = (AUTH_CREDS.split("/")[0], AUTH_CREDS.split("/")[1])
 driver = None
 session = None
 

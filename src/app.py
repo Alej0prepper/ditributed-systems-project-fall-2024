@@ -173,9 +173,9 @@ def create_gym():
     styles = data.get("styles")
     phone_number = data.get("phone_number") if data.get("phone_number") else None
     ig_profile = data.get("ig_profile") if data.get("ig_profile") else None
-    gym_id= add_gym_controller(name,email,location,address,styles,phone_number,ig_profile)
+    gym_id, ok, error = add_gym_controller(name,email,location,address,styles,phone_number,ig_profile)
 
-    if True:
+    if ok:
         return jsonify({"message": f"Gym created. ID: {gym_id}"}), 201
     return jsonify({"error": error}), 500
 
@@ -212,7 +212,7 @@ def get_gym_info():
 def delete_gym():
     data = request.form
     gym_id = data.get("gym_id")
-    info,ok,error = delete_gym_controller(gym_id)
+    _,ok,error = delete_gym_controller(gym_id)
 
     if ok:
         return jsonify({"message": f"deleted succesfully gym with ID {gym_id}" })
