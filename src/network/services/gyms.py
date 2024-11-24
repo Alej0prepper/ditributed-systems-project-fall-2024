@@ -80,8 +80,9 @@ def get_gym_info(driver,gym_id):
     
     if result:
         gym_node_info = result[0][0][0]
-        return dict(gym_node._properties),True,None  
-    return None,False,f"cannot find gym with ID {gym_id} "
+        return dict(gym_node_info._properties),True,None  
+    
+    return None,False,f"Cannot find gym with ID {gym_id} "
 
 def delete_gym(driver,gym_id):
 
@@ -107,4 +108,4 @@ def delete_gym(driver,gym_id):
 
     if result[0] == []:
         return None,True,None
-    return None,False,f"Error: the gym {gym_id}, could not be delete succesfully"
+    return None,False,f"Gym {gym_id} could not be delete succesfully"

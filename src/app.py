@@ -162,11 +162,10 @@ def answer():
         return jsonify({"message": f"Comment sent. ID: {new_comment_id}"}), 201
     return jsonify({"error": error}), 500
 
-#endpoint to create a gym
+# Endpoint to create a gym
 @app.route('/create-gym',methods=['POST'])
 def create_gym():
     data = request.form
-    # gym_id = data.get("gym_id")
     name = data.get("name")
     email = data.get("email")
     location = data.get("location")
@@ -177,7 +176,7 @@ def create_gym():
     gym_id= add_gym_controller(name,email,location,address,styles,phone_number,ig_profile)
 
     if True:
-        return jsonify({"message": f"Gym created ID: {gym_id}"}), 201
+        return jsonify({"message": f"Gym created. ID: {gym_id}"}), 201
     return jsonify({"error": error}), 500
 
 @app.route('/update-gym',methods=['POST'])

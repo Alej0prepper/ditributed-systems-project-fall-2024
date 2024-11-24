@@ -65,6 +65,14 @@
         "documentation": {}
     },
     {
+        "label": "session",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
         "label": "jsonify",
         "importPath": "flask",
         "description": "flask",
@@ -137,6 +145,22 @@
         "documentation": {}
     },
     {
+        "label": "use_db_connection",
+        "importPath": "network.middlewares.use_db_connection",
+        "description": "network.middlewares.use_db_connection",
+        "isExtraImport": true,
+        "detail": "network.middlewares.use_db_connection",
+        "documentation": {}
+    },
+    {
+        "label": "needs_authentication",
+        "importPath": "network.middlewares.auth",
+        "description": "network.middlewares.auth",
+        "isExtraImport": true,
+        "detail": "network.middlewares.auth",
+        "documentation": {}
+    },
+    {
         "label": "needs_authentication",
         "importPath": "network.middlewares.auth",
         "description": "network.middlewares.auth",
@@ -182,6 +206,38 @@
         "description": "network.services.comments",
         "isExtraImport": true,
         "detail": "network.services.comments",
+        "documentation": {}
+    },
+    {
+        "label": "add_gym",
+        "importPath": "network.services.gyms",
+        "description": "network.services.gyms",
+        "isExtraImport": true,
+        "detail": "network.services.gyms",
+        "documentation": {}
+    },
+    {
+        "label": "update_gym",
+        "importPath": "network.services.gyms",
+        "description": "network.services.gyms",
+        "isExtraImport": true,
+        "detail": "network.services.gyms",
+        "documentation": {}
+    },
+    {
+        "label": "get_gym_info",
+        "importPath": "network.services.gyms",
+        "description": "network.services.gyms",
+        "isExtraImport": true,
+        "detail": "network.services.gyms",
+        "documentation": {}
+    },
+    {
+        "label": "delete_gym",
+        "importPath": "network.services.gyms",
+        "description": "network.services.gyms",
+        "isExtraImport": true,
+        "detail": "network.services.gyms",
         "documentation": {}
     },
     {
@@ -330,6 +386,14 @@
         "documentation": {}
     },
     {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
         "label": "secrets",
         "kind": 6,
         "isExtraImport": true,
@@ -443,6 +507,38 @@
         "documentation": {}
     },
     {
+        "label": "add_gym_controller",
+        "importPath": "network.controllers.gyms",
+        "description": "network.controllers.gyms",
+        "isExtraImport": true,
+        "detail": "network.controllers.gyms",
+        "documentation": {}
+    },
+    {
+        "label": "update_gym_controller",
+        "importPath": "network.controllers.gyms",
+        "description": "network.controllers.gyms",
+        "isExtraImport": true,
+        "detail": "network.controllers.gyms",
+        "documentation": {}
+    },
+    {
+        "label": "get_gym_info_controller",
+        "importPath": "network.controllers.gyms",
+        "description": "network.controllers.gyms",
+        "isExtraImport": true,
+        "detail": "network.controllers.gyms",
+        "documentation": {}
+    },
+    {
+        "label": "delete_gym_controller",
+        "importPath": "network.controllers.gyms",
+        "description": "network.controllers.gyms",
+        "isExtraImport": true,
+        "detail": "network.controllers.gyms",
+        "documentation": {}
+    },
+    {
         "label": "open_db_connection",
         "importPath": "src.database.connection",
         "description": "src.database.connection",
@@ -531,7 +627,7 @@
         "documentation": {}
     },
     {
-        "label": "react_comment",
+        "label": "react_to_a_comment_service",
         "importPath": "src.network.services.reactions",
         "description": "src.network.services.reactions",
         "isExtraImport": true,
@@ -539,7 +635,7 @@
         "documentation": {}
     },
     {
-        "label": "react_post",
+        "label": "react_to_a_post_service",
         "importPath": "src.network.services.reactions",
         "description": "src.network.services.reactions",
         "isExtraImport": true,
@@ -625,6 +721,42 @@
         "description": "src.network.controllers.comments",
         "peekOfCode": "def create_comment_answer(caption, media, answered_comment_id, driver=None):\n    return answer_comment(driver, caption, media, session[\"username\"], answered_comment_id)",
         "detail": "src.network.controllers.comments",
+        "documentation": {}
+    },
+    {
+        "label": "add_gym_controller",
+        "kind": 2,
+        "importPath": "src.network.controllers.gyms",
+        "description": "src.network.controllers.gyms",
+        "peekOfCode": "def add_gym_controller(name,email,location,address,styles,phone_number = None ,ig_profile = None,driver = None):\n    return add_gym(driver, name,email,location,address,styles,phone_number,ig_profile)\n@use_db_connection\n@needs_authentication\ndef update_gym_controller(gym_id, name, email,location,address,styles, phone_number=None, ig_profile = None,driver =None):\n    return update_gym(driver,gym_id,name,email,location,address,styles,phone_number,ig_profile)\n@use_db_connection\ndef get_gym_info_controller(gym_id,driver =None):\n    gym_id = int(gym_id)\n    return get_gym_info(driver,gym_id)   ",
+        "detail": "src.network.controllers.gyms",
+        "documentation": {}
+    },
+    {
+        "label": "update_gym_controller",
+        "kind": 2,
+        "importPath": "src.network.controllers.gyms",
+        "description": "src.network.controllers.gyms",
+        "peekOfCode": "def update_gym_controller(gym_id, name, email,location,address,styles, phone_number=None, ig_profile = None,driver =None):\n    return update_gym(driver,gym_id,name,email,location,address,styles,phone_number,ig_profile)\n@use_db_connection\ndef get_gym_info_controller(gym_id,driver =None):\n    gym_id = int(gym_id)\n    return get_gym_info(driver,gym_id)   \n@use_db_connection\n@needs_authentication\ndef delete_gym_controller(gym_id,driver=None):\n    gym_id = int(gym_id)",
+        "detail": "src.network.controllers.gyms",
+        "documentation": {}
+    },
+    {
+        "label": "get_gym_info_controller",
+        "kind": 2,
+        "importPath": "src.network.controllers.gyms",
+        "description": "src.network.controllers.gyms",
+        "peekOfCode": "def get_gym_info_controller(gym_id,driver =None):\n    gym_id = int(gym_id)\n    return get_gym_info(driver,gym_id)   \n@use_db_connection\n@needs_authentication\ndef delete_gym_controller(gym_id,driver=None):\n    gym_id = int(gym_id)\n    return delete_gym(driver,gym_id)",
+        "detail": "src.network.controllers.gyms",
+        "documentation": {}
+    },
+    {
+        "label": "delete_gym_controller",
+        "kind": 2,
+        "importPath": "src.network.controllers.gyms",
+        "description": "src.network.controllers.gyms",
+        "peekOfCode": "def delete_gym_controller(gym_id,driver=None):\n    gym_id = int(gym_id)\n    return delete_gym(driver,gym_id)",
+        "detail": "src.network.controllers.gyms",
         "documentation": {}
     },
     {
@@ -787,6 +919,51 @@
         "description": "src.network.services.comments",
         "peekOfCode": "def comment_post(driver, caption, media, username, commented_post_id):\n    return comment(driver, caption, media, username, commented_post_id=commented_post_id)",
         "detail": "src.network.services.comments",
+        "documentation": {}
+    },
+    {
+        "label": "create_gym_node",
+        "kind": 2,
+        "importPath": "src.network.services.gyms",
+        "description": "src.network.services.gyms",
+        "peekOfCode": "def create_gym_node(driver):\n    gym = driver.execute_query(\n        '''\n        CREATE (g:Gym)\n        RETURN id(g) AS gym_id\n    ''').records[0]\n    return gym['gym_id']\ndef update_gym(driver, gym_id, name , email,location,address,styles, phone_number=None, ig_profile = None):\n    phone = phone_number if(phone_number) else \"\"\n    ig = ig_profile if(ig_profile) else \"\"",
+        "detail": "src.network.services.gyms",
+        "documentation": {}
+    },
+    {
+        "label": "update_gym",
+        "kind": 2,
+        "importPath": "src.network.services.gyms",
+        "description": "src.network.services.gyms",
+        "peekOfCode": "def update_gym(driver, gym_id, name , email,location,address,styles, phone_number=None, ig_profile = None):\n    phone = phone_number if(phone_number) else \"\"\n    ig = ig_profile if(ig_profile) else \"\"\n    gym_id = int(gym_id)\n    print(gym_id)\n    print(type(gym_id))\n    query = '''\n    MATCH (g:Gym)\n        WHERE id(g) = $gym_id  \n        SET g.name = $name,",
+        "detail": "src.network.services.gyms",
+        "documentation": {}
+    },
+    {
+        "label": "add_gym",
+        "kind": 2,
+        "importPath": "src.network.services.gyms",
+        "description": "src.network.services.gyms",
+        "peekOfCode": "def add_gym(driver,name, email,location,address,styles, phone_number=None, ig_profile = None):\n        gym_id = create_gym_node(driver)\n        update_gym(\n            driver,\n            gym_id,\n            name,\n            email,\n            location,\n            address,\n            styles,",
+        "detail": "src.network.services.gyms",
+        "documentation": {}
+    },
+    {
+        "label": "get_gym_info",
+        "kind": 2,
+        "importPath": "src.network.services.gyms",
+        "description": "src.network.services.gyms",
+        "peekOfCode": "def get_gym_info(driver,gym_id):\n    query = \"\"\"\n    MATCH (g:Gym)\n        WHERE id(g) = $gym_id\n        RETURN g\n    \"\"\"\n    result = driver.execute_query(\n        query,\n        {\"gym_id\": gym_id}\n    )",
+        "detail": "src.network.services.gyms",
+        "documentation": {}
+    },
+    {
+        "label": "delete_gym",
+        "kind": 2,
+        "importPath": "src.network.services.gyms",
+        "description": "src.network.services.gyms",
+        "peekOfCode": "def delete_gym(driver,gym_id):\n    query = \"\"\"\n    MATCH (g:Gym)\n        WHERE id(g) = $gym_id\n        DELETE g\n    \"\"\"\n    driver.execute_query(\n        query,\n        {\"gym_id\": gym_id}\n    )",
+        "detail": "src.network.services.gyms",
         "documentation": {}
     },
     {
@@ -1064,7 +1241,43 @@
         "kind": 2,
         "importPath": "src.app",
         "description": "src.app",
-        "peekOfCode": "def answer():\n    data = request.form\n    caption = data.get(\"caption\")\n    media = data.get(\"media\")\n    comment_id = int(data.get(\"comment_id\"))\n    new_comment_id, ok, error = create_comment_answer(caption, media, comment_id)\n    if ok:\n        return jsonify({\"message\": f\"Comment sent. ID: {new_comment_id}\"}), 201\n    return jsonify({\"error\": error}), 500\nif __name__ == '__main__':",
+        "peekOfCode": "def answer():\n    data = request.form\n    caption = data.get(\"caption\")\n    media = data.get(\"media\")\n    comment_id = int(data.get(\"comment_id\"))\n    new_comment_id, ok, error = create_comment_answer(caption, media, comment_id)\n    if ok:\n        return jsonify({\"message\": f\"Comment sent. ID: {new_comment_id}\"}), 201\n    return jsonify({\"error\": error}), 500\n# Endpoint to create a gym",
+        "detail": "src.app",
+        "documentation": {}
+    },
+    {
+        "label": "create_gym",
+        "kind": 2,
+        "importPath": "src.app",
+        "description": "src.app",
+        "peekOfCode": "def create_gym():\n    data = request.form\n    name = data.get(\"name\")\n    email = data.get(\"email\")\n    location = data.get(\"location\")\n    address = data.get(\"address\")\n    styles = data.get(\"styles\")\n    phone_number = data.get(\"phone_number\") if data.get(\"phone_number\") else None\n    ig_profile = data.get(\"ig_profile\") if data.get(\"ig_profile\") else None\n    gym_id= add_gym_controller(name,email,location,address,styles,phone_number,ig_profile)",
+        "detail": "src.app",
+        "documentation": {}
+    },
+    {
+        "label": "update_gym",
+        "kind": 2,
+        "importPath": "src.app",
+        "description": "src.app",
+        "peekOfCode": "def update_gym():\n    data = request.form\n    gym_id = data.get(\"gym_id\")\n    name = data.get(\"name\")\n    email = data.get(\"email\")\n    location = data.get(\"location\")\n    address = data.get(\"address\")\n    styles = data.get(\"styles\")\n    phone_number = data.get(\"phone_number\") if data.get(\"phone_number\") else None\n    ig_profile = data.get(\"ig_profile\") if data.get(\"ig_profile\") else None",
+        "detail": "src.app",
+        "documentation": {}
+    },
+    {
+        "label": "get_gym_info",
+        "kind": 2,
+        "importPath": "src.app",
+        "description": "src.app",
+        "peekOfCode": "def get_gym_info():\n    data = request.form\n    gym_id = data.get(\"gym_id\")\n    info,ok,error = get_gym_info_controller(gym_id)\n    if ok:\n        return jsonify(info),201\n    return jsonify({\"error\": error}), 500\n@app.route('/delete-gym',  methods=['POST'])  \ndef delete_gym():\n    data = request.form",
+        "detail": "src.app",
+        "documentation": {}
+    },
+    {
+        "label": "delete_gym",
+        "kind": 2,
+        "importPath": "src.app",
+        "description": "src.app",
+        "peekOfCode": "def delete_gym():\n    data = request.form\n    gym_id = data.get(\"gym_id\")\n    info,ok,error = delete_gym_controller(gym_id)\n    if ok:\n        return jsonify({\"message\": f\"deleted succesfully gym with ID {gym_id}\" })\n    return jsonify({\"error\": error})\nif __name__ == '__main__':\n    app.run(host=\"0.0.0.0\", port=5000, debug=True)",
         "detail": "src.app",
         "documentation": {}
     },
@@ -1100,7 +1313,7 @@
         "kind": 5,
         "importPath": "tests",
         "description": "tests",
-        "peekOfCode": "comment_id = comment_post(driver, \"Hellooooo!\", [], user_name_frank, post_id)\nanswer_comment(driver, \"Hello 2 u 2\", [], user_name_ale, comment_id)\n#test reactions\nreact_comment(driver,\"sad face\",user_name_frank,comment_id)\nreact_post(driver,\"neutral face\",user_name_ale,post_id)\nreact_comment(driver,\"happy\",user_name_frank,comment_id)\n# Close connection\nclose_db_connection()",
+        "peekOfCode": "comment_id = comment_post(driver, \"Hellooooo!\", [], user_name_frank, post_id)\nanswer_comment(driver, \"Hello 2 u 2\", [], user_name_ale, comment_id)\n#test reactions\nreact_to_a_comment_service(driver,\"sad face\",user_name_frank,comment_id)\nreact_to_a_post_service(driver,\"neutral face\",user_name_ale,post_id)\nreact_to_a_comment_service(driver,\"happy\",user_name_frank,comment_id)\n#test Gyms\n# Close connection\nclose_db_connection()",
         "detail": "tests",
         "documentation": {}
     }
