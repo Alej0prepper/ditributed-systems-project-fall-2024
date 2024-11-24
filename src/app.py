@@ -7,7 +7,7 @@ from network.controllers.users import follow_user
 from network.controllers.users import unfollow_user
 from network.controllers.comments import create_comment_answer, create_post_comment
 from network.controllers.reactions import react_to_a_comment, react_to_a_post
-
+from network.controllers.gyms import add_gym_controller, update_gym_controller, get_gym_info_controller,delete_gym_controller
 app = Flask(__name__)
 CORS(app)
 app.secret_key = secrets.token_hex(16) 
@@ -162,6 +162,61 @@ def answer():
         return jsonify({"message": f"Comment sent. ID: {new_comment_id}"}), 201
     return jsonify({"error": error}), 500
 
+#endpoint to create a gym
+@app.route('/create-gym',methods=['POST'])
+def create_gym():
+    data = request.form
+    # gym_id = data.get("gym_id")
+    name = data.get("name")
+    email = data.get("email")
+    location = data.get("location")
+    address = data.get("address")
+    styles = data.get("styles")
+    phone_number = data.get("phone_number") if data.get("phone_number") else None
+    ig_profile = data.get("ig_profile") if data.get("ig_profile") else None
+    gym_id= add_gym_controller(name,email,location,address,styles,phone_number,ig_profile)
 
+    if True:
+        return jsonify({"message": f"Gym created ID: {gym_id}"}), 201
+    return jsonify({"error": error}), 500
+
+@app.route('/update-gym',methods=['POST'])
+def update_gym():
+
+    data = request.form
+    gym_id = data.get("gym_id")
+    name = data.get("name")
+    email = data.get("email")
+    location = data.get("location")
+    address = data.get("address")
+    styles = data.get("styles")
+    phone_number = data.get("phone_number") if data.get("phone_number") else None
+    ig_profile = data.get("ig_profile") if data.get("ig_profile") else None
+    (gym_id,ok,error) = update_gym_controller(gym_id,name,email,location,address,styles,phone_number,ig_profile)
+
+    if ok:
+        return jsonify({"message": f"Gym updated with ID {gym_id}"}),201
+    return jsonify({"error": error}), 500
+
+@app.route('/get-gym-info',methods=['POST'])
+def get_gym_info():
+    data = request.form
+    gym_id = data.get("gym_id")
+    
+    info,ok,error = get_gym_info_controller(gym_id)
+
+    if ok:
+        return jsonify(info),201
+    return jsonify({"error": error}), 500
+
+@app.route('/delete-gym',  methods=['POST'])  
+def delete_gym():
+    data = request.form
+    gym_id = data.get("gym_id")
+    info,ok,error = delete_gym_controller(gym_id)
+
+    if ok:
+        return jsonify({"message": f"deleted succesfully gym with ID {gym_id}" })
+    return jsonify({"error": error})
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)

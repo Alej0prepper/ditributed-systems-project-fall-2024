@@ -1,0 +1,16 @@
+/register
+/login
+/logout
+/post
+/repost
+/quote
+/delete-post
+/follow
+/unfollow
+/react-post
+/react-comment
+/comment-post
+/answer-comment
+/create-gym
+/update-gym
+/get-gym-info
