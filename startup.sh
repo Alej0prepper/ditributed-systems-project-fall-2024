@@ -1,3 +1,1 @@
-cd src/ 
-
-python3 app.py
+sudo docker run -it -v "$(pwd)":/mma-social-network mma-social-network
