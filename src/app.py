@@ -217,5 +217,6 @@ def delete_gym():
     if ok:
         return jsonify({"message": f"deleted succesfully gym with ID {gym_id}" })
     return jsonify({"error": error})
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)

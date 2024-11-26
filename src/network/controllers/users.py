@@ -35,7 +35,7 @@ def login_user(password, username=None, email=None, driver=None):
 
 def hash_password(password: str) -> bytes:
     salt = bcrypt.gensalt()
-    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+    hashed = bcrypt.hashpw(password, salt)
     return hashed
 
 def verify_password(plain_password: str, hashed_password: bytes) -> bool:

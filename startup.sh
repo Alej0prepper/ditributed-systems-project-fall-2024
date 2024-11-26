@@ -50,7 +50,7 @@ fi
 # Check if the application container exists
 if sudo docker ps -a --filter "name=$APP_CONTAINER" | grep -q "$APP_CONTAINER"; then
     echo "Application container exists. Removing..."
-    sudo docker rm $APP_CONTAINER
+    sudo docker rm $APP_CONTAINER -f
 fi
 
 # Create and start the application container
@@ -58,6 +58,7 @@ echo "Creating and starting the application container..."
 eval sudo docker run -it \
     --name "$APP_CONTAINER" \
     --network "$NETWORK_NAME" \
+    -p 5000:5000 \
     --env-file "$ENV_FILE" \
     --restart unless-stopped \
     -v "$APP_VOLUME" \

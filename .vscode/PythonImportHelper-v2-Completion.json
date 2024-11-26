@@ -665,7 +665,7 @@
         "kind": 5,
         "importPath": "src.database.connection",
         "description": "src.database.connection",
-        "peekOfCode": "AUTH_CREDS = os.getenv('NEO4J_AUTH')\nURI = \"neo4j://neo4j:7687\"\nprint(AUTH_CREDS.split(\"/\")[0], AUTH_CREDS.split(\"/\")[1])\nAUTH = (AUTH_CREDS.split(\"/\")[0], AUTH_CREDS.split(\"/\")[1])\ndriver = None\nsession = None\ndef open_db_connection():\n    global driver, session\n    driver = GraphDatabase.driver(URI, auth=AUTH)\n    session = driver.session(database=\"neo4j\")",
+        "peekOfCode": "AUTH_CREDS = os.getenv('NEO4J_AUTH')\nURI = \"neo4j://neo4j:7687\"\nAUTH = (AUTH_CREDS.split(\"/\")[0], AUTH_CREDS.split(\"/\")[1])\ndriver = None\nsession = None\ndef open_db_connection():\n    global driver, session\n    driver = GraphDatabase.driver(URI, auth=AUTH)\n    session = driver.session(database=\"neo4j\")\n    return session, driver",
         "detail": "src.database.connection",
         "documentation": {}
     },
@@ -674,7 +674,7 @@
         "kind": 5,
         "importPath": "src.database.connection",
         "description": "src.database.connection",
-        "peekOfCode": "URI = \"neo4j://neo4j:7687\"\nprint(AUTH_CREDS.split(\"/\")[0], AUTH_CREDS.split(\"/\")[1])\nAUTH = (AUTH_CREDS.split(\"/\")[0], AUTH_CREDS.split(\"/\")[1])\ndriver = None\nsession = None\ndef open_db_connection():\n    global driver, session\n    driver = GraphDatabase.driver(URI, auth=AUTH)\n    session = driver.session(database=\"neo4j\")\n    return session, driver",
+        "peekOfCode": "URI = \"neo4j://neo4j:7687\"\nAUTH = (AUTH_CREDS.split(\"/\")[0], AUTH_CREDS.split(\"/\")[1])\ndriver = None\nsession = None\ndef open_db_connection():\n    global driver, session\n    driver = GraphDatabase.driver(URI, auth=AUTH)\n    session = driver.session(database=\"neo4j\")\n    return session, driver\ndef close_db_connection():",
         "detail": "src.database.connection",
         "documentation": {}
     },
@@ -836,7 +836,7 @@
         "kind": 2,
         "importPath": "src.network.controllers.users",
         "description": "src.network.controllers.users",
-        "peekOfCode": "def hash_password(password: str) -> bytes:\n    salt = bcrypt.gensalt()\n    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)\n    return hashed\ndef verify_password(plain_password: str, hashed_password: bytes) -> bool:\n    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password)\n@use_db_connection\n@needs_authentication\ndef follow_user(followed_username, driver=None):\n    return create_follow_relation(driver, session[\"username\"], followed_username)",
+        "peekOfCode": "def hash_password(password: str) -> bytes:\n    salt = bcrypt.gensalt()\n    hashed = bcrypt.hashpw(password, salt)\n    return hashed\ndef verify_password(plain_password: str, hashed_password: bytes) -> bool:\n    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password)\n@use_db_connection\n@needs_authentication\ndef follow_user(followed_username, driver=None):\n    return create_follow_relation(driver, session[\"username\"], followed_username)",
         "detail": "src.network.controllers.users",
         "documentation": {}
     },
