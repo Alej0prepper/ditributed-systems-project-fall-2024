@@ -8,6 +8,7 @@ from network.controllers.users import unfollow_user
 from network.controllers.comments import create_comment_answer, create_post_comment
 from network.controllers.reactions import react_to_a_comment, react_to_a_post
 from network.controllers.gyms import add_gym_controller, update_gym_controller, get_gym_info_controller,delete_gym_controller
+from network.controllers.trains_in import trains_in, add_training_styles, remove_training_styles
 app = Flask(__name__)
 CORS(app)
 app.secret_key = secrets.token_hex(16) 
@@ -218,5 +219,23 @@ def delete_gym():
         return jsonify({"message": f"deleted succesfully gym with ID {gym_id}" })
     return jsonify({"error": error})
 
+@app.route('/trains-in', methods=['POST'])
+def trains_in_main():
+    data = request.form
+    gym_id = data.get("gym_id")
+    styles = data.get("styles")
+    _,ok,error = trains_in(styles,gym_id)
+    if ok:
+        return jsonify({"message": f"User trains in gym with ID {gym_id}"})
+    return jsonify({"error": error}), 500
+@app.route('/add-training-styles', methods=['POST'])
+def add_training_styles():
+    data = request.form
+    styles = data.get("styles")
+    gym_id = data.get("gym_id")
+    _,ok,error = add_training_styles(styles,gym_id)
+    if ok:
+        return jsonify({"message": f"Styles added to user in a gym with ID {gym_id}"})
+    return jsonify({"error": error}), 500
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
