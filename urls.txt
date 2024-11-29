@@ -1,4 +1,5 @@
 /register
+/update-user
 /login
 /logout
 /post
@@ -15,10 +16,8 @@
 /update-gym
 /get-gym-info
 /delete-gym
+/gym-login
 
-
-frank
-. la informacion de cualquier user o gym solo puede alterarla el user o gym especifico o la cuenta oficial  
 
 ale
 . manejo de errores en los servicios, que no se pasen los datos que se deben pasar
