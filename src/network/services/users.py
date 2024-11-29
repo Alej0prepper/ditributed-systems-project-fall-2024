@@ -91,7 +91,7 @@ def remove_follow_relation(driver, user_1, user_2):
     else:
         return None, False, "User not found."
 
-def update_user(driver, name, username, email, password,wheigth,styles,levels_by_style):
+def update_user(driver, name, username, email, password, wheight,styles,levels_by_style):
     existing_user = driver.execute_query(
         "MATCH (u:User {username: $username}) RETURN u LIMIT 1", 
         {"username": username}
@@ -102,10 +102,10 @@ def update_user(driver, name, username, email, password,wheigth,styles,levels_by
             """
             MATCH (u:User {username: $username}) 
             SET u.name = $name, u.email = $email, u.password = $password, 
-                u.wheigth = $wheigth, u.styles = $styles, u.levels_by_style = $levels_by_style
+                u.wheight = $wheight, u.styles = $styles, u.levels_by_style = $levels_by_style
             """,
             {"name": name, "email": email, "username": username, "password": password, 
-             "wheigth": wheigth, "styles": styles, "levels_by_style": levels_by_style}
+             "wheight": wheight, "styles": styles, "levels_by_style": levels_by_style}
         )
         return None, True, None
     else:
@@ -128,6 +128,7 @@ def delete_user(driver, username):
         return None, True, None
     else:
         return None, False, "User not found."
+
 def get_users_by_search_term(driver, query):
     
     try:

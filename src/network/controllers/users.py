@@ -64,8 +64,8 @@ def delete_user_account(driver=None):
 
 @use_db_connection
 @needs_authentication
-def update_user_account(name, email, password, wheigth, styles, levels_by_style, driver=None):
-    return update_user(driver, name, session["username"], email, hash_password(password), wheigth, styles, levels_by_style)
+def update_user_account(name, email, password, wheight, styles, levels_by_style, driver=None):
+    return update_user(driver, name, session["username"], email, hash_password(password), wheight, styles, levels_by_style)
 
 
 @use_db_connection

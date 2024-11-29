@@ -507,6 +507,14 @@
         "documentation": {}
     },
     {
+        "label": "get_users_by_search_term",
+        "importPath": "network.controllers.users",
+        "description": "network.controllers.users",
+        "isExtraImport": true,
+        "detail": "network.controllers.users",
+        "documentation": {}
+    },
+    {
         "label": "login_user",
         "importPath": "network.controllers.users",
         "description": "network.controllers.users",
@@ -672,6 +680,14 @@
         "description": "network.controllers.trains_in",
         "isExtraImport": true,
         "detail": "network.controllers.trains_in",
+        "documentation": {}
+    },
+    {
+        "label": "update_user_account",
+        "importPath": "src.network.controllers.users",
+        "description": "src.network.controllers.users",
+        "isExtraImport": true,
+        "detail": "src.network.controllers.users",
         "documentation": {}
     },
     {
@@ -1053,7 +1069,7 @@
         "kind": 2,
         "importPath": "src.network.controllers.users",
         "description": "src.network.controllers.users",
-        "peekOfCode": "def unfollow_user(followed_username, driver=None):\n    return remove_follow_relation(driver, session[\"username\"], followed_username)\n@use_db_connection\n@needs_authentication\ndef delete_user_account(driver=None):\n    return delete_user(driver, session[\"username\"])\n@use_db_connection\n@needs_authentication\ndef update_user_account(name, email, password, wheigth, styles, levels_by_style, driver=None):\n    return update_user(driver, name, session[\"username\"], email, hash_password(password), wheigth, styles, levels_by_style)",
+        "peekOfCode": "def unfollow_user(followed_username, driver=None):\n    return remove_follow_relation(driver, session[\"username\"], followed_username)\n@use_db_connection\n@needs_authentication\ndef delete_user_account(driver=None):\n    return delete_user(driver, session[\"username\"])\n@use_db_connection\n@needs_authentication\ndef update_user_account(name, email, password, wheight, styles, levels_by_style, driver=None):\n    return update_user(driver, name, session[\"username\"], email, hash_password(password), wheight, styles, levels_by_style)",
         "detail": "src.network.controllers.users",
         "documentation": {}
     },
@@ -1062,7 +1078,7 @@
         "kind": 2,
         "importPath": "src.network.controllers.users",
         "description": "src.network.controllers.users",
-        "peekOfCode": "def delete_user_account(driver=None):\n    return delete_user(driver, session[\"username\"])\n@use_db_connection\n@needs_authentication\ndef update_user_account(name, email, password, wheigth, styles, levels_by_style, driver=None):\n    return update_user(driver, name, session[\"username\"], email, hash_password(password), wheigth, styles, levels_by_style)\n@use_db_connection\ndef get_users_by_search_term(query, driver=None):\n    return get_users_by_search_term(driver, query)",
+        "peekOfCode": "def delete_user_account(driver=None):\n    return delete_user(driver, session[\"username\"])\n@use_db_connection\n@needs_authentication\ndef update_user_account(name, email, password, wheight, styles, levels_by_style, driver=None):\n    return update_user(driver, name, session[\"username\"], email, hash_password(password), wheight, styles, levels_by_style)\n@use_db_connection\ndef get_users_by_search_term(query, driver=None):\n    return get_users_by_search_term(driver, query)",
         "detail": "src.network.controllers.users",
         "documentation": {}
     },
@@ -1071,7 +1087,7 @@
         "kind": 2,
         "importPath": "src.network.controllers.users",
         "description": "src.network.controllers.users",
-        "peekOfCode": "def update_user_account(name, email, password, wheigth, styles, levels_by_style, driver=None):\n    return update_user(driver, name, session[\"username\"], email, hash_password(password), wheigth, styles, levels_by_style)\n@use_db_connection\ndef get_users_by_search_term(query, driver=None):\n    return get_users_by_search_term(driver, query)",
+        "peekOfCode": "def update_user_account(name, email, password, wheight, styles, levels_by_style, driver=None):\n    return update_user(driver, name, session[\"username\"], email, hash_password(password), wheight, styles, levels_by_style)\n@use_db_connection\ndef get_users_by_search_term(query, driver=None):\n    return get_users_by_search_term(driver, query)",
         "detail": "src.network.controllers.users",
         "documentation": {}
     },
@@ -1395,7 +1411,7 @@
         "kind": 2,
         "importPath": "src.network.services.users",
         "description": "src.network.services.users",
-        "peekOfCode": "def update_user(driver, name, username, email, password,wheigth,styles,levels_by_style):\n    existing_user = driver.execute_query(\n        \"MATCH (u:User {username: $username}) RETURN u LIMIT 1\", \n        {\"username\": username}\n    ).records\n    if existing_user:\n        driver.execute_query(\n            \"\"\"\n            MATCH (u:User {username: $username}) \n            SET u.name = $name, u.email = $email, u.password = $password, ",
+        "peekOfCode": "def update_user(driver, name, username, email, password, wheight,styles,levels_by_style):\n    existing_user = driver.execute_query(\n        \"MATCH (u:User {username: $username}) RETURN u LIMIT 1\", \n        {\"username\": username}\n    ).records\n    if existing_user:\n        driver.execute_query(\n            \"\"\"\n            MATCH (u:User {username: $username}) \n            SET u.name = $name, u.email = $email, u.password = $password, ",
         "detail": "src.network.services.users",
         "documentation": {}
     },
@@ -1427,11 +1443,20 @@
         "documentation": {}
     },
     {
+        "label": "updateUser",
+        "kind": 2,
+        "importPath": "src.app",
+        "description": "src.app",
+        "peekOfCode": "def updateUser():\n    data = request.form\n    email = data.get(\"email\")\n    name = data.get(\"name\")\n    password = data.get(\"password\")\n    wheight = data.get(\"wheight\")\n    styles = data.get(\"styles\")\n    levels_by_style = data.get(\"levels_by_style\")\n    user_id, error = update_user_account(name, email, password, wheight, styles, levels_by_style)\n    if error == None:",
+        "detail": "src.app",
+        "documentation": {}
+    },
+    {
         "label": "delete_user",
         "kind": 2,
         "importPath": "src.app",
         "description": "src.app",
-        "peekOfCode": "def delete_user():\n    _, ok, error = delete_user_account()\n    if ok:\n        return jsonify({\"message\": \"User deleted successfully.\"}), 200\n    return jsonify({\"error\": error}), 500\n#get user by username\n# Endpoint to log in a user\n@app.route('/login', methods=['POST'])\ndef login():\n    data = request.form",
+        "peekOfCode": "def delete_user():\n    _, ok, error = delete_user_account()\n    if ok:\n        return jsonify({\"message\": \"User deleted successfully.\"}), 200\n    return jsonify({\"error\": error}), 500\n# Endpoint to log in a user\n@app.route('/login', methods=['POST'])\ndef login():\n    data = request.form\n    _, ok, error = login_user(data.get(\"password\"), data.get(\"username\"), data.get(\"email\")) ",
         "detail": "src.app",
         "documentation": {}
     },

@@ -1,6 +1,6 @@
 import secrets
 from flask import Flask, request, jsonify, session
-from network.controllers.users import delete_user_account, login_user, register_user
+from network.controllers.users import delete_user_account, get_users_by_search_term, login_user, register_user
 from network.controllers.posts import create_post, repost_existing_post, quote_existing_post, delete_post
 from flask_cors import CORS
 from network.controllers.users import follow_user
@@ -10,6 +10,7 @@ from network.controllers.reactions import react_to_a_comment, react_to_a_post
 from network.controllers.gyms import add_gym_controller, update_gym_controller, get_gym_info_controller,delete_gym_controller
 from network.controllers.trains_in import trains_in, add_training_styles, remove_training_styles
 from network.controllers.gyms import login_gym
+from src.network.controllers.users import update_user_account
 app = Flask(__name__)
 CORS(app)
 app.secret_key = secrets.token_hex(16) 
@@ -34,6 +35,25 @@ def register():
     if error == None:
         return jsonify({"message": f"User registered successfully. ID: {user_id}"}), 201
     return jsonify({"Error": f"{error}"}), 500
+
+# Endpoint to update logged in user info
+@app.route('/update-user', methods=['POST'])
+def updateUser():
+    data = request.form
+    email = data.get("email")
+    name = data.get("name")
+    password = data.get("password")
+    wheight = data.get("wheight")
+    styles = data.get("styles")
+    levels_by_style = data.get("levels_by_style")
+
+    user_id, error = update_user_account(name, email, password, wheight, styles, levels_by_style)
+    if error == None:
+        return jsonify({"message": f"User updated successfully. ID: {user_id}"}), 201
+    return jsonify({"Error": f"{error}"}), 500
+
+
+
 #delete user account
 @app.route('/delete-user', methods=['POST'])
 def delete_user():
@@ -41,7 +61,7 @@ def delete_user():
     if ok:
         return jsonify({"message": "User deleted successfully."}), 200
     return jsonify({"error": error}), 500
-#get user by username
+
 # Endpoint to log in a user
 @app.route('/login', methods=['POST'])
 def login():
@@ -137,7 +157,6 @@ def get_users():
     if ok:
         return jsonify({"users": users}), 200
     return jsonify({"error": error}), 500
-
 
 # Endpoint to react to a post
 @app.route('/react-post', methods=['POST'])
@@ -268,6 +287,7 @@ def trains_in_main():
     if ok:
         return jsonify({"message": f"User trains in gym with ID {gym_id}"})
     return jsonify({"error": error}), 500
+
 @app.route('/add-training-styles', methods=['POST'])
 def add_training_styles():
     data = request.form
@@ -277,5 +297,6 @@ def add_training_styles():
     if ok:
         return jsonify({"message": f"Styles added to user in a gym with ID {gym_id}"})
     return jsonify({"error": error}), 500
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
