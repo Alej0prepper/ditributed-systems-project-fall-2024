@@ -27,8 +27,8 @@ def add_gym_controller(name,username,email,location,address,styles, password,pho
 
 @use_db_connection
 @needs_authentication
-def update_gym_controller(gym_id, name,username, email,location,address,styles, phone_number=None, ig_profile = None,driver =None):
-    return update_gym(driver,gym_id,name,username,email,location,address,styles,phone_number,ig_profile)
+def update_gym_controller(name,username, email,location,address,styles, phone_number=None, ig_profile = None,driver =None):
+    return update_gym(driver, name,username,email,location,address,styles,phone_number,ig_profile)
 
 @use_db_connection
 def get_gym_info_controller(gym_id,driver =None):
@@ -37,9 +37,8 @@ def get_gym_info_controller(gym_id,driver =None):
 
 @use_db_connection
 @needs_authentication
-def delete_gym_controller(gym_id,driver=None):
-    gym_id = int(gym_id)
-    return delete_gym(driver,gym_id)
+def delete_gym_controller(username,driver=None):
+    return delete_gym(driver,username)
 
 
 def hash_password(password: str) -> bytes:
