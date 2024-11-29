@@ -126,8 +126,9 @@ def unfollow():
     if ok:
         return jsonify({"message": f"Unfollowed user {followed_username}"}), 200
     return jsonify({"error": error}), 500
+
 # endpoint to get and user by username or email 
-@app.route('/get-user', methods=['POST'])
+@app.route('/find-users', methods=['POST'])
 def get_users():
     data = request.form
     query = data.get("query")
@@ -135,6 +136,8 @@ def get_users():
     if ok:
         return jsonify({"users": users}), 200
     return jsonify({"error": error}), 500
+
+
 # Endpoint to react to a post
 @app.route('/react-post', methods=['POST'])
 def react_post():
