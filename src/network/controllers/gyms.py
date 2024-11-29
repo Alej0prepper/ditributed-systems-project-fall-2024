@@ -22,13 +22,13 @@ def login_gym(username,email,password,driver = None):
     return None, True, None
 
 @use_db_connection
-def add_gym_controller(name,email,location,address,styles, password,phone_number = None ,ig_profile = None,driver = None):
-    return add_gym(driver, name,email,location,address,styles, hash_password(password),phone_number,ig_profile)
+def add_gym_controller(name,username,email,location,address,styles, password,phone_number = None ,ig_profile = None,driver = None):
+    return add_gym(driver, name,username,email,location,address,styles, hash_password(password),phone_number,ig_profile)
 
 @use_db_connection
 @needs_authentication
-def update_gym_controller(gym_id, name, email,location,address,styles, phone_number=None, ig_profile = None,driver =None):
-    return update_gym(driver,gym_id,name,email,location,address,styles,phone_number,ig_profile)
+def update_gym_controller(gym_id, name,username, email,location,address,styles, phone_number=None, ig_profile = None,driver =None):
+    return update_gym(driver,gym_id,name,username,email,location,address,styles,phone_number,ig_profile)
 
 @use_db_connection
 def get_gym_info_controller(gym_id,driver =None):

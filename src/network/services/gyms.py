@@ -9,7 +9,7 @@ def create_gym_node(driver):
 
     return gym['gym_id']
 
-def update_gym(driver, gym_id, name , email,location,address,styles,hashed_password, phone_number=None, ig_profile = None):
+def update_gym(driver, gym_id, name , username, email,location,address,styles,hashed_password, phone_number=None, ig_profile = None):
 
     phone = phone_number if(phone_number) else ""
     ig = ig_profile if(ig_profile) else ""
@@ -18,6 +18,7 @@ def update_gym(driver, gym_id, name , email,location,address,styles,hashed_passw
     MATCH (g:Gym)
         WHERE id(g) = $gym_id  
         SET g.name = $name,
+            g.username = $username,
             g.email = $email,
             g.location = $location,
             g.address = $address,
@@ -32,6 +33,7 @@ def update_gym(driver, gym_id, name , email,location,address,styles,hashed_passw
     parameters = {
         "gym_id" : gym_id,
         "name" : name,
+        "username" : username,
         "email" : email,
         "location": location,
         "address" : address,
@@ -47,13 +49,14 @@ def update_gym(driver, gym_id, name , email,location,address,styles,hashed_passw
     else:
         return gym_id,False,f"Gym with ID {gym_id} not found or update failed"
 
-def add_gym(driver,name, email,location,address,styles,hashed_password, phone_number=None, ig_profile = None):
+def add_gym(driver,name,username, email,location,address,styles,hashed_password, phone_number=None, ig_profile = None):
         gym_id = create_gym_node(driver)
 
         return update_gym(
             driver,
             gym_id,
             name,
+            username,
             email,
             location,
             address,

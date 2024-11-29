@@ -873,7 +873,7 @@
         "kind": 2,
         "importPath": "src.network.controllers.gyms",
         "description": "src.network.controllers.gyms",
-        "peekOfCode": "def add_gym_controller(name,email,location,address,styles, password,phone_number = None ,ig_profile = None,driver = None):\n    return add_gym(driver, name,email,location,address,styles, hash_password(password),phone_number,ig_profile)\n@use_db_connection\n@needs_authentication\ndef update_gym_controller(gym_id, name, email,location,address,styles, phone_number=None, ig_profile = None,driver =None):\n    return update_gym(driver,gym_id,name,email,location,address,styles,phone_number,ig_profile)\n@use_db_connection\ndef get_gym_info_controller(gym_id,driver =None):\n    gym_id = int(gym_id)\n    return get_gym_info(driver,gym_id)   ",
+        "peekOfCode": "def add_gym_controller(name,username,email,location,address,styles, password,phone_number = None ,ig_profile = None,driver = None):\n    return add_gym(driver, name,username,email,location,address,styles, hash_password(password),phone_number,ig_profile)\n@use_db_connection\n@needs_authentication\ndef update_gym_controller(gym_id, name,username, email,location,address,styles, phone_number=None, ig_profile = None,driver =None):\n    return update_gym(driver,gym_id,name,username,email,location,address,styles,phone_number,ig_profile)\n@use_db_connection\ndef get_gym_info_controller(gym_id,driver =None):\n    gym_id = int(gym_id)\n    return get_gym_info(driver,gym_id)   ",
         "detail": "src.network.controllers.gyms",
         "documentation": {}
     },
@@ -882,7 +882,7 @@
         "kind": 2,
         "importPath": "src.network.controllers.gyms",
         "description": "src.network.controllers.gyms",
-        "peekOfCode": "def update_gym_controller(gym_id, name, email,location,address,styles, phone_number=None, ig_profile = None,driver =None):\n    return update_gym(driver,gym_id,name,email,location,address,styles,phone_number,ig_profile)\n@use_db_connection\ndef get_gym_info_controller(gym_id,driver =None):\n    gym_id = int(gym_id)\n    return get_gym_info(driver,gym_id)   \n@use_db_connection\n@needs_authentication\ndef delete_gym_controller(gym_id,driver=None):\n    gym_id = int(gym_id)",
+        "peekOfCode": "def update_gym_controller(gym_id, name,username, email,location,address,styles, phone_number=None, ig_profile = None,driver =None):\n    return update_gym(driver,gym_id,name,username,email,location,address,styles,phone_number,ig_profile)\n@use_db_connection\ndef get_gym_info_controller(gym_id,driver =None):\n    gym_id = int(gym_id)\n    return get_gym_info(driver,gym_id)   \n@use_db_connection\n@needs_authentication\ndef delete_gym_controller(gym_id,driver=None):\n    gym_id = int(gym_id)",
         "detail": "src.network.controllers.gyms",
         "documentation": {}
     },
@@ -1143,7 +1143,7 @@
         "kind": 2,
         "importPath": "src.network.services.gyms",
         "description": "src.network.services.gyms",
-        "peekOfCode": "def create_gym_node(driver):\n    gym = driver.execute_query(\n        '''\n        CREATE (g:Gym)\n        RETURN id(g) AS gym_id\n    ''').records[0]\n    return gym['gym_id']\ndef update_gym(driver, gym_id, name , email,location,address,styles,hashed_password, phone_number=None, ig_profile = None):\n    phone = phone_number if(phone_number) else \"\"\n    ig = ig_profile if(ig_profile) else \"\"",
+        "peekOfCode": "def create_gym_node(driver):\n    gym = driver.execute_query(\n        '''\n        CREATE (g:Gym)\n        RETURN id(g) AS gym_id\n    ''').records[0]\n    return gym['gym_id']\ndef update_gym(driver, gym_id, name , username, email,location,address,styles,hashed_password, phone_number=None, ig_profile = None):\n    phone = phone_number if(phone_number) else \"\"\n    ig = ig_profile if(ig_profile) else \"\"",
         "detail": "src.network.services.gyms",
         "documentation": {}
     },
@@ -1152,7 +1152,7 @@
         "kind": 2,
         "importPath": "src.network.services.gyms",
         "description": "src.network.services.gyms",
-        "peekOfCode": "def update_gym(driver, gym_id, name , email,location,address,styles,hashed_password, phone_number=None, ig_profile = None):\n    phone = phone_number if(phone_number) else \"\"\n    ig = ig_profile if(ig_profile) else \"\"\n    gym_id = int(gym_id)\n    query = '''\n    MATCH (g:Gym)\n        WHERE id(g) = $gym_id  \n        SET g.name = $name,\n            g.email = $email,\n            g.location = $location,",
+        "peekOfCode": "def update_gym(driver, gym_id, name , username, email,location,address,styles,hashed_password, phone_number=None, ig_profile = None):\n    phone = phone_number if(phone_number) else \"\"\n    ig = ig_profile if(ig_profile) else \"\"\n    gym_id = int(gym_id)\n    query = '''\n    MATCH (g:Gym)\n        WHERE id(g) = $gym_id  \n        SET g.name = $name,\n            g.username = $username,\n            g.email = $email,",
         "detail": "src.network.services.gyms",
         "documentation": {}
     },
@@ -1161,7 +1161,7 @@
         "kind": 2,
         "importPath": "src.network.services.gyms",
         "description": "src.network.services.gyms",
-        "peekOfCode": "def add_gym(driver,name, email,location,address,styles,hashed_password, phone_number=None, ig_profile = None):\n        gym_id = create_gym_node(driver)\n        return update_gym(\n            driver,\n            gym_id,\n            name,\n            email,\n            location,\n            address,\n            styles,",
+        "peekOfCode": "def add_gym(driver,name,username, email,location,address,styles,hashed_password, phone_number=None, ig_profile = None):\n        gym_id = create_gym_node(driver)\n        return update_gym(\n            driver,\n            gym_id,\n            name,\n            username,\n            email,\n            location,\n            address,",
         "detail": "src.network.services.gyms",
         "documentation": {}
     },
@@ -1557,7 +1557,7 @@
         "kind": 2,
         "importPath": "src.app",
         "description": "src.app",
-        "peekOfCode": "def create_gym():\n    data = request.form\n    name = data.get(\"name\")\n    email = data.get(\"email\")\n    location = data.get(\"location\")\n    address = data.get(\"address\")\n    password = data.get(\"password\")\n    styles = data.get(\"styles\")\n    phone_number = data.get(\"phone_number\") if data.get(\"phone_number\") else None\n    ig_profile = data.get(\"ig_profile\") if data.get(\"ig_profile\") else None",
+        "peekOfCode": "def create_gym():\n    data = request.form\n    name = data.get(\"name\")\n    username = data.get(\"username\")\n    email = data.get(\"email\")\n    location = data.get(\"location\")\n    address = data.get(\"address\")\n    password = data.get(\"password\")\n    styles = data.get(\"styles\")\n    phone_number = data.get(\"phone_number\") if data.get(\"phone_number\") else None",
         "detail": "src.app",
         "documentation": {}
     },
@@ -1575,7 +1575,7 @@
         "kind": 2,
         "importPath": "src.app",
         "description": "src.app",
-        "peekOfCode": "def update_gym():\n    data = request.form\n    gym_id = data.get(\"gym_id\")\n    name = data.get(\"name\")\n    email = data.get(\"email\")\n    location = data.get(\"location\")\n    address = data.get(\"address\")\n    styles = data.get(\"styles\")\n    phone_number = data.get(\"phone_number\") if data.get(\"phone_number\") else None\n    ig_profile = data.get(\"ig_profile\") if data.get(\"ig_profile\") else None",
+        "peekOfCode": "def update_gym():\n    data = request.form\n    gym_id = data.get(\"gym_id\")\n    name = data.get(\"name\")\n    username = data.get(\"username\")\n    email = data.get(\"email\")\n    location = data.get(\"location\")\n    address = data.get(\"address\")\n    styles = data.get(\"styles\")\n    phone_number = data.get(\"phone_number\") if data.get(\"phone_number\") else None",
         "detail": "src.app",
         "documentation": {}
     },

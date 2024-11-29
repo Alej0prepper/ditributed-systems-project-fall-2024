@@ -190,6 +190,7 @@ def answer():
 def create_gym():
     data = request.form
     name = data.get("name")
+    username = data.get("username")
     email = data.get("email")
     location = data.get("location")
     address = data.get("address")
@@ -198,7 +199,7 @@ def create_gym():
     phone_number = data.get("phone_number") if data.get("phone_number") else None
     ig_profile = data.get("ig_profile") if data.get("ig_profile") else None
 
-    gym_id, ok, error = add_gym_controller(name,email,location,address,styles,password,phone_number,ig_profile)
+    gym_id, ok, error = add_gym_controller(name,username,email,location,address,styles,password,phone_number,ig_profile)
 
     if ok:
         return jsonify({"message": f"Gym created. ID: {gym_id}"}), 201
@@ -224,13 +225,14 @@ def update_gym():
     data = request.form
     gym_id = data.get("gym_id")
     name = data.get("name")
+    username = data.get("username")
     email = data.get("email")
     location = data.get("location")
     address = data.get("address")
     styles = data.get("styles")
     phone_number = data.get("phone_number") if data.get("phone_number") else None
     ig_profile = data.get("ig_profile") if data.get("ig_profile") else None
-    (gym_id,ok,error) = update_gym_controller(gym_id,name,email,location,address,styles,phone_number,ig_profile)
+    (gym_id,ok,error) = update_gym_controller(gym_id,name,username,email,location,address,styles,phone_number,ig_profile)
 
     if ok:
         return jsonify({"message": f"Gym updated with ID {gym_id}"}),201
