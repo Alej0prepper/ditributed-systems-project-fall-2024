@@ -4,13 +4,13 @@ from network.middlewares.auth import needs_authentication
 from network.services.gyms import add_gym, update_gym, get_gym_info, delete_gym
 
 @use_db_connection
-def add_gym_controller(name,email,location,address,styles,phone_number = None ,ig_profile = None,driver = None):
-    return add_gym(driver, name,email,location,address,styles,phone_number,ig_profile)
+def add_gym_controller(name,username,email,location,address,styles,phone_number = None ,ig_profile = None,driver = None):
+    return add_gym(driver, name,username,email,location,address,styles,phone_number,ig_profile)
 
 @use_db_connection
 @needs_authentication
-def update_gym_controller(gym_id, name, email,location,address,styles, phone_number=None, ig_profile = None,driver =None):
-    return update_gym(driver,gym_id,name,email,location,address,styles,phone_number,ig_profile)
+def update_gym_controller(gym_id, name,username, email,location,address,styles, phone_number=None, ig_profile = None,driver =None):
+    return update_gym(driver,gym_id,name,username,email,location,address,styles,phone_number,ig_profile)
 
 @use_db_connection
 def get_gym_info_controller(gym_id,driver =None):
