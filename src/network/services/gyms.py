@@ -82,28 +82,28 @@ def get_gym_info(driver,gym_id):
     
     return None,False,f"Cannot find gym with ID {gym_id} "
 
-def delete_gym(driver,gym_id):
+def delete_gym(driver,username):
 
     query = """
     MATCH (g:Gym)
-        WHERE id(g) = $gym_id
+        WHERE g.username = $username
         DELETE g
     """
     driver.execute_query(
         query,
-        {"gym_id": gym_id}
+        {"username": username}
     )
 
     query = """
     MATCH (g:Gym)
-        WHERE id(g) = $gym_id
+        WHERE g.username = $username
         RETURN g
     """
     result = driver.execute_query(
         query,
-        {"gym_id": gym_id}
+        {"username": username}
     )
 
     if result[0] == []:
         return None,True,None
-    return None,False,f"Gym {gym_id} could not be deleted succesfully"
+    return None,False,f"Gym {username} could not be deleted succesfully"

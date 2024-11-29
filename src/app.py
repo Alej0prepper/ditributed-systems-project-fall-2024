@@ -246,7 +246,7 @@ def delete_gym():
 def trains_in_main():
     data = request.form
     gym_id = data.get("gym_id")
-    styles = data.get("styles")
+    styles = data.get("styles") 
     _,ok,error = trains_in(styles,gym_id)
     if ok:
         return jsonify({"message": f"User trains in gym with ID {gym_id}"})
