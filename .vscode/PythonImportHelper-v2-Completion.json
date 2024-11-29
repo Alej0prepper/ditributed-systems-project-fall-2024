@@ -73,6 +73,14 @@
         "documentation": {}
     },
     {
+        "label": "session",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
         "label": "jsonify",
         "importPath": "flask",
         "description": "flask",
@@ -150,6 +158,22 @@
         "description": "network.middlewares.use_db_connection",
         "isExtraImport": true,
         "detail": "network.middlewares.use_db_connection",
+        "documentation": {}
+    },
+    {
+        "label": "use_db_connection",
+        "importPath": "network.middlewares.use_db_connection",
+        "description": "network.middlewares.use_db_connection",
+        "isExtraImport": true,
+        "detail": "network.middlewares.use_db_connection",
+        "documentation": {}
+    },
+    {
+        "label": "needs_authentication",
+        "importPath": "network.middlewares.auth",
+        "description": "network.middlewares.auth",
+        "isExtraImport": true,
+        "detail": "network.middlewares.auth",
         "documentation": {}
     },
     {
@@ -281,6 +305,14 @@
         "documentation": {}
     },
     {
+        "label": "driver",
+        "importPath": "database.connection",
+        "description": "database.connection",
+        "isExtraImport": true,
+        "detail": "database.connection",
+        "documentation": {}
+    },
+    {
         "label": "open_db_connection",
         "importPath": "database.connection",
         "description": "database.connection",
@@ -310,6 +342,30 @@
         "description": "network.services.reactions",
         "isExtraImport": true,
         "detail": "network.services.reactions",
+        "documentation": {}
+    },
+    {
+        "label": "add_training_styles_service",
+        "importPath": "network.services.trains_in",
+        "description": "network.services.trains_in",
+        "isExtraImport": true,
+        "detail": "network.services.trains_in",
+        "documentation": {}
+    },
+    {
+        "label": "remove_training_styles_service",
+        "importPath": "network.services.trains_in",
+        "description": "network.services.trains_in",
+        "isExtraImport": true,
+        "detail": "network.services.trains_in",
+        "documentation": {}
+    },
+    {
+        "label": "trains_in_service",
+        "importPath": "network.services.trains_in",
+        "description": "network.services.trains_in",
+        "isExtraImport": true,
+        "detail": "network.services.trains_in",
         "documentation": {}
     },
     {
@@ -355,6 +411,30 @@
     },
     {
         "label": "remove_follow_relation",
+        "importPath": "network.services.users",
+        "description": "network.services.users",
+        "isExtraImport": true,
+        "detail": "network.services.users",
+        "documentation": {}
+    },
+    {
+        "label": "delete_user",
+        "importPath": "network.services.users",
+        "description": "network.services.users",
+        "isExtraImport": true,
+        "detail": "network.services.users",
+        "documentation": {}
+    },
+    {
+        "label": "update_user",
+        "importPath": "network.services.users",
+        "description": "network.services.users",
+        "isExtraImport": true,
+        "detail": "network.services.users",
+        "documentation": {}
+    },
+    {
+        "label": "get_users_by_search_term",
         "importPath": "network.services.users",
         "description": "network.services.users",
         "isExtraImport": true,
@@ -536,6 +616,30 @@
         "description": "network.controllers.gyms",
         "isExtraImport": true,
         "detail": "network.controllers.gyms",
+        "documentation": {}
+    },
+    {
+        "label": "trains_in",
+        "importPath": "network.controllers.trains_in",
+        "description": "network.controllers.trains_in",
+        "isExtraImport": true,
+        "detail": "network.controllers.trains_in",
+        "documentation": {}
+    },
+    {
+        "label": "add_training_styles",
+        "importPath": "network.controllers.trains_in",
+        "description": "network.controllers.trains_in",
+        "isExtraImport": true,
+        "detail": "network.controllers.trains_in",
+        "documentation": {}
+    },
+    {
+        "label": "remove_training_styles",
+        "importPath": "network.controllers.trains_in",
+        "description": "network.controllers.trains_in",
+        "isExtraImport": true,
+        "detail": "network.controllers.trains_in",
         "documentation": {}
     },
     {
@@ -814,11 +918,38 @@
         "documentation": {}
     },
     {
+        "label": "add_training_styles",
+        "kind": 2,
+        "importPath": "src.network.controllers.trains_in",
+        "description": "src.network.controllers.trains_in",
+        "peekOfCode": "def add_training_styles(styles, gym_id, driver=None):\n    return add_training_styles_service(driver, styles, session[\"username\"], gym_id)\n@use_db_connection\n# @needs_authentication\ndef remove_training_styles(styles, gym_id, driver=None):\n    return remove_training_styles_service(driver, styles, session[\"username\"], gym_id)\n@use_db_connection\n# @needs_authentication\ndef trains_in(styles,gym_id, driver=None):\n    return trains_in_service(driver,styles, session[\"username\"], gym_id)",
+        "detail": "src.network.controllers.trains_in",
+        "documentation": {}
+    },
+    {
+        "label": "remove_training_styles",
+        "kind": 2,
+        "importPath": "src.network.controllers.trains_in",
+        "description": "src.network.controllers.trains_in",
+        "peekOfCode": "def remove_training_styles(styles, gym_id, driver=None):\n    return remove_training_styles_service(driver, styles, session[\"username\"], gym_id)\n@use_db_connection\n# @needs_authentication\ndef trains_in(styles,gym_id, driver=None):\n    return trains_in_service(driver,styles, session[\"username\"], gym_id)",
+        "detail": "src.network.controllers.trains_in",
+        "documentation": {}
+    },
+    {
+        "label": "trains_in",
+        "kind": 2,
+        "importPath": "src.network.controllers.trains_in",
+        "description": "src.network.controllers.trains_in",
+        "peekOfCode": "def trains_in(styles,gym_id, driver=None):\n    return trains_in_service(driver,styles, session[\"username\"], gym_id)",
+        "detail": "src.network.controllers.trains_in",
+        "documentation": {}
+    },
+    {
         "label": "register_user",
         "kind": 2,
         "importPath": "src.network.controllers.users",
         "description": "src.network.controllers.users",
-        "peekOfCode": "def register_user(name, username, email, password, driver=None):\n    user_id, ok, error = add_user(driver, name, username, email, hash_password(password))\n    if ok:\n        print(f\"User with name: {name} created successfully. (ID: {user_id})\")\n        return user_id, None\n    else:\n        print(\"Error registering user\")\n        return None, error\n@use_db_connection\ndef login_user(password, username=None, email=None, driver=None):",
+        "peekOfCode": "def register_user(name, username, email, password, wheigth, styles, levels_by_style, driver=None):\n    user_id, ok, error = add_user(driver, name, username, email, hash_password(password), wheigth, styles, levels_by_style)\n    if ok:\n        print(f\"User with name: {name} created successfully. (ID: {user_id})\")\n        return user_id, None\n    else:\n        print(\"Error registering user\")\n        return None, error\n@use_db_connection\ndef login_user(password, username=None, email=None, driver=None):",
         "detail": "src.network.controllers.users",
         "documentation": {}
     },
@@ -836,7 +967,7 @@
         "kind": 2,
         "importPath": "src.network.controllers.users",
         "description": "src.network.controllers.users",
-        "peekOfCode": "def hash_password(password: str) -> bytes:\n    salt = bcrypt.gensalt()\n    hashed = bcrypt.hashpw(password, salt)\n    return hashed\ndef verify_password(plain_password: str, hashed_password: bytes) -> bool:\n    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password)\n@use_db_connection\n@needs_authentication\ndef follow_user(followed_username, driver=None):\n    return create_follow_relation(driver, session[\"username\"], followed_username)",
+        "peekOfCode": "def hash_password(password: str) -> bytes:\n    salt = bcrypt.gensalt()\n    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)\n    return hashed\ndef verify_password(plain_password: str, hashed_password: bytes) -> bool:\n    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password)\n@use_db_connection\n@needs_authentication\ndef follow_user(followed_username, driver=None):\n    return create_follow_relation(driver, session[\"username\"], followed_username)",
         "detail": "src.network.controllers.users",
         "documentation": {}
     },
@@ -854,7 +985,7 @@
         "kind": 2,
         "importPath": "src.network.controllers.users",
         "description": "src.network.controllers.users",
-        "peekOfCode": "def follow_user(followed_username, driver=None):\n    return create_follow_relation(driver, session[\"username\"], followed_username)\n@use_db_connection\n@needs_authentication\ndef unfollow_user(followed_username, driver=None):\n    return remove_follow_relation(driver, session[\"username\"], followed_username)",
+        "peekOfCode": "def follow_user(followed_username, driver=None):\n    return create_follow_relation(driver, session[\"username\"], followed_username)\n@use_db_connection\n@needs_authentication\ndef unfollow_user(followed_username, driver=None):\n    return remove_follow_relation(driver, session[\"username\"], followed_username)\n@use_db_connection\n@needs_authentication\ndef delete_user_account(driver=None):\n    return delete_user(driver, session[\"username\"])",
         "detail": "src.network.controllers.users",
         "documentation": {}
     },
@@ -863,7 +994,43 @@
         "kind": 2,
         "importPath": "src.network.controllers.users",
         "description": "src.network.controllers.users",
-        "peekOfCode": "def unfollow_user(followed_username, driver=None):\n    return remove_follow_relation(driver, session[\"username\"], followed_username)",
+        "peekOfCode": "def unfollow_user(followed_username, driver=None):\n    return remove_follow_relation(driver, session[\"username\"], followed_username)\n@use_db_connection\n@needs_authentication\ndef delete_user_account(driver=None):\n    return delete_user(driver, session[\"username\"])\n@use_db_connection\n@needs_authentication\ndef update_user_account(name, email, password, wheigth, styles, levels_by_style, driver=None):\n    return update_user(driver, name, session[\"username\"], email, hash_password(password), wheigth, styles, levels_by_style)",
+        "detail": "src.network.controllers.users",
+        "documentation": {}
+    },
+    {
+        "label": "delete_user_account",
+        "kind": 2,
+        "importPath": "src.network.controllers.users",
+        "description": "src.network.controllers.users",
+        "peekOfCode": "def delete_user_account(driver=None):\n    return delete_user(driver, session[\"username\"])\n@use_db_connection\n@needs_authentication\ndef update_user_account(name, email, password, wheigth, styles, levels_by_style, driver=None):\n    return update_user(driver, name, session[\"username\"], email, hash_password(password), wheigth, styles, levels_by_style)\n@use_db_connection\ndef get_user_by_username(username, driver=None):\n    return get_user_by_username(driver, username)\n@use_db_connection",
+        "detail": "src.network.controllers.users",
+        "documentation": {}
+    },
+    {
+        "label": "update_user_account",
+        "kind": 2,
+        "importPath": "src.network.controllers.users",
+        "description": "src.network.controllers.users",
+        "peekOfCode": "def update_user_account(name, email, password, wheigth, styles, levels_by_style, driver=None):\n    return update_user(driver, name, session[\"username\"], email, hash_password(password), wheigth, styles, levels_by_style)\n@use_db_connection\ndef get_user_by_username(username, driver=None):\n    return get_user_by_username(driver, username)\n@use_db_connection\ndef get_users_by_search_term(query, driver=None):\n    return get_users_by_search_term(driver, query)",
+        "detail": "src.network.controllers.users",
+        "documentation": {}
+    },
+    {
+        "label": "get_user_by_username",
+        "kind": 2,
+        "importPath": "src.network.controllers.users",
+        "description": "src.network.controllers.users",
+        "peekOfCode": "def get_user_by_username(username, driver=None):\n    return get_user_by_username(driver, username)\n@use_db_connection\ndef get_users_by_search_term(query, driver=None):\n    return get_users_by_search_term(driver, query)",
+        "detail": "src.network.controllers.users",
+        "documentation": {}
+    },
+    {
+        "label": "get_users_by_search_term",
+        "kind": 2,
+        "importPath": "src.network.controllers.users",
+        "description": "src.network.controllers.users",
+        "peekOfCode": "def get_users_by_search_term(query, driver=None):\n    return get_users_by_search_term(driver, query)",
         "detail": "src.network.controllers.users",
         "documentation": {}
     },
@@ -1084,11 +1251,38 @@
         "documentation": {}
     },
     {
+        "label": "trains_in_service",
+        "kind": 2,
+        "importPath": "src.network.services.trains_in",
+        "description": "src.network.services.trains_in",
+        "peekOfCode": "def trains_in_service(driver,styles,username,gym_id):\n    query = '''\n    MATCH (u:User{username: $username})\n    MATCH (g:Gym)\n        WHERE id(g) = $gym_id\n        CREATE (u) -[r:Trains_in]-> (g)\n        SET r.styles = $styles\n    RETURN r\n    '''\n    parameters = {",
+        "detail": "src.network.services.trains_in",
+        "documentation": {}
+    },
+    {
+        "label": "remove_training_styles_service",
+        "kind": 2,
+        "importPath": "src.network.services.trains_in",
+        "description": "src.network.services.trains_in",
+        "peekOfCode": "def remove_training_styles_service(driver,styles,username,gym_id):\n    query = '''\n    MATCH (u:User{username: $username})-[r:Trains_in]->(g:Gym)\n        WHERE id(g) = $gym_id\n    RETURN r.styles AS styles\n    '''\n    parameters = {\n        \"username\" : username,\n        \"gym_id\" : gym_id\n    }",
+        "detail": "src.network.services.trains_in",
+        "documentation": {}
+    },
+    {
+        "label": "add_training_styles_service",
+        "kind": 2,
+        "importPath": "src.network.services.trains_in",
+        "description": "src.network.services.trains_in",
+        "peekOfCode": "def add_training_styles_service(driver,styles,username,gym_id):\n    query = '''\n    MATCH (u:User{username: $username})-[r:Trains_in]->(g:Gym)\n        WHERE id(g) = $gym_id\n    RETURN r.styles AS styles\n    '''\n    parameters = {\n        \"username\" : username,\n        \"gym_id\" : gym_id\n    }",
+        "detail": "src.network.services.trains_in",
+        "documentation": {}
+    },
+    {
         "label": "add_user",
         "kind": 2,
         "importPath": "src.network.services.users",
         "description": "src.network.services.users",
-        "peekOfCode": "def add_user(driver, name, username, email, password):\n    existing_user = driver.execute_query(\n        \"MATCH (u:User {username: $username}) RETURN u\", {\"username\": username}\n    ).records\n    if len(existing_user) == 0:\n        driver.execute_query(\n            \"\"\"\n                CREATE (u:User {name: $name, email: $email, username: $username, password: $password})\n            \"\"\",\n            {\"name\": name, \"email\": email, \"username\": username, \"password\": password},",
+        "peekOfCode": "def add_user(driver, name, username, email, password,wheigth,styles,levels_by_style):\n    existing_user = driver.execute_query(\n        \"MATCH (u:User {username: $username}) RETURN u\", {\"username\": username}\n    ).records\n    if len(existing_user) == 0:\n        driver.execute_query(\n            \"\"\"\n                CREATE (u:User {name: $name, email: $email, username: $username, password: $password, wheigth: $wheigth, styles: $styles, levels_by_style: $levels_by_style})\n            \"\"\",\n            {\"name\": name, \"email\": email, \"username\": username, \"password\": password, \"wheigth\": wheigth, \"styles\": styles, \"levels_by_style\": levels_by_style},",
         "detail": "src.network.services.users",
         "documentation": {}
     },
@@ -1129,11 +1323,47 @@
         "documentation": {}
     },
     {
+        "label": "update_user",
+        "kind": 2,
+        "importPath": "src.network.services.users",
+        "description": "src.network.services.users",
+        "peekOfCode": "def update_user(driver, name, username, email, password,wheigth,styles,levels_by_style):\n    existing_user = driver.execute_query(\n        \"MATCH (u:User {username: $username}) RETURN u LIMIT 1\", \n        {\"username\": username}\n    ).records\n    if existing_user:\n        driver.execute_query(\n            \"\"\"\n            MATCH (u:User {username: $username}) \n            SET u.name = $name, u.email = $email, u.password = $password, ",
+        "detail": "src.network.services.users",
+        "documentation": {}
+    },
+    {
+        "label": "delete_user",
+        "kind": 2,
+        "importPath": "src.network.services.users",
+        "description": "src.network.services.users",
+        "peekOfCode": "def delete_user(driver, username):\n    existing_user = driver.execute_query(\n        \"MATCH (u:User {username: $username}) RETURN u LIMIT 1\",\n        {\"username\": username}\n    ).records\n    if existing_user:\n        driver.execute_query(\n            \"\"\"\n            MATCH (u:User {username: $username})\n            DELETE u",
+        "detail": "src.network.services.users",
+        "documentation": {}
+    },
+    {
+        "label": "get_users_by_search_term",
+        "kind": 2,
+        "importPath": "src.network.services.users",
+        "description": "src.network.services.users",
+        "peekOfCode": "def get_users_by_search_term(driver, query):\n    try:\n        users = driver.execute_query(\n            \"\"\"\n            MATCH (u:User)\n            WHERE toLower(u.username) CONTAINS toLower($query) \n            OR toLower(u.email) CONTAINS toLower($query)\n            \"\"\",\n            {\"query\": query}\n        ).records",
+        "detail": "src.network.services.users",
+        "documentation": {}
+    },
+    {
         "label": "register",
         "kind": 2,
         "importPath": "src.app",
         "description": "src.app",
-        "peekOfCode": "def register():\n    data = request.form\n    email = data.get(\"email\")\n    name = data.get(\"name\")\n    username = data.get(\"username\")\n    password = data.get(\"password\")\n    if not email or not username or not password:\n        return jsonify({\"message\": f\"Email, username and password are required.\"}), 500\n    user_id, error = register_user(name, username, email, password)\n    if error == None:",
+        "peekOfCode": "def register():\n    data = request.form\n    email = data.get(\"email\")\n    name = data.get(\"name\")\n    username = data.get(\"username\")\n    password = data.get(\"password\")\n    wheigth = data.get(\"wheigth\")\n    styles = data.get(\"styles\")\n    levels_by_style = data.get(\"levels_by_style\")\n    if not email or not username or not password:",
+        "detail": "src.app",
+        "documentation": {}
+    },
+    {
+        "label": "delete_user",
+        "kind": 2,
+        "importPath": "src.app",
+        "description": "src.app",
+        "peekOfCode": "def delete_user():\n    _, ok, error = delete_user_account()\n    if ok:\n        return jsonify({\"message\": \"User deleted successfully.\"}), 200\n    return jsonify({\"error\": error}), 500\n#get user by username\n# Endpoint to log in a user\n@app.route('/login', methods=['POST'])\ndef login():\n    data = request.form",
         "detail": "src.app",
         "documentation": {}
     },
@@ -1205,7 +1435,16 @@
         "kind": 2,
         "importPath": "src.app",
         "description": "src.app",
-        "peekOfCode": "def unfollow():\n    data = request.form\n    followed_username = data.get(\"followed\")\n    _, ok, error = unfollow_user(followed_username)\n    if ok:\n        return jsonify({\"message\": f\"Unfollowed user {followed_username}\"}), 200\n    return jsonify({\"error\": error}), 500\n# Endpoint to react to a post\n@app.route('/react-post', methods=['POST'])\ndef react_post():",
+        "peekOfCode": "def unfollow():\n    data = request.form\n    followed_username = data.get(\"followed\")\n    _, ok, error = unfollow_user(followed_username)\n    if ok:\n        return jsonify({\"message\": f\"Unfollowed user {followed_username}\"}), 200\n    return jsonify({\"error\": error}), 500\n# endpoint to get and user by username or email \n@app.route('/find-users', methods=['POST'])\ndef get_users():",
+        "detail": "src.app",
+        "documentation": {}
+    },
+    {
+        "label": "get_users",
+        "kind": 2,
+        "importPath": "src.app",
+        "description": "src.app",
+        "peekOfCode": "def get_users():\n    data = request.form\n    query = data.get(\"query\")\n    users, ok, error = get_users_by_search_term(query)\n    if ok:\n        return jsonify({\"users\": users}), 200\n    return jsonify({\"error\": error}), 500\n# Endpoint to react to a post\n@app.route('/react-post', methods=['POST'])\ndef react_post():",
         "detail": "src.app",
         "documentation": {}
     },
@@ -1277,7 +1516,25 @@
         "kind": 2,
         "importPath": "src.app",
         "description": "src.app",
-        "peekOfCode": "def delete_gym():\n    data = request.form\n    gym_id = data.get(\"gym_id\")\n    _,ok,error = delete_gym_controller(gym_id)\n    if ok:\n        return jsonify({\"message\": f\"deleted succesfully gym with ID {gym_id}\" })\n    return jsonify({\"error\": error})\nif __name__ == '__main__':\n    app.run(host=\"0.0.0.0\", port=5000, debug=True)",
+        "peekOfCode": "def delete_gym():\n    data = request.form\n    gym_id = data.get(\"gym_id\")\n    _,ok,error = delete_gym_controller(gym_id)\n    if ok:\n        return jsonify({\"message\": f\"deleted succesfully gym with ID {gym_id}\" })\n    return jsonify({\"error\": error})\n@app.route('/trains-in', methods=['POST'])\ndef trains_in_main():\n    data = request.form",
+        "detail": "src.app",
+        "documentation": {}
+    },
+    {
+        "label": "trains_in_main",
+        "kind": 2,
+        "importPath": "src.app",
+        "description": "src.app",
+        "peekOfCode": "def trains_in_main():\n    data = request.form\n    gym_id = data.get(\"gym_id\")\n    styles = data.get(\"styles\")\n    _,ok,error = trains_in(styles,gym_id)\n    if ok:\n        return jsonify({\"message\": f\"User trains in gym with ID {gym_id}\"})\n    return jsonify({\"error\": error}), 500\n@app.route('/add-training-styles', methods=['POST'])\ndef add_training_styles():",
+        "detail": "src.app",
+        "documentation": {}
+    },
+    {
+        "label": "add_training_styles",
+        "kind": 2,
+        "importPath": "src.app",
+        "description": "src.app",
+        "peekOfCode": "def add_training_styles():\n    data = request.form\n    styles = data.get(\"styles\")\n    gym_id = data.get(\"gym_id\")\n    _,ok,error = add_training_styles(styles,gym_id)\n    if ok:\n        return jsonify({\"message\": f\"Styles added to user in a gym with ID {gym_id}\"})\n    return jsonify({\"error\": error}), 500\nif __name__ == '__main__':\n    app.run(host=\"0.0.0.0\", port=5000, debug=True)",
         "detail": "src.app",
         "documentation": {}
     },
@@ -1295,7 +1552,7 @@
         "kind": 5,
         "importPath": "src.app",
         "description": "src.app",
-        "peekOfCode": "app.secret_key = secrets.token_hex(16) \n# Endpoint to register a new user\n@app.route('/register', methods=['POST'])\ndef register():\n    data = request.form\n    email = data.get(\"email\")\n    name = data.get(\"name\")\n    username = data.get(\"username\")\n    password = data.get(\"password\")\n    if not email or not username or not password:",
+        "peekOfCode": "app.secret_key = secrets.token_hex(16) \n# Endpoint to register a new user\n@app.route('/register', methods=['POST'])\ndef register():\n    data = request.form\n    email = data.get(\"email\")\n    name = data.get(\"name\")\n    username = data.get(\"username\")\n    password = data.get(\"password\")\n    wheigth = data.get(\"wheigth\")",
         "detail": "src.app",
         "documentation": {}
     },

@@ -1,19 +1,25 @@
 FROM python:3.10-slim
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
+# Ensure the package index is updated and install system dependencies
 WORKDIR /mma-social-network
 
+# Copy project files into the container
 COPY . /mma-social-network
 
-RUN pip install --no-cache-dir -r requirements.txt
+# Install system dependencies, including build-essential
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
+# Install Python dependencies
+RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
+
+# Make startup script executable
 RUN chmod +x startup.sh
 
+# Expose the application port
 EXPOSE 5000
 
+# Set working directory and run the application
 WORKDIR /mma-social-network/src
-
 CMD ["python3", "app.py"]
