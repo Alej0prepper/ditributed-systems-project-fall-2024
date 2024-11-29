@@ -84,6 +84,19 @@ def get_gym_info(driver,gym_id):
 
 def delete_gym(driver,username):
 
+    
+    query = """
+    MATCH (g:Gym)
+        WHERE g.username = $username
+        RETURN g
+    """
+    result = driver.execute_query(
+        query,
+        {"username": username}
+    )
+    if result[0] == []:
+        return username,False,f"Gym with username {username} not found"
+    
     query = """
     MATCH (g:Gym)
         WHERE g.username = $username
