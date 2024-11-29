@@ -14,7 +14,7 @@
 /create-gym
 /update-gym
 /get-gym-info
-
+/delete-gym
 
 
 frank

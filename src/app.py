@@ -221,7 +221,7 @@ def create_gym():
     gym_id, ok, error = add_gym_controller(name,username,email,location,address,styles,password,phone_number,ig_profile)
 
     if ok:
-        return jsonify({"message": f"Gym created. ID: {gym_id}"}), 201
+        return jsonify({"message": f"Gym created. username: {username}"}), 201
     return jsonify({"error": error}), 500
 
 # Endpoint to log in as gym
@@ -242,19 +242,17 @@ def loginGym():
 def update_gym():
 
     data = request.form
-    gym_id = data.get("gym_id")
     name = data.get("name")
-    username = data.get("username")
     email = data.get("email")
     location = data.get("location")
     address = data.get("address")
     styles = data.get("styles")
     phone_number = data.get("phone_number") if data.get("phone_number") else None
     ig_profile = data.get("ig_profile") if data.get("ig_profile") else None
-    (gym_id,ok,error) = update_gym_controller(gym_id,name,username,email,location,address,styles,phone_number,ig_profile)
+    (username,ok,error) = update_gym_controller(name,session['username'],email,location,address,styles,phone_number,ig_profile)
 
     if ok:
-        return jsonify({"message": f"Gym updated with ID {gym_id}"}),201
+        return jsonify({"message": f"Gym updated with username {session['username']}"}),201
     return jsonify({"error": error}), 500
 
 @app.route('/get-gym-info',methods=['POST'])
@@ -271,18 +269,17 @@ def get_gym_info():
 @app.route('/delete-gym',  methods=['POST'])  
 def delete_gym():
     data = request.form
-    gym_id = data.get("gym_id")
-    _,ok,error = delete_gym_controller(gym_id)
+    _,ok,error = delete_gym_controller(session['username'])
 
     if ok:
-        return jsonify({"message": f"deleted succesfully gym with ID {gym_id}" })
+        return jsonify({"message": f"deleted succesfully gym with ID {session['username']}" })
     return jsonify({"error": error})
 
 @app.route('/trains-in', methods=['POST'])
 def trains_in_main():
     data = request.form
     gym_id = data.get("gym_id")
-    styles = data.get("styles")
+    styles = data.get("styles") 
     _,ok,error = trains_in(styles,gym_id)
     if ok:
         return jsonify({"message": f"User trains in gym with ID {gym_id}"})

@@ -9,16 +9,14 @@ def create_gym_node(driver):
 
     return gym['gym_id']
 
-def update_gym(driver, gym_id, name , username, email,location,address,styles,hashed_password, phone_number=None, ig_profile = None):
+def update_gym(driver, name , username, email,location,address,styles,hashed_password, phone_number=None, ig_profile = None):
 
     phone = phone_number if(phone_number) else ""
     ig = ig_profile if(ig_profile) else ""
-    gym_id = int(gym_id)
     query = '''
     MATCH (g:Gym)
-        WHERE id(g) = $gym_id  
+        WHERE g.username = $username  
         SET g.name = $name,
-            g.username = $username,
             g.email = $email,
             g.location = $location,
             g.address = $address,
@@ -31,7 +29,6 @@ def update_gym(driver, gym_id, name , username, email,location,address,styles,ha
     '''
 
     parameters = {
-        "gym_id" : gym_id,
         "name" : name,
         "username" : username,
         "email" : email,
@@ -45,9 +42,9 @@ def update_gym(driver, gym_id, name , username, email,location,address,styles,ha
 
     result = driver.execute_query(query,parameters)
     if(result):
-        return gym_id,True,None
+        return username,True,None
     else:
-        return gym_id,False,f"Gym with ID {gym_id} not found or update failed"
+        return username,False,f"Gym with username {username} not found or update failed"
 
 def add_gym(driver,name,username, email,location,address,styles,hashed_password, phone_number=None, ig_profile = None):
         gym_id = create_gym_node(driver)
@@ -85,31 +82,31 @@ def get_gym_info(driver,gym_id):
     
     return None,False,f"Cannot find gym with ID {gym_id} "
 
-def delete_gym(driver,gym_id):
+def delete_gym(driver,username):
 
     query = """
     MATCH (g:Gym)
-        WHERE id(g) = $gym_id
+        WHERE g.username = $username
         DELETE g
     """
     driver.execute_query(
         query,
-        {"gym_id": gym_id}
+        {"username": username}
     )
 
     query = """
     MATCH (g:Gym)
-        WHERE id(g) = $gym_id
+        WHERE g.username = $username
         RETURN g
     """
     result = driver.execute_query(
         query,
-        {"gym_id": gym_id}
+        {"username": username}
     )
 
     if result[0] == []:
         return None,True,None
-    return None,False,f"Gym {gym_id} could not be deleted succesfully"
+    return None,False,f"Gym {username} could not be deleted succesfully"
 
 def get_gym_by_email(driver, email):
     user = driver.execute_query(
