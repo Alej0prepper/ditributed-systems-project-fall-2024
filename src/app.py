@@ -22,15 +22,25 @@ def register():
     name = data.get("name")
     username = data.get("username")
     password = data.get("password")
+    wheigth = data.get("wheigth")
+    styles = data.get("styles")
+    levels_by_style = data.get("levels_by_style")
 
     if not email or not username or not password:
-        return jsonify({"message": f"Email, username and password are required."}), 500
+        return jsonify({"message": f"Email or username and password are required."}), 500
 
-    user_id, error = register_user(name, username, email, password)
+    user_id, error = register_user(name, username, email, password, wheigth, styles, levels_by_style)
     if error == None:
         return jsonify({"message": f"User registered successfully. ID: {user_id}"}), 201
     return jsonify({"Error": f"{error}"}), 500
-
+#delete user account
+@app.route('/delete-user', methods=['POST'])
+def delete_user():
+    _, ok, error = delete_user_account()
+    if ok:
+        return jsonify({"message": "User deleted successfully."}), 200
+    return jsonify({"error": error}), 500
+#get user by username
 # Endpoint to log in a user
 @app.route('/login', methods=['POST'])
 def login():
@@ -116,7 +126,15 @@ def unfollow():
     if ok:
         return jsonify({"message": f"Unfollowed user {followed_username}"}), 200
     return jsonify({"error": error}), 500
-
+# endpoint to get and user by username or email 
+@app.route('/get-user', methods=['POST'])
+def get_users():
+    data = request.form
+    query = data.get("query")
+    users, ok, error = get_users_by_search_term(query)
+    if ok:
+        return jsonify({"users": users}), 200
+    return jsonify({"error": error}), 500
 # Endpoint to react to a post
 @app.route('/react-post', methods=['POST'])
 def react_post():
