@@ -1,6 +1,6 @@
 from datetime import datetime
 
-def add_user(driver, name, username, email, password):
+def add_user(driver, name, username, email, password,wheigth,styles,levels_by_style):
     existing_user = driver.execute_query(
         "MATCH (u:User {username: $username}) RETURN u", {"username": username}
     ).records
@@ -8,9 +8,9 @@ def add_user(driver, name, username, email, password):
     if len(existing_user) == 0:
         driver.execute_query(
             """
-                CREATE (u:User {name: $name, email: $email, username: $username, password: $password})
+                CREATE (u:User {name: $name, email: $email, username: $username, password: $password, wheigth: $wheigth, styles: $styles, levels_by_style: $levels_by_style})
             """,
-            {"name": name, "email": email, "username": username, "password": password},
+            {"name": name, "email": email, "username": username, "password": password, "wheigth": wheigth, "styles": styles, "levels_by_style": levels_by_style},
         )
         return driver.execute_query(
         "MATCH (u:User {username: $username}) RETURN id(u) as user_id", {"username": username}
@@ -27,7 +27,7 @@ def get_user_by_email(driver, email):
     )
     return user.records[0]["User"]._properties if len(user.records)!=0 else None
 
-def get_user_by_username(driver, username):
+def get_user_by_username_service(driver, username):
     user = driver.execute_query(
         """
             Match (u:User {username: $username}) return u as User
@@ -90,3 +90,59 @@ def remove_follow_relation(driver, user_1, user_2):
         return None, False, "Not following user."
     else:
         return None, False, "User not found."
+
+def update_user(driver, name, username, email, password, wheight,styles,levels_by_style):
+    existing_user = driver.execute_query(
+        "MATCH (u:User {username: $username}) RETURN u LIMIT 1", 
+        {"username": username}
+    ).records
+
+    if existing_user:
+        driver.execute_query(
+            """
+            MATCH (u:User {username: $username}) 
+            SET u.name = $name, u.email = $email, u.password = $password, 
+                u.wheight = $wheight, u.styles = $styles, u.levels_by_style = $levels_by_style
+            """,
+            {"name": name, "email": email, "username": username, "password": password, 
+             "wheight": wheight, "styles": styles, "levels_by_style": levels_by_style}
+        )
+        return username, True, None
+    else:
+        return None, False, "User not found."
+
+def delete_user(driver, username):
+    existing_user = driver.execute_query(
+        "MATCH (u:User {username: $username}) RETURN u LIMIT 1",
+        {"username": username}
+    ).records
+
+    if existing_user:
+        driver.execute_query(
+            """
+            MATCH (u:User {username: $username})
+            DELETE u
+            """,
+            {"username": username}
+        )
+        return None, True, None
+    else:
+        return None, False, "User not found."
+
+def get_users_by_search_term(driver, query):
+    
+    try:
+        users = driver.execute_query(
+            """
+            MATCH (u:User)
+            WHERE toLower(u.username) CONTAINS toLower($query) 
+            OR toLower(u.email) CONTAINS toLower($query)
+            """,
+            {"query": query}
+        ).records
+        if len(users) > 0:
+            return users,True,None
+        else:
+            return [],True,None 
+    except Exception as e:
+        return [],False,e

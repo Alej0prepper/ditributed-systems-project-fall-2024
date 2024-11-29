@@ -1,6 +1,6 @@
 import secrets
 from flask import Flask, request, jsonify, session
-from network.controllers.users import login_user, register_user
+from network.controllers.users import delete_user_account, get_users_by_search_term, login_user, register_user
 from network.controllers.posts import create_post, repost_existing_post, quote_existing_post, delete_post
 from flask_cors import CORS
 from network.controllers.users import follow_user
@@ -8,6 +8,9 @@ from network.controllers.users import unfollow_user
 from network.controllers.comments import create_comment_answer, create_post_comment
 from network.controllers.reactions import react_to_a_comment, react_to_a_post
 from network.controllers.gyms import add_gym_controller, update_gym_controller, get_gym_info_controller,delete_gym_controller
+from network.controllers.trains_in import trains_in, add_training_styles, remove_training_styles
+from network.controllers.gyms import login_gym
+from network.controllers.users import update_user_account
 app = Flask(__name__)
 CORS(app)
 app.secret_key = secrets.token_hex(16) 
@@ -21,14 +24,43 @@ def register():
     name = data.get("name")
     username = data.get("username")
     password = data.get("password")
+    wheigth = data.get("wheigth")
+    styles = data.get("styles")
+    levels_by_style = data.get("levels_by_style")
 
     if not email or not username or not password:
-        return jsonify({"message": f"Email, username and password are required."}), 500
+        return jsonify({"message": f"Email or username and password are required."}), 500
 
-    user_id, error = register_user(name, username, email, password)
+    user_id, error = register_user(name, username, email, password, wheigth, styles, levels_by_style)
     if error == None:
         return jsonify({"message": f"User registered successfully. ID: {user_id}"}), 201
     return jsonify({"Error": f"{error}"}), 500
+
+# Endpoint to update logged in user info
+@app.route('/update-user', methods=['POST'])
+def updateUser():
+    data = request.form
+    email = data.get("email")
+    name = data.get("name")
+    password = data.get("password")
+    wheight = data.get("wheight")
+    styles = data.get("styles")
+    levels_by_style = data.get("levels_by_style")
+
+    _, ok, error = update_user_account(name, email, password, wheight, styles, levels_by_style)
+    if ok:
+        return jsonify({"message": f"User updated successfully."}), 201
+    return jsonify({"Error": f"{error}"}), 500
+
+
+
+#delete user account
+@app.route('/delete-user', methods=['POST'])
+def delete_user():
+    _, ok, error = delete_user_account()
+    if ok:
+        return jsonify({"message": "User deleted successfully."}), 200
+    return jsonify({"error": error}), 500
 
 # Endpoint to log in a user
 @app.route('/login', methods=['POST'])
@@ -116,6 +148,16 @@ def unfollow():
         return jsonify({"message": f"Unfollowed user {followed_username}"}), 200
     return jsonify({"error": error}), 500
 
+# endpoint to get and user by username or email 
+@app.route('/find-users', methods=['POST'])
+def get_users():
+    data = request.form
+    query = data.get("query")
+    users, ok, error = get_users_by_search_term(query)
+    if ok:
+        return jsonify({"users": users}), 200
+    return jsonify({"error": error}), 500
+
 # Endpoint to react to a post
 @app.route('/react-post', methods=['POST'])
 def react_post():
@@ -167,34 +209,51 @@ def answer():
 def create_gym():
     data = request.form
     name = data.get("name")
+    username = data.get("username")
     email = data.get("email")
     location = data.get("location")
     address = data.get("address")
+    password = data.get("password")
     styles = data.get("styles")
     phone_number = data.get("phone_number") if data.get("phone_number") else None
     ig_profile = data.get("ig_profile") if data.get("ig_profile") else None
-    gym_id, ok, error = add_gym_controller(name,email,location,address,styles,phone_number,ig_profile)
+
+    gym_id, ok, error = add_gym_controller(name,username,email,location,address,styles,password,phone_number,ig_profile)
 
     if ok:
-        return jsonify({"message": f"Gym created. ID: {gym_id}"}), 201
+        return jsonify({"message": f"Gym created. username: {username}"}), 201
+    return jsonify({"error": error}), 500
+
+# Endpoint to log in as gym
+@app.route('/gym-login',methods=['POST'])
+def loginGym():
+    data = request.form
+    username = data.get("username")
+    email = data.get("email")
+    password = data.get("password")
+    
+    _, ok, error = login_gym(username,email,password)
+
+    if ok:
+        return jsonify({"message": f"Gym logged in."}), 201
     return jsonify({"error": error}), 500
 
 @app.route('/update-gym',methods=['POST'])
 def update_gym():
 
     data = request.form
-    gym_id = data.get("gym_id")
     name = data.get("name")
     email = data.get("email")
     location = data.get("location")
     address = data.get("address")
     styles = data.get("styles")
+    password = data.get("password")
     phone_number = data.get("phone_number") if data.get("phone_number") else None
     ig_profile = data.get("ig_profile") if data.get("ig_profile") else None
-    (gym_id,ok,error) = update_gym_controller(gym_id,name,email,location,address,styles,phone_number,ig_profile)
+    username,ok,error = update_gym_controller(name,session['username'],email,location,address,styles,password,phone_number,ig_profile)
 
     if ok:
-        return jsonify({"message": f"Gym updated with ID {gym_id}"}),201
+        return jsonify({"message": f"Gym updated with username {session['username']}"}),201
     return jsonify({"error": error}), 500
 
 @app.route('/get-gym-info',methods=['POST'])
@@ -210,13 +269,32 @@ def get_gym_info():
 
 @app.route('/delete-gym',  methods=['POST'])  
 def delete_gym():
-    data = request.form
-    gym_id = data.get("gym_id")
-    _,ok,error = delete_gym_controller(gym_id)
+
+    _,ok,error = delete_gym_controller(session['username'])
 
     if ok:
-        return jsonify({"message": f"deleted succesfully gym with ID {gym_id}" })
+        return jsonify({"message": f"Gym with username {session['username']} deleted succesfully." })
     return jsonify({"error": error})
+
+@app.route('/trains-in', methods=['POST'])
+def trains_in_main():
+    data = request.form
+    gym_id = data.get("gym_id")
+    styles = data.get("styles") 
+    _,ok,error = trains_in(styles,gym_id)
+    if ok:
+        return jsonify({"message": f"User trains in gym with ID {gym_id}"})
+    return jsonify({"error": error}), 500
+
+@app.route('/add-training-styles', methods=['POST'])
+def add_training_styles():
+    data = request.form
+    styles = data.get("styles")
+    gym_id = data.get("gym_id")
+    _,ok,error = add_training_styles(styles,gym_id)
+    if ok:
+        return jsonify({"message": f"Styles added to user in a gym with ID {gym_id}"})
+    return jsonify({"error": error}), 500
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)

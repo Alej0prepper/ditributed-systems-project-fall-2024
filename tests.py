@@ -1,9 +1,9 @@
 from clean_db import remove_old_data
-from src.database.connection import open_db_connection, close_db_connection
-from src.network.services.users import add_user, create_follow_relation
-from src.network.services.posts import post, repost
-from src.network.services.comments import comment_post, answer_comment
-from src.network.services.reactions import react_to_a_comment_service, react_to_a_post_service
+from database.connection import open_db_connection, close_db_connection
+from network.services.users import add_user, create_follow_relation
+from network.services.posts import post, repost
+from network.services.comments import comment_post, answer_comment
+from network.services.reactions import react_to_a_comment_service, react_to_a_post_service
 
 # Open connection
 session, driver = open_db_connection()
