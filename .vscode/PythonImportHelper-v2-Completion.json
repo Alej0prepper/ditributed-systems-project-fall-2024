@@ -836,7 +836,7 @@
         "kind": 2,
         "importPath": "src.network.controllers.users",
         "description": "src.network.controllers.users",
-        "peekOfCode": "def hash_password(password: str) -> bytes:\n    salt = bcrypt.gensalt()\n    hashed = bcrypt.hashpw(password, salt)\n    return hashed\ndef verify_password(plain_password: str, hashed_password: bytes) -> bool:\n    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password)\n@use_db_connection\n@needs_authentication\ndef follow_user(followed_username, driver=None):\n    return create_follow_relation(driver, session[\"username\"], followed_username)",
+        "peekOfCode": "def hash_password(password: str) -> bytes:\n    salt = bcrypt.gensalt()\n    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)\n    return hashed\ndef verify_password(plain_password: str, hashed_password: bytes) -> bool:\n    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password)\n@use_db_connection\n@needs_authentication\ndef follow_user(followed_username, driver=None):\n    return create_follow_relation(driver, session[\"username\"], followed_username)",
         "detail": "src.network.controllers.users",
         "documentation": {}
     },
