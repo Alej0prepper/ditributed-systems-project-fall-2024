@@ -38,6 +38,17 @@ def update_gym(driver, name , username, email,location,address,styles,hashed_pas
         "phone" : phone,
         "ig" : ig
     }
+    print({
+        "name" : name,
+        "username" : username,
+        "email" : email,
+        "location": location,
+        "address" : address,
+        "styles" : styles,
+        "password" : hashed_password,
+        "phone" : phone,
+        "ig" : ig
+    })
 
     result = driver.execute_query(query,parameters)
     if(result):
@@ -57,8 +68,8 @@ def add_gym(driver,name,username, email,location,address,styles,hashed_password,
             address,
             styles,
             hashed_password,
-            phone_number=phone_number if phone_number else None,
-            ig_profile=ig_profile if ig_profile else None,
+            phone_number if phone_number else None,
+            ig_profile if ig_profile else None,
         )
 
 

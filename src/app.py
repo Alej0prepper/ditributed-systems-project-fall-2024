@@ -247,9 +247,10 @@ def update_gym():
     location = data.get("location")
     address = data.get("address")
     styles = data.get("styles")
+    password = data.get("password")
     phone_number = data.get("phone_number") if data.get("phone_number") else None
     ig_profile = data.get("ig_profile") if data.get("ig_profile") else None
-    (username,ok,error) = update_gym_controller(name,session['username'],email,location,address,styles,phone_number,ig_profile)
+    username,ok,error = update_gym_controller(name,session['username'],email,location,address,styles,password,phone_number,ig_profile)
 
     if ok:
         return jsonify({"message": f"Gym updated with username {session['username']}"}),201
@@ -272,7 +273,7 @@ def delete_gym():
     _,ok,error = delete_gym_controller(session['username'])
 
     if ok:
-        return jsonify({"message": f"deleted succesfully gym with ID {session['username']}" })
+        return jsonify({"message": f"Gym with username {session['username']} deleted succesfully." })
     return jsonify({"error": error})
 
 @app.route('/trains-in', methods=['POST'])
