@@ -31,7 +31,6 @@ else
         sudo docker run -d \
             --name $NEO4J_CONTAINER \
             --network $NETWORK_NAME \
-            -p 7474:7474 -p 7687:7687 \
             -e NEO4J_AUTH=$NEO4J_AUTH \
             -v $NEO4J_DATA_PATH:/data \
             -v $NEO4J_LOGS_PATH:/logs \
