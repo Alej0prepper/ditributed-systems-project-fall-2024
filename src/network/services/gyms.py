@@ -1,11 +1,10 @@
 from datetime import datetime 
-
-def create_gym_node(driver):
+def create_gym_node(driver, username):
     gym = driver.execute_query(
         '''
-        CREATE (g:Gym)
+        CREATE (g:Gym {username: $username})
         RETURN id(g) AS gym_id
-    ''').records[0]
+    ''', {'username': username}).records[0]
 
     return gym['gym_id']
 
@@ -22,7 +21,7 @@ def update_gym(driver, name , username, email,location,address,styles,hashed_pas
             g.address = $address,
             g.styles = $styles,
             g.phone_number = $phone,
-            g.password = $hashed_password,
+            g.password = $password,
             g.ig_profile = $ig
 
         RETURN g
@@ -47,11 +46,10 @@ def update_gym(driver, name , username, email,location,address,styles,hashed_pas
         return username,False,f"Gym with username {username} not found or update failed"
 
 def add_gym(driver,name,username, email,location,address,styles,hashed_password, phone_number=None, ig_profile = None):
-        gym_id = create_gym_node(driver)
+        create_gym_node(driver, username)
 
         return update_gym(
             driver,
-            gym_id,
             name,
             username,
             email,
@@ -62,6 +60,7 @@ def add_gym(driver,name,username, email,location,address,styles,hashed_password,
             phone_number=phone_number if phone_number else None,
             ig_profile=ig_profile if ig_profile else None,
         )
+
 
 def get_gym_info(driver,gym_id):
     

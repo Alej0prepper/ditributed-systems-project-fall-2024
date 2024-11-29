@@ -8,7 +8,7 @@ from network.services.gyms import add_gym, update_gym, get_gym_info, delete_gym,
 def login_gym(username,email,password,driver = None):
     if username:
         gym = get_gym_by_username(driver, username)
-        pass
+        
     elif email:
         gym = get_gym_by_email(driver, email)
     if gym == None: 
