@@ -10,7 +10,7 @@ from network.controllers.reactions import react_to_a_comment, react_to_a_post
 from network.controllers.gyms import add_gym_controller, update_gym_controller, get_gym_info_controller,delete_gym_controller
 from network.controllers.trains_in import trains_in, add_training_styles, remove_training_styles
 from network.controllers.gyms import login_gym
-from src.network.controllers.users import update_user_account
+from network.controllers.users import update_user_account
 app = Flask(__name__)
 CORS(app)
 app.secret_key = secrets.token_hex(16) 
@@ -47,9 +47,9 @@ def updateUser():
     styles = data.get("styles")
     levels_by_style = data.get("levels_by_style")
 
-    user_id, error = update_user_account(name, email, password, wheight, styles, levels_by_style)
-    if error == None:
-        return jsonify({"message": f"User updated successfully. ID: {user_id}"}), 201
+    _, ok, error = update_user_account(name, email, password, wheight, styles, levels_by_style)
+    if ok:
+        return jsonify({"message": f"User updated successfully."}), 201
     return jsonify({"Error": f"{error}"}), 500
 
 
@@ -232,10 +232,10 @@ def loginGym():
     email = data.get("email")
     password = data.get("password")
     
-    gym_id, ok, error = login_gym(username,email,password)
+    _, ok, error = login_gym(username,email,password)
 
     if ok:
-        return jsonify({"message": f"Gym created. ID: {gym_id}"}), 201
+        return jsonify({"message": f"Gym logged in."}), 201
     return jsonify({"error": error}), 500
 
 @app.route('/update-gym',methods=['POST'])

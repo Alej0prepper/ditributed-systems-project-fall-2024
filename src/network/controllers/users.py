@@ -25,8 +25,7 @@ def register_user(name, username, email, password, wheigth, styles, levels_by_st
 def login_user(password, username=None, email=None, driver=None):
     if username:
         user = get_user_by_username_service(driver, username)
-        pass
-    elif email:
+    if not user and email:
         user = get_user_by_email(driver, email)
     if user == None: 
         return None, False, "User not found."

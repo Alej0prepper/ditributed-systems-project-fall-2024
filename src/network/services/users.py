@@ -107,7 +107,7 @@ def update_user(driver, name, username, email, password, wheight,styles,levels_b
             {"name": name, "email": email, "username": username, "password": password, 
              "wheight": wheight, "styles": styles, "levels_by_style": levels_by_style}
         )
-        return None, True, None
+        return username, True, None
     else:
         return None, False, "User not found."
 

@@ -13,7 +13,6 @@ def login_gym(username,email,password,driver = None):
         gym = get_gym_by_email(driver, email)
     if gym == None: 
         return None, False, "Gym account not found."
-    
     session["username"] = gym["username"]
     session["email"] = gym["email"]
 
@@ -22,8 +21,8 @@ def login_gym(username,email,password,driver = None):
     return None, True, None
 
 @use_db_connection
-def add_gym_controller(name,username,email,location,address,styles, password,phone_number = None ,ig_profile = None,driver = None):
-    return add_gym(driver, name,username,email,location,address,styles, hash_password(password),phone_number,ig_profile)
+def add_gym_controller(name, username, email,location,address,styles, password,phone_number = None ,ig_profile = None,driver = None):
+    return add_gym(driver, name, username,email,location,address,styles, hash_password(password),phone_number,ig_profile)
 
 @use_db_connection
 @needs_authentication

@@ -1,4 +1,4 @@
-from src.database.connection import open_db_connection, close_db_connection
+from database.connection import open_db_connection, close_db_connection
 
 def remove_old_data(driver):
     driver.execute_query("match (n:User) -[r:Posts]-> (n1:Post) delete r")
