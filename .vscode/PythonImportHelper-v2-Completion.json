@@ -233,6 +233,15 @@
         "documentation": {}
     },
     {
+        "label": "bcrypt",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "bcrypt",
+        "description": "bcrypt",
+        "detail": "bcrypt",
+        "documentation": {}
+    },
+    {
         "label": "add_gym",
         "importPath": "network.services.gyms",
         "description": "network.services.gyms",
@@ -258,6 +267,22 @@
     },
     {
         "label": "delete_gym",
+        "importPath": "network.services.gyms",
+        "description": "network.services.gyms",
+        "isExtraImport": true,
+        "detail": "network.services.gyms",
+        "documentation": {}
+    },
+    {
+        "label": "get_gym_by_email",
+        "importPath": "network.services.gyms",
+        "description": "network.services.gyms",
+        "isExtraImport": true,
+        "detail": "network.services.gyms",
+        "documentation": {}
+    },
+    {
+        "label": "get_gym_by_username",
         "importPath": "network.services.gyms",
         "description": "network.services.gyms",
         "isExtraImport": true,
@@ -369,15 +394,6 @@
         "documentation": {}
     },
     {
-        "label": "bcrypt",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "bcrypt",
-        "description": "bcrypt",
-        "detail": "bcrypt",
-        "documentation": {}
-    },
-    {
         "label": "add_user",
         "importPath": "network.services.users",
         "description": "network.services.users",
@@ -394,7 +410,7 @@
         "documentation": {}
     },
     {
-        "label": "get_user_by_username",
+        "label": "get_user_by_username_service",
         "importPath": "network.services.users",
         "description": "network.services.users",
         "isExtraImport": true,
@@ -480,6 +496,14 @@
         "importPath": "secrets",
         "description": "secrets",
         "detail": "secrets",
+        "documentation": {}
+    },
+    {
+        "label": "delete_user_account",
+        "importPath": "network.controllers.users",
+        "description": "network.controllers.users",
+        "isExtraImport": true,
+        "detail": "network.controllers.users",
         "documentation": {}
     },
     {
@@ -612,6 +636,14 @@
     },
     {
         "label": "delete_gym_controller",
+        "importPath": "network.controllers.gyms",
+        "description": "network.controllers.gyms",
+        "isExtraImport": true,
+        "detail": "network.controllers.gyms",
+        "documentation": {}
+    },
+    {
+        "label": "login_gym",
         "importPath": "network.controllers.gyms",
         "description": "network.controllers.gyms",
         "isExtraImport": true,
@@ -828,11 +860,20 @@
         "documentation": {}
     },
     {
+        "label": "login_gym",
+        "kind": 2,
+        "importPath": "src.network.controllers.gyms",
+        "description": "src.network.controllers.gyms",
+        "peekOfCode": "def login_gym(username,email,password,driver = None):\n    if username:\n        gym = get_gym_by_username(driver, username)\n        pass\n    elif email:\n        gym = get_gym_by_email(driver, email)\n    if gym == None: \n        return None, False, \"Gym account not found.\"\n    session[\"username\"] = gym[\"username\"]\n    session[\"email\"] = gym[\"email\"]",
+        "detail": "src.network.controllers.gyms",
+        "documentation": {}
+    },
+    {
         "label": "add_gym_controller",
         "kind": 2,
         "importPath": "src.network.controllers.gyms",
         "description": "src.network.controllers.gyms",
-        "peekOfCode": "def add_gym_controller(name,email,location,address,styles,phone_number = None ,ig_profile = None,driver = None):\n    return add_gym(driver, name,email,location,address,styles,phone_number,ig_profile)\n@use_db_connection\n@needs_authentication\ndef update_gym_controller(gym_id, name, email,location,address,styles, phone_number=None, ig_profile = None,driver =None):\n    return update_gym(driver,gym_id,name,email,location,address,styles,phone_number,ig_profile)\n@use_db_connection\ndef get_gym_info_controller(gym_id,driver =None):\n    gym_id = int(gym_id)\n    return get_gym_info(driver,gym_id)   ",
+        "peekOfCode": "def add_gym_controller(name,email,location,address,styles, password,phone_number = None ,ig_profile = None,driver = None):\n    return add_gym(driver, name,email,location,address,styles, hash_password(password),phone_number,ig_profile)\n@use_db_connection\n@needs_authentication\ndef update_gym_controller(gym_id, name, email,location,address,styles, phone_number=None, ig_profile = None,driver =None):\n    return update_gym(driver,gym_id,name,email,location,address,styles,phone_number,ig_profile)\n@use_db_connection\ndef get_gym_info_controller(gym_id,driver =None):\n    gym_id = int(gym_id)\n    return get_gym_info(driver,gym_id)   ",
         "detail": "src.network.controllers.gyms",
         "documentation": {}
     },
@@ -850,7 +891,7 @@
         "kind": 2,
         "importPath": "src.network.controllers.gyms",
         "description": "src.network.controllers.gyms",
-        "peekOfCode": "def get_gym_info_controller(gym_id,driver =None):\n    gym_id = int(gym_id)\n    return get_gym_info(driver,gym_id)   \n@use_db_connection\n@needs_authentication\ndef delete_gym_controller(gym_id,driver=None):\n    gym_id = int(gym_id)\n    return delete_gym(driver,gym_id)",
+        "peekOfCode": "def get_gym_info_controller(gym_id,driver =None):\n    gym_id = int(gym_id)\n    return get_gym_info(driver,gym_id)   \n@use_db_connection\n@needs_authentication\ndef delete_gym_controller(gym_id,driver=None):\n    gym_id = int(gym_id)\n    return delete_gym(driver,gym_id)\ndef hash_password(password: str) -> bytes:\n    salt = bcrypt.gensalt()",
         "detail": "src.network.controllers.gyms",
         "documentation": {}
     },
@@ -859,7 +900,25 @@
         "kind": 2,
         "importPath": "src.network.controllers.gyms",
         "description": "src.network.controllers.gyms",
-        "peekOfCode": "def delete_gym_controller(gym_id,driver=None):\n    gym_id = int(gym_id)\n    return delete_gym(driver,gym_id)",
+        "peekOfCode": "def delete_gym_controller(gym_id,driver=None):\n    gym_id = int(gym_id)\n    return delete_gym(driver,gym_id)\ndef hash_password(password: str) -> bytes:\n    salt = bcrypt.gensalt()\n    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)\n    return hashed\ndef verify_password(plain_password: str, hashed_password: bytes) -> bool:\n    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password)",
+        "detail": "src.network.controllers.gyms",
+        "documentation": {}
+    },
+    {
+        "label": "hash_password",
+        "kind": 2,
+        "importPath": "src.network.controllers.gyms",
+        "description": "src.network.controllers.gyms",
+        "peekOfCode": "def hash_password(password: str) -> bytes:\n    salt = bcrypt.gensalt()\n    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)\n    return hashed\ndef verify_password(plain_password: str, hashed_password: bytes) -> bool:\n    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password)",
+        "detail": "src.network.controllers.gyms",
+        "documentation": {}
+    },
+    {
+        "label": "verify_password",
+        "kind": 2,
+        "importPath": "src.network.controllers.gyms",
+        "description": "src.network.controllers.gyms",
+        "peekOfCode": "def verify_password(plain_password: str, hashed_password: bytes) -> bool:\n    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password)",
         "detail": "src.network.controllers.gyms",
         "documentation": {}
     },
@@ -958,7 +1017,7 @@
         "kind": 2,
         "importPath": "src.network.controllers.users",
         "description": "src.network.controllers.users",
-        "peekOfCode": "def login_user(password, username=None, email=None, driver=None):\n    if username:\n        user = get_user_by_username(driver, username)\n    elif email:\n        user = get_user_by_email(driver, email)\n    if user == None: \n        return None, False, \"User not found.\"\n    session[\"username\"] = user[\"username\"]\n    session[\"email\"] = user[\"email\"]\n    if not verify_password(password, user[\"password\"]):",
+        "peekOfCode": "def login_user(password, username=None, email=None, driver=None):\n    if username:\n        user = get_user_by_username_service(driver, username)\n        pass\n    elif email:\n        user = get_user_by_email(driver, email)\n    if user == None: \n        return None, False, \"User not found.\"\n    session[\"username\"] = user[\"username\"]\n    session[\"email\"] = user[\"email\"]",
         "detail": "src.network.controllers.users",
         "documentation": {}
     },
@@ -1003,7 +1062,7 @@
         "kind": 2,
         "importPath": "src.network.controllers.users",
         "description": "src.network.controllers.users",
-        "peekOfCode": "def delete_user_account(driver=None):\n    return delete_user(driver, session[\"username\"])\n@use_db_connection\n@needs_authentication\ndef update_user_account(name, email, password, wheigth, styles, levels_by_style, driver=None):\n    return update_user(driver, name, session[\"username\"], email, hash_password(password), wheigth, styles, levels_by_style)\n@use_db_connection\ndef get_user_by_username(username, driver=None):\n    return get_user_by_username(driver, username)\n@use_db_connection",
+        "peekOfCode": "def delete_user_account(driver=None):\n    return delete_user(driver, session[\"username\"])\n@use_db_connection\n@needs_authentication\ndef update_user_account(name, email, password, wheigth, styles, levels_by_style, driver=None):\n    return update_user(driver, name, session[\"username\"], email, hash_password(password), wheigth, styles, levels_by_style)\n@use_db_connection\ndef get_users_by_search_term(query, driver=None):\n    return get_users_by_search_term(driver, query)",
         "detail": "src.network.controllers.users",
         "documentation": {}
     },
@@ -1012,16 +1071,7 @@
         "kind": 2,
         "importPath": "src.network.controllers.users",
         "description": "src.network.controllers.users",
-        "peekOfCode": "def update_user_account(name, email, password, wheigth, styles, levels_by_style, driver=None):\n    return update_user(driver, name, session[\"username\"], email, hash_password(password), wheigth, styles, levels_by_style)\n@use_db_connection\ndef get_user_by_username(username, driver=None):\n    return get_user_by_username(driver, username)\n@use_db_connection\ndef get_users_by_search_term(query, driver=None):\n    return get_users_by_search_term(driver, query)",
-        "detail": "src.network.controllers.users",
-        "documentation": {}
-    },
-    {
-        "label": "get_user_by_username",
-        "kind": 2,
-        "importPath": "src.network.controllers.users",
-        "description": "src.network.controllers.users",
-        "peekOfCode": "def get_user_by_username(username, driver=None):\n    return get_user_by_username(driver, username)\n@use_db_connection\ndef get_users_by_search_term(query, driver=None):\n    return get_users_by_search_term(driver, query)",
+        "peekOfCode": "def update_user_account(name, email, password, wheigth, styles, levels_by_style, driver=None):\n    return update_user(driver, name, session[\"username\"], email, hash_password(password), wheigth, styles, levels_by_style)\n@use_db_connection\ndef get_users_by_search_term(query, driver=None):\n    return get_users_by_search_term(driver, query)",
         "detail": "src.network.controllers.users",
         "documentation": {}
     },
@@ -1093,7 +1143,7 @@
         "kind": 2,
         "importPath": "src.network.services.gyms",
         "description": "src.network.services.gyms",
-        "peekOfCode": "def create_gym_node(driver):\n    gym = driver.execute_query(\n        '''\n        CREATE (g:Gym)\n        RETURN id(g) AS gym_id\n    ''').records[0]\n    return gym['gym_id']\ndef update_gym(driver, gym_id, name , email,location,address,styles, phone_number=None, ig_profile = None):\n    phone = phone_number if(phone_number) else \"\"\n    ig = ig_profile if(ig_profile) else \"\"",
+        "peekOfCode": "def create_gym_node(driver):\n    gym = driver.execute_query(\n        '''\n        CREATE (g:Gym)\n        RETURN id(g) AS gym_id\n    ''').records[0]\n    return gym['gym_id']\ndef update_gym(driver, gym_id, name , email,location,address,styles,hashed_password, phone_number=None, ig_profile = None):\n    phone = phone_number if(phone_number) else \"\"\n    ig = ig_profile if(ig_profile) else \"\"",
         "detail": "src.network.services.gyms",
         "documentation": {}
     },
@@ -1102,7 +1152,7 @@
         "kind": 2,
         "importPath": "src.network.services.gyms",
         "description": "src.network.services.gyms",
-        "peekOfCode": "def update_gym(driver, gym_id, name , email,location,address,styles, phone_number=None, ig_profile = None):\n    phone = phone_number if(phone_number) else \"\"\n    ig = ig_profile if(ig_profile) else \"\"\n    gym_id = int(gym_id)\n    query = '''\n    MATCH (g:Gym)\n        WHERE id(g) = $gym_id  \n        SET g.name = $name,\n            g.email = $email,\n            g.location = $location,",
+        "peekOfCode": "def update_gym(driver, gym_id, name , email,location,address,styles,hashed_password, phone_number=None, ig_profile = None):\n    phone = phone_number if(phone_number) else \"\"\n    ig = ig_profile if(ig_profile) else \"\"\n    gym_id = int(gym_id)\n    query = '''\n    MATCH (g:Gym)\n        WHERE id(g) = $gym_id  \n        SET g.name = $name,\n            g.email = $email,\n            g.location = $location,",
         "detail": "src.network.services.gyms",
         "documentation": {}
     },
@@ -1111,7 +1161,7 @@
         "kind": 2,
         "importPath": "src.network.services.gyms",
         "description": "src.network.services.gyms",
-        "peekOfCode": "def add_gym(driver,name, email,location,address,styles, phone_number=None, ig_profile = None):\n        gym_id = create_gym_node(driver)\n        return update_gym(\n            driver,\n            gym_id,\n            name,\n            email,\n            location,\n            address,\n            styles,",
+        "peekOfCode": "def add_gym(driver,name, email,location,address,styles,hashed_password, phone_number=None, ig_profile = None):\n        gym_id = create_gym_node(driver)\n        return update_gym(\n            driver,\n            gym_id,\n            name,\n            email,\n            location,\n            address,\n            styles,",
         "detail": "src.network.services.gyms",
         "documentation": {}
     },
@@ -1130,6 +1180,24 @@
         "importPath": "src.network.services.gyms",
         "description": "src.network.services.gyms",
         "peekOfCode": "def delete_gym(driver,gym_id):\n    query = \"\"\"\n    MATCH (g:Gym)\n        WHERE id(g) = $gym_id\n        DELETE g\n    \"\"\"\n    driver.execute_query(\n        query,\n        {\"gym_id\": gym_id}\n    )",
+        "detail": "src.network.services.gyms",
+        "documentation": {}
+    },
+    {
+        "label": "get_gym_by_email",
+        "kind": 2,
+        "importPath": "src.network.services.gyms",
+        "description": "src.network.services.gyms",
+        "peekOfCode": "def get_gym_by_email(driver, email):\n    user = driver.execute_query(\n        \"\"\"\n            Match (u:Gym {email: $email}) return u as gym\n        \"\"\",\n        {\"email\": email},\n    )\n    return user.records[0][\"gym\"]._properties if len(user.records)!=0 else None\ndef get_gym_by_username(driver, username):\n    user = driver.execute_query(",
+        "detail": "src.network.services.gyms",
+        "documentation": {}
+    },
+    {
+        "label": "get_gym_by_username",
+        "kind": 2,
+        "importPath": "src.network.services.gyms",
+        "description": "src.network.services.gyms",
+        "peekOfCode": "def get_gym_by_username(driver, username):\n    user = driver.execute_query(\n        \"\"\"\n            Match (u:Gym {username: $username}) return u as gym\n        \"\"\",\n        {\"username\": username},\n    )\n    return user.records[0][\"gym\"]._properties if len(user.records)!=0 else None",
         "detail": "src.network.services.gyms",
         "documentation": {}
     },
@@ -1291,16 +1359,16 @@
         "kind": 2,
         "importPath": "src.network.services.users",
         "description": "src.network.services.users",
-        "peekOfCode": "def get_user_by_email(driver, email):\n    user = driver.execute_query(\n        \"\"\"\n            Match (u:User {email: $email}) return u as User\n        \"\"\",\n        {\"email\": email},\n    )\n    return user.records[0][\"User\"]._properties if len(user.records)!=0 else None\ndef get_user_by_username(driver, username):\n    user = driver.execute_query(",
+        "peekOfCode": "def get_user_by_email(driver, email):\n    user = driver.execute_query(\n        \"\"\"\n            Match (u:User {email: $email}) return u as User\n        \"\"\",\n        {\"email\": email},\n    )\n    return user.records[0][\"User\"]._properties if len(user.records)!=0 else None\ndef get_user_by_username_service(driver, username):\n    user = driver.execute_query(",
         "detail": "src.network.services.users",
         "documentation": {}
     },
     {
-        "label": "get_user_by_username",
+        "label": "get_user_by_username_service",
         "kind": 2,
         "importPath": "src.network.services.users",
         "description": "src.network.services.users",
-        "peekOfCode": "def get_user_by_username(driver, username):\n    user = driver.execute_query(\n        \"\"\"\n            Match (u:User {username: $username}) return u as User\n        \"\"\",\n        {\"username\": username},\n    )\n    return user.records[0][\"User\"]._properties if len(user.records)!=0 else None\ndef create_follow_relation(driver, user_1, user_2):\n    existing_user_1 = driver.execute_query(",
+        "peekOfCode": "def get_user_by_username_service(driver, username):\n    user = driver.execute_query(\n        \"\"\"\n            Match (u:User {username: $username}) return u as User\n        \"\"\",\n        {\"username\": username},\n    )\n    return user.records[0][\"User\"]._properties if len(user.records)!=0 else None\ndef create_follow_relation(driver, user_1, user_2):\n    existing_user_1 = driver.execute_query(",
         "detail": "src.network.services.users",
         "documentation": {}
     },
@@ -1489,7 +1557,16 @@
         "kind": 2,
         "importPath": "src.app",
         "description": "src.app",
-        "peekOfCode": "def create_gym():\n    data = request.form\n    name = data.get(\"name\")\n    email = data.get(\"email\")\n    location = data.get(\"location\")\n    address = data.get(\"address\")\n    styles = data.get(\"styles\")\n    phone_number = data.get(\"phone_number\") if data.get(\"phone_number\") else None\n    ig_profile = data.get(\"ig_profile\") if data.get(\"ig_profile\") else None\n    gym_id, ok, error = add_gym_controller(name,email,location,address,styles,phone_number,ig_profile)",
+        "peekOfCode": "def create_gym():\n    data = request.form\n    name = data.get(\"name\")\n    email = data.get(\"email\")\n    location = data.get(\"location\")\n    address = data.get(\"address\")\n    password = data.get(\"password\")\n    styles = data.get(\"styles\")\n    phone_number = data.get(\"phone_number\") if data.get(\"phone_number\") else None\n    ig_profile = data.get(\"ig_profile\") if data.get(\"ig_profile\") else None",
+        "detail": "src.app",
+        "documentation": {}
+    },
+    {
+        "label": "loginGym",
+        "kind": 2,
+        "importPath": "src.app",
+        "description": "src.app",
+        "peekOfCode": "def loginGym():\n    data = request.form\n    username = data.get(\"username\")\n    email = data.get(\"email\")\n    password = data.get(\"password\")\n    gym_id, ok, error = login_gym(username,email,password)\n    if ok:\n        return jsonify({\"message\": f\"Gym created. ID: {gym_id}\"}), 201\n    return jsonify({\"error\": error}), 500\n@app.route('/update-gym',methods=['POST'])",
         "detail": "src.app",
         "documentation": {}
     },

@@ -1,6 +1,6 @@
 import bcrypt
 from flask import session
-from network.services.users import add_user, get_user_by_email, get_user_by_username
+from network.services.users import add_user, get_user_by_email, get_user_by_username_service
 from network.middlewares.use_db_connection import use_db_connection
 from network.middlewares.auth import needs_authentication
 from database.connection import driver
@@ -24,7 +24,8 @@ def register_user(name, username, email, password, wheigth, styles, levels_by_st
 @use_db_connection
 def login_user(password, username=None, email=None, driver=None):
     if username:
-        user = get_user_by_username(driver, username)
+        user = get_user_by_username_service(driver, username)
+        pass
     elif email:
         user = get_user_by_email(driver, email)
     if user == None: 
@@ -66,9 +67,6 @@ def delete_user_account(driver=None):
 def update_user_account(name, email, password, wheigth, styles, levels_by_style, driver=None):
     return update_user(driver, name, session["username"], email, hash_password(password), wheigth, styles, levels_by_style)
 
-@use_db_connection
-def get_user_by_username(username, driver=None):
-    return get_user_by_username(driver, username)
 
 @use_db_connection
 def get_users_by_search_term(query, driver=None):

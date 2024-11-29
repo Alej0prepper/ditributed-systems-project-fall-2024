@@ -9,7 +9,7 @@ def create_gym_node(driver):
 
     return gym['gym_id']
 
-def update_gym(driver, gym_id, name , email,location,address,styles, phone_number=None, ig_profile = None):
+def update_gym(driver, gym_id, name , email,location,address,styles,hashed_password, phone_number=None, ig_profile = None):
 
     phone = phone_number if(phone_number) else ""
     ig = ig_profile if(ig_profile) else ""
@@ -23,6 +23,7 @@ def update_gym(driver, gym_id, name , email,location,address,styles, phone_numbe
             g.address = $address,
             g.styles = $styles,
             g.phone_number = $phone,
+            g.password = $hashed_password,
             g.ig_profile = $ig
 
         RETURN g
@@ -35,9 +36,9 @@ def update_gym(driver, gym_id, name , email,location,address,styles, phone_numbe
         "location": location,
         "address" : address,
         "styles" : styles,
+        "password" : hashed_password,
         "phone" : phone,
         "ig" : ig
-
     }
 
     result = driver.execute_query(query,parameters)
@@ -46,7 +47,7 @@ def update_gym(driver, gym_id, name , email,location,address,styles, phone_numbe
     else:
         return gym_id,False,f"Gym with ID {gym_id} not found or update failed"
 
-def add_gym(driver,name, email,location,address,styles, phone_number=None, ig_profile = None):
+def add_gym(driver,name, email,location,address,styles,hashed_password, phone_number=None, ig_profile = None):
         gym_id = create_gym_node(driver)
 
         return update_gym(
@@ -57,6 +58,7 @@ def add_gym(driver,name, email,location,address,styles, phone_number=None, ig_pr
             location,
             address,
             styles,
+            hashed_password,
             phone_number=phone_number if phone_number else None,
             ig_profile=ig_profile if ig_profile else None,
         )
@@ -105,3 +107,21 @@ def delete_gym(driver,gym_id):
     if result[0] == []:
         return None,True,None
     return None,False,f"Gym {gym_id} could not be deleted succesfully"
+
+def get_gym_by_email(driver, email):
+    user = driver.execute_query(
+        """
+            Match (u:Gym {email: $email}) return u as gym
+        """,
+        {"email": email},
+    )
+    return user.records[0]["gym"]._properties if len(user.records)!=0 else None
+
+def get_gym_by_username(driver, username):
+    user = driver.execute_query(
+        """
+            Match (u:Gym {username: $username}) return u as gym
+        """,
+        {"username": username},
+    )
+    return user.records[0]["gym"]._properties if len(user.records)!=0 else None
