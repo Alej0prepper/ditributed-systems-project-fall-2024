@@ -1,6 +1,6 @@
 import secrets
 from flask import Flask, request, jsonify, session
-from network.controllers.users import login_user, register_user
+from network.controllers.users import delete_user_account, login_user, register_user
 from network.controllers.posts import create_post, repost_existing_post, quote_existing_post, delete_post
 from flask_cors import CORS
 from network.controllers.users import follow_user
@@ -9,6 +9,7 @@ from network.controllers.comments import create_comment_answer, create_post_comm
 from network.controllers.reactions import react_to_a_comment, react_to_a_post
 from network.controllers.gyms import add_gym_controller, update_gym_controller, get_gym_info_controller,delete_gym_controller
 from network.controllers.trains_in import trains_in, add_training_styles, remove_training_styles
+from network.controllers.gyms import login_gym
 app = Flask(__name__)
 CORS(app)
 app.secret_key = secrets.token_hex(16) 
@@ -193,10 +194,26 @@ def create_gym():
     email = data.get("email")
     location = data.get("location")
     address = data.get("address")
+    password = data.get("password")
     styles = data.get("styles")
     phone_number = data.get("phone_number") if data.get("phone_number") else None
     ig_profile = data.get("ig_profile") if data.get("ig_profile") else None
-    gym_id, ok, error = add_gym_controller(name,username,email,location,address,styles,phone_number,ig_profile)
+
+    gym_id, ok, error = add_gym_controller(name,username,email,location,address,styles,password,phone_number,ig_profile)
+
+    if ok:
+        return jsonify({"message": f"Gym created. ID: {gym_id}"}), 201
+    return jsonify({"error": error}), 500
+
+# Endpoint to log in as gym
+@app.route('/gym-login',methods=['POST'])
+def loginGym():
+    data = request.form
+    username = data.get("username")
+    email = data.get("email")
+    password = data.get("password")
+    
+    gym_id, ok, error = login_gym(username,email,password)
 
     if ok:
         return jsonify({"message": f"Gym created. ID: {gym_id}"}), 201

@@ -27,7 +27,7 @@ def get_user_by_email(driver, email):
     )
     return user.records[0]["User"]._properties if len(user.records)!=0 else None
 
-def get_user_by_username(driver, username):
+def get_user_by_username_service(driver, username):
     user = driver.execute_query(
         """
             Match (u:User {username: $username}) return u as User
