@@ -268,7 +268,7 @@ def get_gym_info():
 
 @app.route('/delete-gym',  methods=['POST'])  
 def delete_gym():
-    data = request.form
+
     _,ok,error = delete_gym_controller(session['username'])
 
     if ok:

@@ -1,5 +1,4 @@
 from datetime import datetime 
-
 def create_gym_node(driver, username):
     gym = driver.execute_query(
         '''
@@ -62,6 +61,7 @@ def add_gym(driver,name,username, email,location,address,styles,hashed_password,
             ig_profile=ig_profile if ig_profile else None,
         )
 
+
 def get_gym_info(driver,gym_id):
     
     query = """
@@ -83,6 +83,19 @@ def get_gym_info(driver,gym_id):
 
 def delete_gym(driver,username):
 
+    
+    query = """
+    MATCH (g:Gym)
+        WHERE g.username = $username
+        RETURN g
+    """
+    result = driver.execute_query(
+        query,
+        {"username": username}
+    )
+    if result[0] == []:
+        return username,False,f"Gym with username {username} not found"
+    
     query = """
     MATCH (g:Gym)
         WHERE g.username = $username
