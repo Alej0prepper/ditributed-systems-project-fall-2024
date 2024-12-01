@@ -1,6 +1,6 @@
 import requests
 
-BASE_URL = "http://127.0.0.1:5000"
+BASE_URL = "http://10.0.11.3"
 
 def register_user(name, username, email, password, weight, styles, levels_by_style):
     url = f"{BASE_URL}/register"
