@@ -37,7 +37,7 @@ def register():
     return jsonify({"Error": f"{error}"}), 500
 
 # Endpoint to update logged in user info
-@app.route('/update-user', methods=['POST'])
+@app.route('/update-user', methods=['PUT'])
 def updateUser():
     data = request.form
     email = data.get("email")
@@ -55,7 +55,6 @@ def updateUser():
     if ok:
         return jsonify({"message": f"User updated successfully."}), 201
     return jsonify({"Error": f"{error}"}), 500
-
 
 
 #delete user account
@@ -169,13 +168,12 @@ def unfollow():
         return jsonify({"message": f"Unfollowed user {followed_username}"}), 200
     return jsonify({"error": error}), 500
 
-# endpoint to get and user by username or email 
-@app.route('/find-users', methods=['POST'])
+@app.route('/find-users', methods=['GET'])
 def get_users():
-    data = request.form
-    query = data.get("query")
+    query = request.args.get("query")
     if not query:
-        return jsonify({"error": "Query is required"}), 500
+        return jsonify({"error": "Query is required"}), 500    
+    if query == "": return jsonify({"users": []}), 200
     users, ok, error = get_users_by_search_term(query)
     if ok:
         return jsonify({"users": users}), 200
@@ -279,7 +277,7 @@ def loginGym():
         return jsonify({"message": f"Gym logged in."}), 201
     return jsonify({"error": error}), 500
 
-@app.route('/update-gym',methods=['POST'])
+@app.route('/update-gym',methods=['PUT'])
 def update_gym():
 
     data = request.form
@@ -298,6 +296,7 @@ def update_gym():
         return jsonify({"message": f"Gym updated with username {session['username']}"}),201
     return jsonify({"error": error}), 500
 
+
 @app.route('/get-gym-info',methods=['POST'])
 def get_gym_info():
     data = request.form
@@ -310,7 +309,7 @@ def get_gym_info():
         return jsonify(info),201
     return jsonify({"error": error}), 500
 
-@app.route('/delete-gym',  methods=['POST'])  
+@app.route('/delete-gym',  methods=['DELETE'])  
 def delete_gym():
 
     _,ok,error = delete_gym_controller(session['username'])
@@ -320,7 +319,7 @@ def delete_gym():
     return jsonify({"error": error})
 
 @app.route('/trains-in', methods=['POST'])
-def trains_in_main():
+def trains_in_endpoint():
     data = request.form
     gym_id = data.get("gym_id")
     styles = data.get("styles") 

@@ -1,25 +1,17 @@
 FROM python:3.10-slim
 
-# Ensure the package index is updated and install system dependencies
 WORKDIR /mma-social-network
 
-# Copy project files into the container
-COPY . /mma-social-network
+COPY /default_route.sh ./default_route.sh
+COPY . .
 
-# Install system dependencies, including build-essential
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+build-essential \
+iproute2 \
+&& rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
 RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
-# Make startup script executable
-RUN chmod +x startup.sh
-
-# Expose the application port
 EXPOSE 5000
 
-# Set working directory and run the application
-WORKDIR /mma-social-network/src
-CMD ["python3", "app.py"]
+ENTRYPOINT ["/bin/bash", "-c", "/mma-social-network/default_route.sh && python3 /mma-social-network/src/app.py"]
