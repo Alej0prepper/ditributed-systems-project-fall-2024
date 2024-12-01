@@ -129,18 +129,22 @@ def delete_user(driver, username):
     else:
         return None, False, "User not found."
 
-def get_users_by_search_term(driver, query):
+def get_users_by_search_term_service(driver, query):
     
     try:
         users = driver.execute_query(
             """
             MATCH (u:User)
             WHERE toLower(u.username) CONTAINS toLower($query) 
-            OR toLower(u.email) CONTAINS toLower($query)
+            OR toLower(u.name) CONTAINS toLower($query)
+            RETURN u
             """,
             {"query": query}
         ).records
         if len(users) > 0:
+            users = [user["u"]._properties for user in users]
+            for user in users:
+                del user["password"]
             return users,True,None
         else:
             return [],True,None 

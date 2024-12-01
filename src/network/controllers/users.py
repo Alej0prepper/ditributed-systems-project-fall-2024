@@ -8,7 +8,7 @@ from network.services.users import create_follow_relation
 from network.services.users import remove_follow_relation
 from network.services.users import delete_user
 from network.services.users import update_user
-from network.services.users import get_users_by_search_term
+from network.services.users import get_users_by_search_term_service
 
 
 @use_db_connection
@@ -69,7 +69,7 @@ def update_user_account(name, email, password, wheight, styles, levels_by_style,
 
 @use_db_connection
 def get_users_by_search_term(query, driver=None):
-    return get_users_by_search_term(driver, query)
+    return get_users_by_search_term_service(driver, query)
 
 
 
