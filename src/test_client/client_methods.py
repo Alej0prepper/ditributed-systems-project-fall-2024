@@ -9,7 +9,7 @@ def register_user(name, username, email, password, weight, styles, levels_by_sty
         "username": username,
         "email": email,
         "password": password,
-        "wheigth": weight,
+        "weight": weight,
         "styles": styles,
         "levels_by_style": levels_by_style
     }
