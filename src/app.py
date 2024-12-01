@@ -41,11 +41,15 @@ def register():
 def updateUser():
     data = request.form
     email = data.get("email")
-    name = data.get("name")
+    name = data.get("name") 
     password = data.get("password")
     wheight = data.get("wheight")
     styles = data.get("styles")
     levels_by_style = data.get("levels_by_style")
+
+    # Check if all required fields are present
+    if not all([email, name, password, wheight, styles, levels_by_style]):
+        return jsonify({"error": "All fields (email, name, password, weight, styles and levels) are required"}), 400
 
     _, ok, error = update_user_account(name, email, password, wheight, styles, levels_by_style)
     if ok:
@@ -86,7 +90,7 @@ def post():
     media = data.get("media")
     caption = data.get("caption")
 
-    if not media or not caption:
+    if not media and not caption:
         return jsonify({"message": f"Media or caption are required."}), 500
     
     response, ok, error = create_post(data["media"], data["caption"])
@@ -99,7 +103,11 @@ def post():
 @app.route('/repost', methods=['POST'])
 def repost():
     data = request.form
-    _, ok, error = repost_existing_post(int(data["reposted_post_id"]))
+    reposted_post_id = data.get("reposted_post_id")
+    if not reposted_post_id:
+        return jsonify({"error": "Reposted post ID is required"}), 500
+    reposted_post_id = int(reposted_post_id)
+    _, ok, error = repost_existing_post(reposted_post_id)
     if ok:
         return jsonify({"message": f"Post reposted successfully."}), 201
     else:
@@ -112,6 +120,12 @@ def quote():
     quoted_post_id = int(data.get("quoted_post_id"))
     media = data.get("media")
     caption = data.get("caption")
+    if not quoted_post_id:
+        return jsonify({"error": "Quoted post ID is required"}), 500
+    if not media and not caption:
+        return jsonify({"error": "Media or caption is required"}), 500
+    quoted_post_id = int(quoted_post_id)
+   
     _, ok, error = quote_existing_post(quoted_post_id, media, caption)
     if ok:
         return jsonify({"message": f"Post quoted successfully."}), 201
@@ -122,7 +136,10 @@ def quote():
 @app.route('/delete-post', methods=['DELETE'])
 def remove_post():
     data = request.form
-    post_id = int(data.get("post_id"))
+    post_id = data.get("post_id")
+    if not post_id:
+        return jsonify({"error": "Post ID is required"}), 500
+    post_id = int(post_id)
     _, ok, error = delete_post(post_id)
     if not ok:
         return jsonify({"error": error}), 500 
@@ -133,6 +150,8 @@ def remove_post():
 def follow():
     data = request.form
     followed_username = data.get("followed")
+    if not followed_username:
+        return jsonify({"error": "Followed username is required"}), 500
     _, ok, error = follow_user(followed_username)
     if ok:
         return jsonify({"message": f"Now following user {followed_username}"}), 200
@@ -143,6 +162,8 @@ def follow():
 def unfollow():
     data = request.form
     followed_username = data.get("followed")
+    if not followed_username:
+        return jsonify({"error": "Followed username is required"}), 500
     _, ok, error = unfollow_user(followed_username)
     if ok:
         return jsonify({"message": f"Unfollowed user {followed_username}"}), 200
@@ -153,6 +174,8 @@ def unfollow():
 def get_users():
     data = request.form
     query = data.get("query")
+    if not query:
+        return jsonify({"error": "Query is required"}), 500
     users, ok, error = get_users_by_search_term(query)
     if ok:
         return jsonify({"users": users}), 200
@@ -164,6 +187,10 @@ def react_post():
     data = request.form
     reaction = data.get("reaction")
     post_id = int(data.get("post_id"))
+    if not reaction:
+        return jsonify({"error": "Reaction is required"}), 500
+    if not post_id:
+        return jsonify({"error": "Post ID is required"}), 500
     _, ok, error = react_to_a_post(reaction, post_id)
     if ok:
         return jsonify({"message": "Reaction sent"}), 201
@@ -175,6 +202,8 @@ def react_comment():
     data = request.form
     reaction = data.get("reaction")
     comment_id = int(data.get("comment_id"))
+    if not reaction or not comment_id:
+        return jsonify({"error": "Reaction and comment ID are required"}), 500
     _, ok, error = react_to_a_comment(reaction, comment_id)
     if ok:
         return jsonify({"message": "Reaction sent"}), 201
@@ -187,6 +216,10 @@ def comment():
     caption = data.get("caption")
     media = data.get("media")
     post_id = int(data.get("post_id"))
+    if not caption and not media:
+        return jsonify({"error": "Caption or media is required"}), 500
+    if not post_id:
+        return jsonify({"error": "Post ID is required"}), 500
     comment_id, ok, error = create_post_comment(caption, media, post_id)
     if ok:
         return jsonify({"message": f"Comment sent. ID: {comment_id}"}), 201
@@ -199,6 +232,10 @@ def answer():
     caption = data.get("caption")
     media = data.get("media")
     comment_id = int(data.get("comment_id"))
+    if not caption and not media:
+        return jsonify({"error": "Caption or media is required"}), 500
+    if not comment_id:
+        return jsonify({"error": "Comment ID is required"}), 500
     new_comment_id, ok, error = create_comment_answer(caption, media, comment_id)
     if ok:
         return jsonify({"message": f"Comment sent. ID: {new_comment_id}"}), 201
@@ -217,7 +254,8 @@ def create_gym():
     styles = data.get("styles")
     phone_number = data.get("phone_number") if data.get("phone_number") else None
     ig_profile = data.get("ig_profile") if data.get("ig_profile") else None
-
+    if not name or not username or not email or not location or not address or not password or not styles:
+        return jsonify({"error": "All fields (name, username, email, location, address, password and styles) are required"}), 400
     gym_id, ok, error = add_gym_controller(name,username,email,location,address,styles,password,phone_number,ig_profile)
 
     if ok:
@@ -231,7 +269,10 @@ def loginGym():
     username = data.get("username")
     email = data.get("email")
     password = data.get("password")
-    
+    if not username and not email:
+        return jsonify({"error": "Username or email is required"}), 400
+    if not password:
+        return jsonify({"error": "Password is required"}), 400
     _, ok, error = login_gym(username,email,password)
 
     if ok:
@@ -250,8 +291,9 @@ def update_gym():
     password = data.get("password")
     phone_number = data.get("phone_number") if data.get("phone_number") else None
     ig_profile = data.get("ig_profile") if data.get("ig_profile") else None
+    if not name or not email or not location or not address or not styles or not password:
+        return jsonify({"error": "All fields (name, email, location, address, styles and password) are required"}), 400
     username,ok,error = update_gym_controller(name,session['username'],email,location,address,styles,password,phone_number,ig_profile)
-
     if ok:
         return jsonify({"message": f"Gym updated with username {session['username']}"}),201
     return jsonify({"error": error}), 500
@@ -260,7 +302,8 @@ def update_gym():
 def get_gym_info():
     data = request.form
     gym_id = data.get("gym_id")
-    
+    if not gym_id:
+        return jsonify({"error": "Gym ID is required"}), 400
     info,ok,error = get_gym_info_controller(gym_id)
 
     if ok:
@@ -281,6 +324,8 @@ def trains_in_main():
     data = request.form
     gym_id = data.get("gym_id")
     styles = data.get("styles") 
+    if not gym_id or not styles:
+        return jsonify({"error": "Gym ID and styles are required"}), 400
     _,ok,error = trains_in(styles,gym_id)
     if ok:
         return jsonify({"message": f"User trains in gym with ID {gym_id}"})
@@ -291,6 +336,8 @@ def add_training_styles():
     data = request.form
     styles = data.get("styles")
     gym_id = data.get("gym_id")
+    if not gym_id or not styles:
+        return jsonify({"error": "Gym ID and styles are required"}), 400    
     _,ok,error = add_training_styles(styles,gym_id)
     if ok:
         return jsonify({"message": f"Styles added to user in a gym with ID {gym_id}"})
