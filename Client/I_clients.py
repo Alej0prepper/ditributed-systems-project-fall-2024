@@ -4,9 +4,7 @@ from client_methods import (
     react_to_post, react_to_comment, comment_post, answer_comment, create_gym,
     login_gym, update_gym, get_gym_info, delete_gym, trains_in, add_training_styles
 )
-
-session_token = ""
-
+TOKEN = None
 def interactive_register_user():
     name = input("Enter name: ")
     username = input("Enter username: ")
@@ -25,58 +23,56 @@ def interactive_update_user():
     weight = input("Enter weight: ")
     styles = input("Enter styles (comma-separated): ")
     levels_by_style = input("Enter levels by style (comma-separated): ")
-    response = update_user(email, name, password, weight, styles, levels_by_style)
+    response = update_user(email, name, password, weight, styles, levels_by_style, TOKEN)
     print(response.json())
 
 def interactive_delete_user():
-    response = delete_user()
+    response = delete_user(TOKEN)
     print(response.json())
 
 def interactive_login():
     username = input("Enter username (or leave blank): ")
     email = input("Enter email (or leave blank): ")
     password = input("Enter password: ")
-    response = login(username, email, password)
-    global session_token
-    session_token = response["token"]
+    response, TOKEN = login(username, email, password)
     print(response.json())
+    
 
 def interactive_logout():
-    print(session_token)
-    response = logout(session_token)
+    response = logout(TOKEN)
     print(response.json())
 
 def interactive_create_post():
     media = input("Enter media: ")
     caption = input("Enter caption: ")
-    response = create_post(media, caption)
+    response = create_post(media, caption, TOKEN)
     print(response.json())
 
 def interactive_repost():
     reposted_post_id = input("Enter reposted post ID: ")
-    response = repost(reposted_post_id)
+    response = repost(reposted_post_id, TOKEN)
     print(response.json())
 
 def interactive_quote_post():
     quoted_post_id = input("Enter quoted post ID: ")
     media = input("Enter media: ")
     caption = input("Enter caption: ")
-    response = quote_post(quoted_post_id, media, caption)
+    response = quote_post(quoted_post_id, media, caption, TOKEN)
     print(response.json())
 
 def interactive_delete_post():
     post_id = input("Enter post ID: ")
-    response = delete_post(post_id)
+    response = delete_post(post_id, TOKEN)
     print(response.json())
 
 def interactive_follow_user():
     followed_username = input("Enter username to follow: ")
-    response = follow_user(followed_username)
+    response = follow_user(followed_username, TOKEN)
     print(response.json())
 
 def interactive_unfollow_user():
     followed_username = input("Enter username to unfollow: ")
-    response = unfollow_user(followed_username)
+    response = unfollow_user(followed_username, TOKEN)
     print(response.json())
 
 def interactive_find_users():
@@ -87,27 +83,27 @@ def interactive_find_users():
 def interactive_react_to_post():
     reaction = input("Enter reaction: ")
     post_id = input("Enter post ID: ")
-    response = react_to_post(reaction, post_id)
+    response = react_to_post(reaction, post_id, TOKEN)
     print(response.json())
 
 def interactive_react_to_comment():
     reaction = input("Enter reaction: ")
     comment_id = input("Enter comment ID: ")
-    response = react_to_comment(reaction, comment_id)
+    response = react_to_comment(reaction, comment_id, TOKEN)
     print(response.json())
 
 def interactive_comment_post():
     caption = input("Enter caption: ")
     media = input("Enter media: ")
     post_id = input("Enter post ID: ")
-    response = comment_post(caption, media, post_id)
+    response = comment_post(caption, media, post_id, TOKEN)
     print(response.json())
 
 def interactive_answer_comment():
     caption = input("Enter caption: ")
     media = input("Enter media: ")
     comment_id = input("Enter comment ID: ")
-    response = answer_comment(caption, media, comment_id)
+    response = answer_comment(caption, media, comment_id, TOKEN)
     print(response.json())
 
 def interactive_create_gym():
@@ -154,13 +150,13 @@ def interactive_delete_gym():
 def interactive_trains_in():
     gym_id = input("Enter gym ID: ")
     styles = input("Enter styles (comma-separated): ")
-    response = trains_in(gym_id, styles)
+    response = trains_in(gym_id, styles, TOKEN)
     print(response.json())
 
 def interactive_add_training_styles():
     styles = input("Enter styles (comma-separated): ")
     gym_id = input("Enter gym ID: ")
-    response = add_training_styles(styles, gym_id)
+    response = add_training_styles(styles, gym_id, TOKEN)
     print(response.json())
 
 def main_menu():

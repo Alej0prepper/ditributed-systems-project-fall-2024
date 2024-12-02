@@ -58,7 +58,7 @@ def updateUser():
 
 
 #delete user account
-@app.route('/delete-user', methods=['POST'])
+@app.route('/delete-user', methods=['DELETE'])
 def delete_user():
     _, ok, error = delete_user_account()
     if ok:
