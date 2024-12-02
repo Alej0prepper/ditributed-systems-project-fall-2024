@@ -4,6 +4,7 @@ WORKDIR /client
 
 RUN apk update && apk add --no-cache iproute2
 RUN pip install requests
+RUN pip install python-dotenv
 
 COPY . .
 

@@ -46,7 +46,7 @@ fi
 
 # Run the router container in detached mode
 echo "Starting the router container..."
-sudo docker run -d --name $APP_IMAGE $APP_IMAGE
+sudo docker run -itd --name $APP_IMAGE $APP_IMAGE
 
 
 # Connect the router container to the clients and servers networks

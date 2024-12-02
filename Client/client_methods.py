@@ -1,6 +1,9 @@
 import requests
+from dotenv import load_dotenv
+import os
 
-BASE_URL = "http://10.0.11.3"
+load_dotenv()
+BASE_URL = os.getenv('SERVER_URL')
 
 def register_user(name, username, email, password, weight, styles, levels_by_style):
     url = f"{BASE_URL}/register"
