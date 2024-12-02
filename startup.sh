@@ -5,7 +5,10 @@ if [ -f .env ]; then
     export $(grep -v '^#' .env | xargs)
 fi
 
-
+# Start router
+cd Router/
+bash startRouter.sh
+cd ..
 
 # Check if the network exists, if not create it
 if ! sudo docker network ls | grep -q "$NETWORK_NAME"; then
@@ -25,10 +28,8 @@ fi
 if sudo docker ps -a --filter "name=$NEO4J_CONTAINER" | grep -q "$NEO4J_CONTAINER"; then
     echo "Neo4j container exists but is stopped. Starting..."
     sudo docker rm $NEO4J_CONTAINER
-    echo ✅
     # Ensure it's connected to the network
     sudo docker network connect $NETWORK_NAME $NEO4J_CONTAINER || echo "Neo4j container already connected to $NETWORK_NAME"
-    echo ✅
 else
     # Create and start the Neo4j container
     echo "Neo4j container does not exist. Creating and starting..."
@@ -43,7 +44,7 @@ else
         -p 7474:7474 \
         -p 7687:7687 \
         $NEO4J_IMAGE
-    echo ✅
+    echo Neo4j is ready! ✅
 fi
 
 
@@ -64,4 +65,4 @@ eval sudo docker run -it \
     -v "$APP_VOLUME" \
     "$APP_IMAGE"
 
-echo Ready to work! ✅
+echo Server is ready! ✅
