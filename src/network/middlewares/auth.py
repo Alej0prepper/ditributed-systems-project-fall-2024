@@ -1,5 +1,5 @@
 from flask import session, request
-from network.controllers.users import validate_token
+from network.middlewares.token import validate_token
 
 def needs_authentication(func):
     def wrapper(*args, **kwargs):

@@ -62,15 +62,17 @@ def login(username=None, email=None, password=None):
     try:
         response = requests.post(url, data=data)
         response.raise_for_status()
-        return response
+        token = response['token']
+        return token
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
         return None
 
-def logout():
+def logout(token):
     url = f"{BASE_URL}/logout"
+    headers = {"Authorization": token}
     try:
-        response = requests.post(url)
+        response = requests.post(url, headers=headers)
         response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:

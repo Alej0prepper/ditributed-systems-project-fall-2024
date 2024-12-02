@@ -1,45 +1,15 @@
-import os
 import bcrypt
-import jwt
-import datetime
 from flask import session
+from network.middlewares.token import generate_token
 from network.services.users import add_user, get_user_by_email, get_user_by_username_service
 from network.middlewares.use_db_connection import use_db_connection
 from network.middlewares.auth import needs_authentication
-from database.connection import driver
 from network.services.users import create_follow_relation
 from network.services.users import remove_follow_relation
 from network.services.users import delete_user
 from network.services.users import update_user
 from network.services.users import get_users_by_search_term_service
 
-
-SECRET_KEY = os.getenv('SECRET_KEY', '')
-def generate_token(username, email):
-    """
-    Generates a JWT token for the logged-in user.
-    """
-    payload = {
-        'username': username,
-        'email': email,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)  # Token expires in 1 hour
-    }
-    token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
-    return token
-
-def validate_token(token):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-        
-        if datetime.utcnow() > datetime.utcfromtimestamp(payload["exp"]):
-            return None
-
-        return payload
-
-    except jwt.ExpiredSignatureError:
-        return None
-    except jwt.InvalidTokenError:
-        return None
 
 
 @use_db_connection

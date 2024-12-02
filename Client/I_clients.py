@@ -5,6 +5,8 @@ from client_methods import (
     login_gym, update_gym, get_gym_info, delete_gym, trains_in, add_training_styles
 )
 
+session_token = ""
+
 def interactive_register_user():
     name = input("Enter name: ")
     username = input("Enter username: ")
@@ -35,10 +37,13 @@ def interactive_login():
     email = input("Enter email (or leave blank): ")
     password = input("Enter password: ")
     response = login(username, email, password)
+    global session_token
+    session_token = response["token"]
     print(response.json())
 
 def interactive_logout():
-    response = logout()
+    print(session_token)
+    response = logout(session_token)
     print(response.json())
 
 def interactive_create_post():
