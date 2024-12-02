@@ -69,9 +69,9 @@ def delete_user():
 @app.route('/login', methods=['POST'])
 def login():
     data = request.form
-    _, ok, error = login_user(data.get("password"), data.get("username"), data.get("email")) 
+    token, ok, error = login_user(data.get("password"), data.get("username"), data.get("email")) 
     if ok:
-        return jsonify({"message": "User logged in."}), 201
+        return jsonify({"token": token}), 201
     else:
         return jsonify({"error": error}), 500
 

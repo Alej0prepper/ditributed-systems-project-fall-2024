@@ -1,4 +1,7 @@
+import os
 import bcrypt
+import jwt
+import datetime
 from flask import session
 from network.services.users import add_user, get_user_by_email, get_user_by_username_service
 from network.middlewares.use_db_connection import use_db_connection
@@ -9,6 +12,20 @@ from network.services.users import remove_follow_relation
 from network.services.users import delete_user
 from network.services.users import update_user
 from network.services.users import get_users_by_search_term_service
+
+
+def generate_token(username, email):
+    SECRET_KEY = os.getenv('SECRET_KEY', '')
+    """
+    Generates a JWT token for the logged-in user.
+    """
+    payload = {
+        'username': username,
+        'email': email,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)  # Token expires in 1 hour
+    }
+    token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
+    return token
 
 
 @use_db_connection
@@ -23,11 +40,14 @@ def register_user(name, username, email, password, wheigth, styles, levels_by_st
 
 @use_db_connection
 def login_user(password, username=None, email=None, driver=None):
+    user = None
+
     if username:
         user = get_user_by_username_service(driver, username)
     if not user and email:
         user = get_user_by_email(driver, email)
-    if user == None: 
+    
+    if user is None: 
         return None, False, "User not found."
     
     session["username"] = user["username"]
@@ -35,7 +55,11 @@ def login_user(password, username=None, email=None, driver=None):
 
     if not verify_password(password, user["password"]):
         return None, False, "Wrong password"
-    return None, True, None
+    
+    token = generate_token(user["username"], user["email"])
+
+    return token, True, None
+
 
 def hash_password(password: str) -> bytes:
     salt = bcrypt.gensalt()
