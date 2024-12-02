@@ -154,7 +154,7 @@ def find_users(query):
     url = f"{BASE_URL}/find-users"
     data = {"query": query}
     try:
-        response = requests.post(url, data=data)
+        response = requests.get(url, data=data)
         response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:
