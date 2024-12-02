@@ -4,14 +4,27 @@
 if [ -f .env ]; then
     export $(grep -v '^#' .env | xargs)
 fi
+set -e  # Exit on error
 
-# Start router
-cd Router/
-bash startRouter.sh
-cd ..
+# Build the Docker image if it doesn't exist
+if ! sudo docker images --format "{{.Repository}}"  "$APP_IMAGE" | grep -qx "$APP_IMAGE"; then
+    echo "Image $APP_IMAGE not found. Building the image..."
+    sudo docker build -t "$APP_IMAGE" .
+else
+    echo "Image $APP_IMAGE already exists. Continuing..."
+fi
+
+# Build the Neo4j image if it doesn't exist
+if ! sudo docker images --format "{{.Repository}}" "$NEO4J_IMAGE" | grep -qx "$NEO4J_IMAGE"; then
+    echo "Image $NEO4J_IMAGE not found. Building the image..."
+    sudo docker build -t "$NEO4J_IMAGE" .
+else
+    echo "Image $NEO4J_IMAGE already exists. Continuing..."
+fi
+
 
 # Check if the network exists, if not create it
-if ! sudo docker network ls | grep -q "$NETWORK_NAME"; then
+if ! sudo docker network ls | grep "$NETWORK_NAME"; then
     echo "Network $NETWORK_NAME does not exist. Creating..."
     sudo docker network create $NETWORK_NAME --subnet $NETWORK_SUBNET 
 else
@@ -21,7 +34,7 @@ fi
 
 # Check if the Neo4j container is already running
 if sudo docker ps --filter "name=$NEO4J_CONTAINER" --filter "status=running" | grep -q "$NEO4J_CONTAINER"; then
-    echo "Neo4j container is already running. Stoping..."
+    echo "Neo4j container is already running. Stopping..."
     sudo docker rm $NEO4J_CONTAINER -f
 fi
 # Check if the Neo4j container exists but is stopped
@@ -44,7 +57,7 @@ else
         -p 7474:7474 \
         -p 7687:7687 \
         $NEO4J_IMAGE
-    echo Neo4j is ready! ✅
+    echo "Neo4j is ready! ✅"
 fi
 
 
@@ -56,7 +69,7 @@ fi
 
 # Create and start the application container
 echo "Creating and starting the application container..."
-eval sudo docker run -it \
+eval sudo docker run -idt \
     --name "$APP_CONTAINER" \
     --cap-add NET_ADMIN \
     --network "$NETWORK_NAME" \
@@ -65,4 +78,16 @@ eval sudo docker run -it \
     -v "$APP_VOLUME" \
     "$APP_IMAGE"
 
-echo Server is ready! ✅
+echo "Server is ready! ✅"
+
+# Start router
+cd Router/
+bash startRouter.sh
+cd ..
+
+
+# Start client
+cd Client/
+bash startClient.sh
+cd ..
+
