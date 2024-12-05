@@ -28,8 +28,11 @@ def register():
     styles = data.get("styles")
     levels_by_style = data.get("levels_by_style")
 
-    if not password or (not email and not username):
-        return jsonify({"message": "Password and either email or username are required."}), 500
+    # Check that either email+password or username+password are provided
+    if not password:
+        return jsonify({"message": "Password is required."}), 400
+    if not email and not username:
+        return jsonify({"message": "Either email or username is required."}), 400
 
     user_id, error = register_user(name, username, email, password, wheigth, styles, levels_by_style)
     if error == None:
