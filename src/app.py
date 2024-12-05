@@ -44,15 +44,18 @@ def register():
 def updateUser():
     data = request.form
     email = data.get("email")
-    name = data.get("name") 
+    username = data.get("username")
     password = data.get("password")
+    name = data.get("name") 
     wheight = data.get("wheight")
     styles = data.get("styles")
-    levels_by_style = data.get("levels_by_style")
+    levels_by_style = data.get("levels_by_style")   
 
-    # Check if all required fields are present
-    if not all([email, name, password, wheight, styles, levels_by_style]):
-        return jsonify({"error": "All fields (email, name, password, weight, styles and levels) are required"}), 400
+    # Check that either email+password or username+password are provided
+    if not password:
+        return jsonify({"error": "Password is required"}), 400
+    if not email and not username:
+        return jsonify({"error": "Either email or username is required"}), 400
 
     _, ok, error = update_user_account(name, email, password, wheight, styles, levels_by_style)
     if ok:
