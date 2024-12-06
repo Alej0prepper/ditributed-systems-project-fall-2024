@@ -111,13 +111,27 @@ def update_user(driver, name, username, email, password, wheight,styles,levels_b
     else:
         return None, False, "User not found."
 
-def delete_user(driver, username):
+def delete_user_service(driver, username):
     existing_user = driver.execute_query(
         "MATCH (u:User {username: $username}) RETURN u LIMIT 1",
         {"username": username}
     ).records
 
     if existing_user:
+        driver.execute_query(
+            """
+            MATCH (u:User {username: $username}) -[r]-> (n)
+            DELETE r
+            """,
+            {"username": username}
+        )
+        driver.execute_query(
+            """
+            MATCH (n) -[r]-> (u:User {username: $username})
+            DELETE r
+            """,
+            {"username": username}
+        )
         driver.execute_query(
             """
             MATCH (u:User {username: $username})

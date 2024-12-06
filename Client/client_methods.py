@@ -18,7 +18,6 @@ def register_user(name, username, email, password, weight, styles, levels_by_sty
     }
     try:
         response = requests.post(url, data=data)
-        response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
@@ -37,7 +36,6 @@ def update_user(email, name, password, weight, styles, levels_by_style, token):
     }
     try:
         response = requests.put(url, headers=headers, data=data)
-        response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
@@ -47,8 +45,7 @@ def delete_user(token):
     url = f"{BASE_URL}/delete-user"
     headers = {"Authorization": token}
     try:
-        response = requests.post(url, headers=headers)
-        response.raise_for_status()
+        response = requests.delete(url, headers=headers)
         return response
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
@@ -63,7 +60,6 @@ def login(username=None, email=None, password=None):
     }
     try:
         response = requests.post(url, data=data)
-        response.raise_for_status()
         token = response.json().get('token')
         return response, token
     except requests.exceptions.RequestException as e:
@@ -75,7 +71,6 @@ def logout(token):
     headers = {"Authorization": token}
     try:
         response = requests.post(url, headers=headers)
-        response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
@@ -90,7 +85,6 @@ def create_post(media, caption, token):
     }
     try:
         response = requests.post(url, headers=headers, data=data)
-        response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
@@ -102,7 +96,6 @@ def repost(reposted_post_id, token):
     data = {"reposted_post_id": int(reposted_post_id)}
     try:
         response = requests.post(url, headers=headers, data=data)
-        response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
@@ -118,7 +111,6 @@ def quote_post(quoted_post_id, media, caption, token):
     }
     try:
         response = requests.post(url, headers=headers, data=data)
-        response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
@@ -130,7 +122,6 @@ def delete_post(post_id, token):
     data = {"post_id": int(post_id)}
     try:
         response = requests.delete(url, headers=headers, data=data)
-        response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
@@ -142,7 +133,6 @@ def follow_user(followed_username, token):
     data = {"followed": followed_username}
     try:
         response = requests.post(url, headers=headers, data=data)
-        response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
@@ -154,7 +144,6 @@ def unfollow_user(followed_username, token):
     data = {"followed": followed_username}
     try:
         response = requests.post(url, headers=headers, data=data)
-        response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
@@ -165,7 +154,6 @@ def find_users(query):
     data = {"query": query}
     try:
         response = requests.post(url, data=data)
-        response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
@@ -180,7 +168,6 @@ def react_to_post(reaction, post_id, token):
     }
     try:
         response = requests.post(url, headers=headers, data=data)
-        response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
@@ -195,7 +182,6 @@ def react_to_comment(reaction, comment_id, token):
     }
     try:
         response = requests.post(url, headers=headers, data=data)
-        response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
@@ -211,7 +197,6 @@ def comment_post(caption, media, post_id, token):
     }
     try:
         response = requests.post(url, headers=headers, data=data)
-        response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
@@ -227,7 +212,6 @@ def answer_comment(caption, media, comment_id, token):
     }
     try:
         response = requests.post(url, headers=headers, data=data)
-        response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
@@ -248,7 +232,6 @@ def create_gym(name, username, email, location, address, password, styles, phone
     }
     try:
         response = requests.post(url, data=data)
-        response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
@@ -263,7 +246,6 @@ def login_gym(username=None, email=None, password=None):
     }
     try:
         response = requests.post(url, data=data)
-        response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
@@ -283,7 +265,6 @@ def update_gym(name, email, location, address, styles, password, phone_number=No
     }
     try:
         response = requests.post(url, data=data)
-        response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
@@ -294,7 +275,6 @@ def get_gym_info(gym_id):
     data = {"gym_id": int(gym_id)}
     try:
         response = requests.post(url, data=data)
-        response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
@@ -304,7 +284,6 @@ def delete_gym():
     url = f"{BASE_URL}/delete-gym"
     try:
         response = requests.post(url)
-        response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
@@ -319,7 +298,6 @@ def trains_in(gym_id, styles, token=None):
     }
     try:
         response = requests.post(url, data=data, headers=headers)
-        response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
@@ -334,7 +312,6 @@ def add_training_styles(styles, gym_id, token=None):
     }
     try:
         response = requests.post(url, data=data, headers=headers)
-        response.raise_for_status()
         return response
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")

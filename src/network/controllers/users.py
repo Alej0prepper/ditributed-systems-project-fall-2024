@@ -6,9 +6,9 @@ from network.middlewares.use_db_connection import use_db_connection
 from network.middlewares.auth import needs_authentication
 from network.services.users import create_follow_relation
 from network.services.users import remove_follow_relation
-from network.services.users import delete_user
 from network.services.users import update_user
 from network.services.users import get_users_by_search_term_service
+from network.services.users import delete_user_service
 
 
 
@@ -67,7 +67,7 @@ def unfollow_user(followed_username, driver=None):
 @use_db_connection
 @needs_authentication
 def delete_user_account(driver=None):
-    return delete_user(driver, session["username"])
+    return delete_user_service(driver, session["username"])
 
 @use_db_connection
 @needs_authentication

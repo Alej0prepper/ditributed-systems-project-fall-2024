@@ -34,6 +34,7 @@ def interactive_login():
     username = input("Enter username (or leave blank): ")
     email = input("Enter email (or leave blank): ")
     password = input("Enter password: ")
+    global TOKEN
     response, TOKEN = login(username, email, password)
     print(response.json())
     
@@ -201,7 +202,10 @@ def main_menu():
                 break
             elif 1 <= choice <= len(options):
                 _, action = options[choice - 1]
-                action()
+                try:
+                    action()
+                except:
+                    pass
             else:
                 print("Invalid choice. Please try again.")
         else:
