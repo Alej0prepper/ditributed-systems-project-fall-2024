@@ -1,0 +1,128 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{enumitem}
+\usepackage{hyperref}
+
+\title{Informe de Diseño del Sistema Distribuido}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Arquitectura del Sistema}
+
+\subsection{Diseño del Sistema}
+
+La arquitectura del sistema está basada en una red de tipo \textbf{Chord}, donde cada instancia de \textbf{Flask} actúa como un nodo. Cada nodo cuenta con las siguientes características:
+
+\begin{itemize}
+    \item \textbf{Identificador único}: Generado a partir del hash de su dirección IP y puerto.
+    \item \textbf{Tabla de finger}: Utilizada para navegar eficientemente por la red.
+    \item \textbf{Base de datos local}: Implementada con \textbf{Neo4j}, encargada de almacenar los datos de los que el nodo es responsable.
+\end{itemize}
+
+\subsection{Organización del Sistema Distribuido}
+
+\begin{itemize}
+    \item \textbf{Roles del Sistema}: Cada nodo posee una base de datos local, esencial para garantizar la consistencia de los datos. Además, cada nodo conoce las responsabilidades de los demás nodos en la red, lo que permite una distribución eficiente de tareas.
+    \item \textbf{Distribución de Servicios}: Los nodos se encargan de gestionar los servicios de la red social en función de los datos que almacenan. Por ejemplo, si un nodo contiene los datos de los usuarios 1 al 5, será responsable de manejar las operaciones relacionadas con esos usuarios, como seguimientos, publicaciones, etc.
+\end{itemize}
+
+\section{Procesos del Sistema}
+
+\subsection{Servicios de Usuarios}
+
+El sistema ofrece una amplia gama de servicios para los usuarios, los cuales se detallan a continuación:
+
+\begin{enumerate}
+    \item \textbf{Registro de Usuario} (\texttt{/register}, \texttt{POST})
+    \item \textbf{Actualización de Usuario} (\texttt{/update-user}, \texttt{PUT})
+    \item \textbf{Eliminación de Usuario} (\texttt{/delete-user}, \texttt{DELETE})
+    \item \textbf{Inicio de Sesión de Usuario} (\texttt{/login}, \texttt{POST})
+    \item \textbf{Cierre de Sesión de Usuario} (\texttt{/logout}, \texttt{POST})
+    \item \textbf{Seguir a un Usuario} (\texttt{/follow}, \texttt{POST})
+    \item \textbf{Dejar de Seguir a un Usuario} (\texttt{/unfollow}, \texttt{POST})
+    \item \textbf{Buscar Usuarios} (\texttt{/find-users}, \texttt{GET})
+    \item \textbf{Crear una Publicación} (\texttt{/post}, \texttt{POST})
+    \item \textbf{Repostear una Publicación} (\texttt{/repost}, \texttt{POST})
+    \item \textbf{Citar una Publicación} (\texttt{/quote}, \texttt{POST})
+    \item \textbf{Eliminar una Publicación} (\texttt{/delete-post}, \texttt{DELETE})
+    \item \textbf{Comentar una Publicación} (\texttt{/comment-post}, \texttt{POST})
+    \item \textbf{Responder a un Comentario} (\texttt{/answer-comment}, \texttt{POST})
+    \item \textbf{Reaccionar a una Publicación} (\texttt{/react-post}, \texttt{POST})
+    \item \textbf{Reaccionar a un Comentario} (\texttt{/react-comment}, \texttt{POST})
+    \item \textbf{Crear un Gimnasio} (\texttt{/create-gym}, \texttt{POST})
+    \item \textbf{Iniciar Sesión como Gimnasio} (\texttt{/gym-login}, \texttt{POST})
+    \item \textbf{Actualizar Información del Gimnasio} (\texttt{/update-gym}, \texttt{PUT})
+    \item \textbf{Obtener Información del Gimnasio} (\texttt{/get-gym-info}, \texttt{POST})
+    \item \textbf{Eliminar Gimnasio} (\texttt{/delete-gym}, \texttt{DELETE})
+    \item \textbf{Crear Relación "Entrena en"} (\texttt{/trains-in}, \texttt{POST})
+    \item \textbf{Añadir Estilos de Entrenamiento a la Relación} (\texttt{/add-training-styles}, \texttt{POST})
+    \item \textbf{Eliminar Estilos de Entrenamiento de la Relación} (\texttt{/remove-training-styles}, \texttt{POST})
+\end{enumerate}
+
+Cada nodo se encarga de las operaciones relacionadas con los datos que gestiona. Por ejemplo, si un nodo es responsable de los datos de un conjunto de usuarios, manejará todas las operaciones asociadas a esos usuarios, como inicio de sesión, publicaciones, seguimientos, etc.
+
+\subsection{Consideraciones sobre Concurrencia}
+
+El sistema debe manejar múltiples operaciones simultáneas, lo que implica la necesidad de implementar \textbf{hilos} para cada operación. Esto garantiza que los usuarios no tengan que esperar a que se completen las operaciones de otros usuarios. Sin embargo, es crucial implementar mecanismos de \textbf{bloqueo} (\texttt{lock}) para evitar conflictos en las actualizaciones de la base de datos, especialmente cuando múltiples usuarios intentan modificar la misma información.
+
+\section{Comunicación en el Sistema}
+
+La comunicación entre nodos se realiza mediante \textbf{sockets}, utilizando el protocolo \textbf{TCP}, que es orientado a conexión y permite una comunicación bidireccional.
+
+\begin{itemize}
+    \item \textbf{Funcionamiento de los Nodos}: Cada nodo actúa como un \textbf{servidor} que escucha en un puerto específico para recibir solicitudes de otros nodos. Cuando un nodo necesita obtener información de otro nodo (por ejemplo, encontrar un sucesor o predecesor), actúa como \textbf{cliente} y se conecta al servidor del otro nodo.
+    \item \textbf{Manejo de Hilos}: Para manejar múltiples operaciones simultáneamente, el sistema utiliza \textbf{hilos} (\texttt{threading}), lo que permite que cada nodo realice varias tareas en paralelo.
+\end{itemize}
+
+\section{Sincronización de Acciones}
+
+Cada nodo es responsable de gestionar los servicios relacionados con su segmento de la base de datos. Existe un nodo principal para cada segmento, junto con nodos secundarios que actúan como respaldo. Si el nodo principal falla, se selecciona otro nodo como principal y se reajusta la red.
+
+Las operaciones de escritura en la base de datos deben realizarse con \textbf{acceso exclusivo}, asegurando que solo un proceso pueda modificar la base de datos en un momento dado. Aunque cada nodo tiene su propia base de datos local, estas bases de datos están replicadas en otros nodos para garantizar la consistencia. El procedimiento para realizar modificaciones es el siguiente:
+
+\begin{enumerate}
+    \item \textbf{Buscar el nodo responsable} de los datos que se desean modificar.
+    \item \textbf{Realizar la modificación} en la base de datos local del nodo principal.
+    \item \textbf{Propagar la modificación} a los nodos secundarios para mantener la consistencia.
+\end{enumerate}
+
+Este enfoque minimiza los problemas de \textbf{condiciones de carrera}, ya que las operaciones de escritura están sincronizadas.
+
+\section{Nombrado y Localización}
+
+La distribución de los recursos en la red se realiza de manera automatizada. Cada nodo mantiene una tabla que indica qué recursos gestiona. Cuando se solicita un recurso, el sistema consulta esta tabla para determinar a qué nodo debe dirigirse la solicitud. Si un nodo abandona la red o se incorpora uno nuevo, los recursos se redistribuyen automáticamente.
+
+\section{Consistencia y Replicación}
+
+La consistencia de los datos se logra mediante la \textbf{replicación}. El sistema está diseñado para garantizar que, incluso si se eliminan dos nodos cualesquiera, todos los datos sigan siendo accesibles. Esto se consigue de la siguiente manera:
+
+\begin{itemize}
+    \item Cada nodo es responsable de un conjunto específico de datos (por ejemplo, los datos de los usuarios con ID 1 a 100).
+    \item Además, cada nodo almacena una copia de los datos de los nodos adyacentes (nodo \texttt{i-1} y nodo \texttt{i+1}).
+    \item De esta forma, si dos nodos fallan, siempre habrá al menos un nodo que contenga la información necesaria.
+\end{itemize}
+
+\section{Tolerancia a Fallas}
+
+El sistema está diseñado para ser tolerante a fallos. Cada nodo conoce exactamente qué otros nodos contienen los recursos que gestiona. Si el nodo principal falla, se selecciona otro nodo como principal y la red se reajusta para garantizar la consistencia de los datos. Este proceso de estabilización se realiza de manera automática, aunque es importante considerar posibles retrasos (\texttt{lag}) para evitar conflictos si un nodo se recupera después de haber sido dado de baja.
+
+La estructura de la red \textbf{Chord} facilita esta tolerancia a fallos gracias al uso de la \textbf{tabla de finger}, que permite una rápida localización de nodos y recursos.
+
+\subsection{Seguridad en la Comunicación}
+
+\begin{itemize}
+    \item \textbf{Comunicación Segura}: Se implementan mecanismos para asegurar la comunicación entre nodos, como el uso de protocolos cifrados (por ejemplo, \textbf{TLS}).
+\end{itemize}
+
+\subsection{Seguridad en el Diseño}
+
+\begin{itemize}
+    \item \textbf{Diseño Seguro}: El sistema incorpora consideraciones de seguridad desde su diseño, incluyendo la validación de entradas y la protección contra ataques comunes.
+    \item \textbf{Autorización y Autenticación}: El sistema maneja la autorización y autenticación mediante tokens de acceso y contraseñas cifradas, garantizando que solo los usuarios autorizados puedan realizar operaciones sensibles.
+\end{itemize}
+
+\end{document}
