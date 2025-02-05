@@ -98,7 +98,6 @@ def react_to_a_comment_service(driver, reaction_type,username , reacted_comment_
         "reacted_comment_id": reacted_comment_id
     }
     driver.execute_query(query,params)
-    print("Comment reacted!!!")
     return None, True, None
     
 
@@ -128,5 +127,4 @@ def react_to_a_post_service(driver, reaction_type,username,reacted_post_id):
         "reacted_post_id": reacted_post_id
     }
     driver.execute_query(query,params)
-    print("Post reacted!!!")
     return None, True, None

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-def add_user(driver, name, username, email, password,wheigth,styles,levels_by_style):
+def add_user(driver, name, username, email, image_url, password,wheigth,styles,levels_by_style, birth_date):
     existing_user = driver.execute_query(
         "MATCH (u:User {username: $username}) RETURN u", {"username": username}
     ).records
@@ -8,9 +8,9 @@ def add_user(driver, name, username, email, password,wheigth,styles,levels_by_st
     if len(existing_user) == 0:
         driver.execute_query(
             """
-                CREATE (u:User {name: $name, email: $email, username: $username, password: $password, wheigth: $wheigth, styles: $styles, levels_by_style: $levels_by_style})
+                CREATE (u:User {name: $name, email: $email, image: $image,  username: $username, password: $password, wheigth: $wheigth, styles: $styles, levels_by_style: $levels_by_style, birth_date: $birth_date})
             """,
-            {"name": name, "email": email, "username": username, "password": password, "wheigth": wheigth, "styles": styles, "levels_by_style": levels_by_style},
+            {"name": name, "email": email, "image": image_url, "username": username, "password": password, "wheigth": wheigth, "styles": styles, "levels_by_style": levels_by_style, "birth_date": birth_date},
         )
         return driver.execute_query(
         "MATCH (u:User {username: $username}) RETURN id(u) as user_id", {"username": username}
@@ -91,7 +91,7 @@ def remove_follow_relation(driver, user_1, user_2):
     else:
         return None, False, "User not found."
 
-def update_user(driver, name, username, email, password, wheight,styles,levels_by_style):
+def update_user(driver, name, username, email, password, image_url, wheight,styles,levels_by_style, birth_date):
     existing_user = driver.execute_query(
         "MATCH (u:User {username: $username}) RETURN u LIMIT 1", 
         {"username": username}
@@ -101,11 +101,11 @@ def update_user(driver, name, username, email, password, wheight,styles,levels_b
         driver.execute_query(
             """
             MATCH (u:User {username: $username}) 
-            SET u.name = $name, u.email = $email, u.password = $password, 
-                u.wheight = $wheight, u.styles = $styles, u.levels_by_style = $levels_by_style
+            SET u.name = $name, u.email = $email, u.password = $password, u.image = $image_url, 
+                u.wheight = $wheight, u.styles = $styles, u.levels_by_style = $levels_by_style, u.birth_date = $birth_date
             """,
-            {"name": name, "email": email, "username": username, "password": password, 
-             "wheight": wheight, "styles": styles, "levels_by_style": levels_by_style}
+            {"name": name, "email": email, "username": username, "password": password, "image_url": image_url, 
+             "wheight": wheight, "styles": styles, "levels_by_style": levels_by_style, "birth_date": birth_date}
         )
         return username, True, None
     else:
@@ -151,6 +151,26 @@ def get_users_by_search_term_service(driver, query):
             MATCH (u:User)
             WHERE toLower(u.username) CONTAINS toLower($query) 
             OR toLower(u.name) CONTAINS toLower($query)
+            RETURN u
+            """,
+            {"query": query}
+        ).records
+        if len(users) > 0:
+            users = [user["u"]._properties for user in users]
+            for user in users:
+                del user["password"]
+            return users,True,None
+        else:
+            return [],True,None 
+    except Exception as e:
+        return [],False,e
+
+def get_all_users_service(driver, query):
+    
+    try:
+        users = driver.execute_query(
+            """
+            MATCH (u:User)
             RETURN u
             """,
             {"query": query}

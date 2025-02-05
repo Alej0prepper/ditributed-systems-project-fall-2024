@@ -69,7 +69,8 @@ fi
 
 # Create and start the application container
 echo "Creating and starting the application container..."
-eval sudo docker run -idt \
+eval sudo docker run -it \
+    --restart always \
     --name "$APP_CONTAINER" \
     --cap-add NET_ADMIN \
     --network "$NETWORK_NAME" \
@@ -79,15 +80,3 @@ eval sudo docker run -idt \
     "$APP_IMAGE"
 
 echo "Server is ready! ✅"
-
-# Start router
-cd Router/
-bash startRouter.sh
-cd ..
-
-
-# Start client
-cd Client/
-bash startClient.sh
-cd ..
-

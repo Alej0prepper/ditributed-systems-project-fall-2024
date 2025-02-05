@@ -48,10 +48,6 @@ def update_post(driver, post_id, media: list[str], caption: str, quoted_post_id:
     }
     
     result = driver.execute_query(query, parameters)
-    if result:
-        print(f"Post with ID {post_id} updated successfully.")
-    else:
-        print(f"Post with ID {post_id} not found or update failed.")
 
 def add_post(driver, media: list[str], caption: str):
     post_id = create_post_node(driver)
@@ -82,7 +78,6 @@ def post(driver, media, caption, username):
     with driver.session() as session:
         result = session.run(query, parameters)
         if result != None: 
-            print("Posted!")
             return post_id, True, None
         return None, False, "There was a DB related error."
 
@@ -112,7 +107,6 @@ def repost(driver, reposted_post_id:int, username, media=None, caption=None):
     )
     
 
-    print(f"User {username} reposted post with ID: {reposted_post_id}")
     return reposted_post_id, True, None
 
 def get_post_by_id(driver, post_id):

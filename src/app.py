@@ -1,19 +1,41 @@
 import secrets
-from flask import Flask, request, jsonify, session
-from network.controllers.users import delete_user_account, get_users_by_search_term, login_user, register_user
+import os
+from werkzeug.utils import secure_filename
+from flask import Flask, request, jsonify, session, send_from_directory
+from network.controllers.users import delete_user_account, get_all_users_controller, get_users_by_search_term, login_user, register_user
 from network.controllers.posts import create_post, repost_existing_post, quote_existing_post, delete_post
 from flask_cors import CORS
 from network.controllers.users import follow_user
 from network.controllers.users import unfollow_user
 from network.controllers.comments import create_comment_answer, create_post_comment
 from network.controllers.reactions import react_to_a_comment, react_to_a_post
-from network.controllers.gyms import add_gym_controller, update_gym_controller, get_gym_info_controller,delete_gym_controller
+from network.controllers.gyms import add_gym_controller, get_all_gyms_controller, update_gym_controller, get_gym_info_controller,delete_gym_controller
 from network.controllers.trains_in import trains_in, add_training_styles, remove_training_styles
 from network.controllers.gyms import login_gym
 from network.controllers.users import update_user_account
+from network.controllers.gyms import get_gyms_by_search_term
+import json
+from network.controllers.users import get_user_by_username_controller
+from network.controllers.users import get_logged_user_controller
+from network.controllers.gyms import get_logged_gym_controller
 app = Flask(__name__)
 CORS(app)
 app.secret_key = secrets.token_hex(16) 
+
+UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'svg'}
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+def allowed_file(filename):
+    """Check if the file extension is allowed."""
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 # Endpoint to register a new user
 @app.route('/register', methods=['POST'])
@@ -31,6 +53,10 @@ def register():
     - wheigth 
     - styles
     - levels_by_style
+    - birth_date
+    - gyms_ids
+    - image
+
     
     Returns:
         201: JSON with success message and user ID if registration successful
@@ -46,6 +72,18 @@ def register():
     wheigth = data.get("wheigth")
     styles = data.get("styles")
     levels_by_style = data.get("levels_by_style")
+    gyms_ids = data.get("gyms_ids")
+    birth_date = data.get("birthDate")
+
+    profile_image = request.files.get("image")
+    image_url = None
+
+    if profile_image and allowed_file(profile_image.filename):
+        filename = secure_filename(profile_image.filename)
+        image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        profile_image.save(image_path)
+        image_url = 'uploads/' + filename
+
 
     # Check that either email+password or username+password are provided
     if not password:
@@ -53,7 +91,7 @@ def register():
     if not email and not username:
         return jsonify({"message": "Either email or username is required."}), 400
 
-    user_id, error = register_user(name, username, email, password, wheigth, styles, levels_by_style)
+    user_id, error = register_user(name, username, email, image_url, password, wheigth, styles, levels_by_style, birth_date, gyms_ids)
     if error == None:
         return jsonify({"message": f"User registered successfully. ID: {user_id}"}), 201
     return jsonify({"Error": f"{error}"}), 500
@@ -73,6 +111,8 @@ def updateUser():
     - wheight
     - styles 
     - levels_by_style
+    - birthDate
+    - image
     At least one field is required for update.
     Returns:
         201: JSON with success message if update successful
@@ -80,19 +120,29 @@ def updateUser():
     """
     data = request.form
     email = data.get("email")
-    username = data.get("username")
     password = data.get("password")
     name = data.get("name") 
     wheight = data.get("wheight")
     styles = data.get("styles")
     levels_by_style = data.get("levels_by_style")  
+    birth_date = data.get("birthDate")  
+
+    profile_image = request.files.get("image")
+    image_url = None
+
+    if profile_image and allowed_file(profile_image.filename):
+        filename = secure_filename(profile_image.filename)
+        image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        profile_image.save(image_path)
+        image_url = 'uploads/' + filename
+
     if name is None and email is None and password is None and wheight is None and styles is None and levels_by_style is None:
         return jsonify({"error": "At least one field is required for update"}), 400
-    _, ok, error = update_user_account(name, email, password, wheight, styles, levels_by_style)
+    
+    _, ok, error = update_user_account(name, email, password, image_url, wheight, styles, levels_by_style, birth_date)
     if ok:
         return jsonify({"message": f"User updated successfully."}), 201
     return jsonify({"Error": f"{error}"}), 500
-
 
 #delete user account
 @app.route('/delete-user', methods=['DELETE'])
@@ -130,9 +180,9 @@ def login():
         500: JSON with error message if login fails
     """
     data = request.form
-    token, ok, error = login_user(data.get("password"), data.get("username"), data.get("email")) 
+    data, ok, error = login_user(data.get("password"), data.get("username"), data.get("email")) 
     if ok:
-        return jsonify({"token": token}), 201
+        return jsonify({"data": data}), 201
     else:
         return jsonify({"error": error}), 500
 
@@ -152,6 +202,65 @@ def logout():
     session["username"] = ""
     session["email"] = ""
     return jsonify({"message": "Logged out."}), 201
+
+@app.route('/users',methods=['GET'])
+def get_all_users():
+    """
+    Get all users endpoint.
+    
+    Returns:
+        200: JSON with users
+        500: JSON with error if users fetch had an error
+    """
+    users, ok, error = get_all_users_controller()
+
+    if ok:
+        return jsonify({"users": users}), 200
+    return jsonify({"error": error}), 500
+
+@app.route('/users/<username>',methods=['GET'])
+def get_user_by_username(username):
+    """
+    Get specific user endpoint.
+    
+    Returns:
+        200: JSON with user
+        500: JSON with error if user fetch had an error
+    """
+    user, ok, error = get_user_by_username_controller(username)
+
+    if ok:
+        return jsonify({"user": user}), 200
+    return jsonify({"error": error}), 500
+
+@app.route('/users/me',methods=['GET'])
+def get_my_user():
+    """
+    Get specific user endpoint.
+    
+    Returns:
+        200: JSON with user
+        500: JSON with error if user fetch had an error
+    """
+    user, ok, error = get_logged_user_controller()
+    if ok:
+        return jsonify({"user": user}), 200
+    return jsonify({"error": error}), 500
+
+@app.route('/gyms/me',methods=['GET'])
+def get_my_gym():
+    """
+    Get specific user endpoint.
+    
+    Returns:
+        200: JSON with user
+        500: JSON with error if user fetch had an error
+    """
+    gym, ok, error = get_logged_gym_controller()
+
+    if ok:
+        return jsonify({"gym": gym}), 200
+    return jsonify({"error": error}), 500
 
 # Endpoint to create a new post
 @app.route('/post', methods=['POST'])
@@ -330,6 +439,28 @@ def get_users():
         return jsonify({"users": users}), 200
     return jsonify({"error": error}), 500
 
+@app.route('/find-gyms', methods=['GET'])
+def get_gyms():
+    """
+    Find gyms endpoint.
+    
+    Accepts GET request with query parameter for searching users.
+    Required parameters:
+    - query: Search term to find gyms
+
+    Returns:
+        200: JSON with list of matching gyms if search successful
+        500: JSON with error message if search fails or query missing
+    """
+    query = request.args.get("query")
+    if not query:
+        return jsonify({"error": "Query is required"}), 500    
+    if query == "": return jsonify({"gyms": []}), 200
+    gyms, ok, error = get_gyms_by_search_term(query)
+    if ok:
+        return jsonify({"gyms": gyms}), 200
+    return jsonify({"error": error}), 500
+
 # Endpoint to react to a post
 @app.route('/react-post', methods=['POST'])
 def react_post():
@@ -456,12 +587,13 @@ def create_gym():
     - username: Username for gym account
     - email: Email address for gym
     - location: Location of the gym
-    - address: Street address of the gym
     - password: Password for gym account
     - styles: Training styles offered
     Optional fields:
     - phone_number: Contact phone number
     - ig_profile: Instagram profile handle
+    - description: Gym description
+    - image: Gym's profile image
 
     Returns:
         201: JSON with success message if gym created successfully
@@ -472,19 +604,59 @@ def create_gym():
     name = data.get("name")
     username = data.get("username")
     email = data.get("email")
-    location = data.get("location")
-    address = data.get("address")
+
+    location = data.get("location") 
+    if isinstance(location, str): 
+        try:
+            location = json.loads(location) 
+        except json.JSONDecodeError:
+            return jsonify({"error": "Invalid location format"}), 400
+        
     password = data.get("password")
     styles = data.get("styles")
+    description = data.get("description")
     phone_number = data.get("phone_number") if data.get("phone_number") else None
     ig_profile = data.get("ig_profile") if data.get("ig_profile") else None
-    if not name or not username or not email or not location or not address or not password or not styles:
-        return jsonify({"error": "All fields (name, username, email, location, address, password and styles) are required"}), 400
-    gym_id, ok, error = add_gym_controller(name,username,email,location,address,styles,password,phone_number,ig_profile)
+
+    # Handle profile image
+    profile_image = request.files.get("image")
+    image_url = None  # Default if no image is uploaded
+
+    if profile_image and allowed_file(profile_image.filename):
+        filename = secure_filename(profile_image.filename)
+        image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        profile_image.save(image_path)
+        image_url = 'uploads/' + filename
+
+    
+    if not name or not username or not email or not location or not password or not styles:
+        return jsonify({"error": "All fields (name, username, email, location, password and styles) are required"}), 400
+    
+    print("image:"+profile_image.filename)
+    
+    gym_id, ok, error = add_gym_controller(name,username,email,description,image_url,location,styles,password,phone_number,ig_profile)
 
     if ok:
         return jsonify({"message": f"Gym created. username: {username}"}), 201
     return jsonify({"error": error}), 500
+
+@app.route('/gyms',methods=['GET'])
+def get_all_gyms():
+    """
+    Get all gyms endpoint.
+    
+    Accepts GET request with form data containing gym details.
+    
+    Returns:
+        200: JSON with gyms
+        500: JSON with error if gyms fetch had an error
+    """
+    gyms, ok, error = get_all_gyms_controller()
+
+    if ok:
+        return jsonify({"gyms": gyms}), 200
+    return jsonify({"error": error}), 500
+
 
 # Endpoint to log in as gym
 @app.route('/gym-login',methods=['POST'])
@@ -508,6 +680,7 @@ def loginGym():
     username = data.get("username")
     email = data.get("email")
     password = data.get("password")
+
     if not username and not email:
         return jsonify({"error": "Username or email is required"}), 400
     if not password:
@@ -528,6 +701,8 @@ def update_gym():
     - name: New name for the gym
     - email: New email address
     - location: New location
+    - description: New Description
+    - image: New image
     - address: New address
     - styles: New training styles offered
     - password: New password
@@ -543,19 +718,38 @@ def update_gym():
     data = request.form
     name = data.get("name")
     email = data.get("email")
-    location = data.get("location")
+
+    profile_image = request.files.get("image")
+    image_url = None
+
+    if profile_image and allowed_file(profile_image.filename):
+        filename = secure_filename(profile_image.filename)
+        image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        profile_image.save(image_path)
+        image_url = 'uploads/' + filename
+    
+    location = data.get("location") 
+    if isinstance(location, str): 
+        try:
+            location = json.loads(location) 
+        except json.JSONDecodeError:
+            return jsonify({"error": "Invalid location format"}), 400
+    
     address = data.get("address")
     styles = data.get("styles")
     password = data.get("password")
+    description = data.get("description")
     phone_number = data.get("phone_number") if data.get("phone_number") else None
     ig_profile = data.get("ig_profile") if data.get("ig_profile") else None
-    username,ok,error = update_gym_controller(name,session['username'],email,location,address,styles,password,phone_number,ig_profile)
+
+    username,ok,error = update_gym_controller(name,session['username'],email, description, image_url, location,address,styles,password,phone_number,ig_profile)
+   
     if name is None and email is None and location is None and address is None and styles is None and password is None and phone_number is None and ig_profile is None:
         return jsonify({"error": "At least one field is required for update"}), 400
+    
     if ok:
         return jsonify({"message": f"Gym updated with username {session['username']}"}),201
     return jsonify({"error": error}), 500
-
 
 @app.route('/get-gym-info',methods=['POST'])
 def get_gym_info():

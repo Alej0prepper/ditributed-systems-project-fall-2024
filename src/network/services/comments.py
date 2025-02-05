@@ -75,7 +75,6 @@ def comment(driver, caption, media, username, answered_comment_id=None, commente
         }
 
         driver.execute_query(query, params)
-        print("Comment answered!")
         return new_comment_id, True, None
     
     if commented_post_id:
@@ -93,7 +92,6 @@ def comment(driver, caption, media, username, answered_comment_id=None, commente
         }
 
         driver.execute_query(query, params)
-        print("Post commented!")
         return new_comment_id, True, None
 
 def answer_comment(driver, caption, media, username, answered_comment_id):

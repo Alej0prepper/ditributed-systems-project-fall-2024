@@ -1,25 +1,29 @@
 
-def trains_in_service(driver,styles,username,gym_id):
+def trains_in_service(driver, styles, username, gym_id):
     query = '''
-    MATCH (u:User{username: $username})
+    MATCH (u:User {username: $username})
     MATCH (g:Gym)
-        WHERE id(g) = $gym_id
-        CREATE (u) -[r:Trains_in]-> (g)
-        SET r.styles = $styles
+    WHERE id(g) = $gym_id
+    MERGE (u) -[r:Trains_in]-> (g)
+    SET r.styles = $styles
     RETURN r
     '''
-
+    
     parameters = {
-        "styles" : styles,
-        "username" : username,
-        "gym_id" : gym_id
+        "styles": styles,
+        "username": username,
+        "gym_id": gym_id
     }
 
-    result = driver.execute_query(query,parameters)
-    if(result):
-        return None,True,None
-    else:
-        return None,False,f"User {username} or Gym with ID {gym_id} not found or update failed"
+    try:
+        result = driver.execute_query(query, parameters)
+        if result:
+            return None, True, None
+        else:
+            return None, False, f"User {username} or Gym with ID {gym_id} not found or update failed"
+    except Exception as e:
+        return None, False, str(e)
+
 
 def remove_training_styles_service(driver,styles,username,gym_id):
     
