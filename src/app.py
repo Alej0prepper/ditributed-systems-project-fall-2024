@@ -18,6 +18,7 @@ import json
 from network.controllers.users import get_user_by_username_controller
 from network.controllers.users import get_logged_user_controller
 from network.controllers.gyms import get_logged_gym_controller
+from network.controllers.gyms import get_gym_by_username_controller
 app = Flask(__name__)
 CORS(app)
 app.secret_key = secrets.token_hex(16) 
@@ -108,7 +109,7 @@ def updateUser():
     - username 
     - password
     - name
-    - wheight
+    - weight
     - styles 
     - levels_by_style
     - birthDate
@@ -122,7 +123,7 @@ def updateUser():
     email = data.get("email")
     password = data.get("password")
     name = data.get("name") 
-    wheight = data.get("wheight")
+    weight = data.get("weight")
     styles = data.get("styles")
     levels_by_style = data.get("levels_by_style")  
     birth_date = data.get("birthDate")  
@@ -136,10 +137,10 @@ def updateUser():
         profile_image.save(image_path)
         image_url = 'uploads/' + filename
 
-    if name is None and email is None and password is None and wheight is None and styles is None and levels_by_style is None:
+    if name is None and email is None and password is None and weight is None and styles is None and levels_by_style is None:
         return jsonify({"error": "At least one field is required for update"}), 400
     
-    _, ok, error = update_user_account(name, email, password, image_url, wheight, styles, levels_by_style, birth_date)
+    _, ok, error = update_user_account(name, email, password, image_url, weight, styles, levels_by_style, birth_date)
     if ok:
         return jsonify({"message": f"User updated successfully."}), 201
     return jsonify({"Error": f"{error}"}), 500
@@ -184,7 +185,7 @@ def login():
     if ok:
         return jsonify({"data": data}), 201
     else:
-        return jsonify({"error": error}), 500
+        return jsonify({"error": error}), 401
 
 # Endpoint to log out a user
 @app.route('/logout', methods=['POST'])
@@ -231,6 +232,21 @@ def get_user_by_username(username):
 
     if ok:
         return jsonify({"user": user}), 200
+    return jsonify({"error": error}), 500
+
+@app.route('/gyms/<username>',methods=['GET'])
+def get_gym_by_username(username):
+    """
+    Get specific gym endpoint.
+    
+    Returns:
+        200: JSON with gym
+        500: JSON with error if gym fetch had an error
+    """
+    gym, ok, error = get_gym_by_username_controller(username)
+
+    if ok:
+        return jsonify({"gym": gym}), 200
     return jsonify({"error": error}), 500
 
 @app.route('/users/me',methods=['GET'])
@@ -685,10 +701,10 @@ def loginGym():
         return jsonify({"error": "Username or email is required"}), 400
     if not password:
         return jsonify({"error": "Password is required"}), 400
-    _, ok, error = login_gym(username,email,password)
+    data, ok, error = login_gym(username,email,password)
 
     if ok:
-        return jsonify({"message": f"Gym logged in."}), 201
+        return jsonify({"data": data}), 201
     return jsonify({"error": error}), 500
 
 @app.route('/update-gym',methods=['PUT'])

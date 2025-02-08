@@ -24,7 +24,6 @@ def login_gym(username,email,password,driver = None):
     
     data = {
         "token": generate_token(gym["username"], gym["email"]),
-        "username": gym["username"],
         "role": "gym" 
     }
 
@@ -75,3 +74,10 @@ def get_logged_gym_controller(driver=None):
         return gym, True, None
     return None, False, "Gym not found."
 
+@use_db_connection
+def get_gym_by_username_controller(username, driver=None):
+    gym = get_gym_by_username(driver, username)
+    if gym:
+        gym.pop("password", None)
+        return gym, True, None
+    return None, False, "Gym not found."

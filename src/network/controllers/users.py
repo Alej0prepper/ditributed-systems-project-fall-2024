@@ -46,7 +46,6 @@ def login_user(password, username=None, email=None, driver=None):
     
     data = {
         "token": generate_token(user["username"], user["email"]),
-        "username": user["username"], 
         "role": "user" 
     }
 
@@ -77,8 +76,8 @@ def delete_user_account(driver=None):
 
 @use_db_connection
 @needs_authentication
-def update_user_account(name, email, password, image_url, wheight, styles, levels_by_style, birth_date, driver=None):
-    return update_user(driver, name, session["username"], email, hash_password(password), image_url, wheight, styles, levels_by_style, birth_date)
+def update_user_account(name, email, password, image_url, weight, styles, levels_by_style, birth_date, driver=None):
+    return update_user(driver, name, session["username"], email, hash_password(password), image_url, weight, styles, levels_by_style, birth_date)
 
 @use_db_connection
 def get_users_by_search_term(query, driver=None):
@@ -90,7 +89,11 @@ def get_all_users_controller(query, driver=None):
 
 @use_db_connection
 def get_user_by_username_controller(username, driver=None):
-    return get_user_by_username_service(driver, username)
+    user = get_user_by_username_service(driver, username)
+    if user:
+        user.pop("password", None)
+        return user, True, None
+    return None, False, "User not found."
 
 @use_db_connection
 @needs_authentication
