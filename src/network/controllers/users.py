@@ -15,8 +15,8 @@ import ast
 
 
 @use_db_connection
-def register_user(name, username, email, image_url, password, wheigth, styles, levels_by_style, birth_date, gyms_ids, driver=None):
-    user_id, ok, error = add_user(driver, name, username, email, image_url, hash_password(password), wheigth, styles, levels_by_style, birth_date)
+def register_user(name, username, email, image_url, password, weight, styles, levels_by_style, birth_date, gyms_ids, driver=None):
+    user_id, ok, error = add_user(driver, name, username, email, image_url, hash_password(password), weight, styles, levels_by_style, birth_date)
     if ok:
         login_user(password, email=email)
         if gyms_ids:
@@ -61,7 +61,7 @@ def verify_password(plain_password: str, hashed_password: bytes) -> bool:
 
 @use_db_connection
 @needs_authentication
-def follow_user(followed_username, driver=None):
+def follow_account(followed_username, driver=None):
     return create_follow_relation(driver, session["username"], followed_username)
 
 @use_db_connection

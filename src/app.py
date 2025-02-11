@@ -5,7 +5,7 @@ from flask import Flask, request, jsonify, session, send_from_directory
 from network.controllers.users import delete_user_account, get_all_users_controller, get_users_by_search_term, login_user, register_user
 from network.controllers.posts import create_post, repost_existing_post, quote_existing_post, delete_post
 from flask_cors import CORS
-from network.controllers.users import follow_user
+from network.controllers.users import follow_account
 from network.controllers.users import unfollow_user
 from network.controllers.comments import create_comment_answer, create_post_comment
 from network.controllers.reactions import react_to_a_comment, react_to_a_post
@@ -51,7 +51,7 @@ def register():
     
     Optional fields:
     - name
-    - wheigth 
+    - weigth 
     - styles
     - levels_by_style
     - birth_date
@@ -70,7 +70,7 @@ def register():
     name = data.get("name")
     username = data.get("username")
     password = data.get("password")
-    wheigth = data.get("wheigth")
+    weight = data.get("weight")
     styles = data.get("styles")
     levels_by_style = data.get("levels_by_style")
     gyms_ids = data.get("gyms_ids")
@@ -92,7 +92,7 @@ def register():
     if not email and not username:
         return jsonify({"message": "Either email or username is required."}), 400
 
-    user_id, error = register_user(name, username, email, image_url, password, wheigth, styles, levels_by_style, birth_date, gyms_ids)
+    user_id, error = register_user(name, username, email, image_url, password, weight, styles, levels_by_style, birth_date, gyms_ids)
     if error == None:
         return jsonify({"message": f"User registered successfully. ID: {user_id}"}), 201
     return jsonify({"Error": f"{error}"}), 500
@@ -286,25 +286,36 @@ def post():
     
     Accepts POST request with form data containing post content.
     Required fields (at least one must be present):
-    - media: Media content for the post
-    - caption: Text caption for the post
+    - media: One or more media files for the post
+    - caption: Text caption for the post (optional)
 
     Returns:
         201: JSON with success message and post ID if creation successful
         500: JSON with error message if creation fails or required fields missing
     """
     data = request.form
-    media = data.get("media")
-    caption = data.get("caption")
+    caption = data.get("caption", "")
 
-    if not media and not caption:
-        return jsonify({"message": f"Media or caption are required."}), 500
-    
-    response, ok, error = create_post(data["media"], data["caption"])
+    media_files = request.files.getlist("media")  # Retrieve multiple media files
+    media_urls = []
+
+    if media_files:
+        for media_file in media_files:
+            if media_file and allowed_file(media_file.filename):
+                filename = secure_filename(media_file.filename)
+                image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                media_file.save(image_path)
+                media_urls.append('uploads/' + filename)
+
+    if not media_files and not caption:
+        return jsonify({"message": "At least one media file or a caption is required."}), 500
+
+    response, ok, error = create_post(media_urls, caption)  # Pass media_urls as a list
     if ok:
         return jsonify({"message": f"Post created successfully. ID: {response}"}), 201
     else:
-        return jsonify({"error": error})
+        return jsonify({"error": error}), 500
+    
 
 # Endpoint to repost an existing post
 @app.route('/repost', methods=['POST'])
@@ -398,14 +409,16 @@ def follow():
     - followed: Username of the user to follow
 
     Returns:
-        200: JSON with success message if follow successful
+        200: JSON with success message if follow successfull
         500: JSON with error message if follow fails or username missing
     """
     data = request.form
     followed_username = data.get("followed")
+
     if not followed_username:
         return jsonify({"error": "Followed username is required"}), 500
-    _, ok, error = follow_user(followed_username)
+    _, ok, error = follow_account(followed_username)
+    
     if ok:
         return jsonify({"message": f"Now following user {followed_username}"}), 200
     return jsonify({"error": error}), 500

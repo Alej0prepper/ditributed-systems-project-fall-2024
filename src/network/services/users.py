@@ -1,6 +1,6 @@
 from datetime import datetime
 
-def add_user(driver, name, username, email, image_url, password,wheigth,styles,levels_by_style, birth_date):
+def add_user(driver, name, username, email, image_url, password,weight,styles,levels_by_style, birth_date):
     existing_user = driver.execute_query(
         "MATCH (u:User {username: $username}) RETURN u", {"username": username}
     ).records
@@ -8,9 +8,9 @@ def add_user(driver, name, username, email, image_url, password,wheigth,styles,l
     if len(existing_user) == 0:
         driver.execute_query(
             """
-                CREATE (u:User {name: $name, email: $email, image: $image,  username: $username, password: $password, wheigth: $wheigth, styles: $styles, levels_by_style: $levels_by_style, birth_date: $birth_date})
+                CREATE (u:User {name: $name, email: $email, image: $image,  username: $username, password: $password, weight: $weight, styles: $styles, levels_by_style: $levels_by_style, birth_date: $birth_date})
             """,
-            {"name": name, "email": email, "image": image_url, "username": username, "password": password, "wheigth": wheigth, "styles": styles, "levels_by_style": levels_by_style, "birth_date": birth_date},
+            {"name": name, "email": email, "image": image_url, "username": username, "password": password, "weight": weight, "styles": styles, "levels_by_style": levels_by_style, "birth_date": birth_date},
         )
         return driver.execute_query(
         "MATCH (u:User {username: $username}) RETURN id(u) as user_id", {"username": username}
@@ -36,60 +36,84 @@ def get_user_by_username_service(driver, username):
     )
     return user.records[0]["User"]._properties if len(user.records)!=0 else None
 
-def create_follow_relation(driver, user_1, user_2):
-    existing_user_1 = driver.execute_query(
-        "MATCH (u:User {username: $user_1}) RETURN u LIMIT 1", {"user_1": user_1}
+def create_follow_relation(driver, entity_1, entity_2):
+    existing_entity_1 = driver.execute_query(
+        """
+        MATCH (e) 
+        WHERE (e:User OR e:Gym) AND e.username = $entity_1 
+        RETURN e LIMIT 1
+        """,
+        {"entity_1": entity_1}
     ).records
 
-    existing_user_2 = driver.execute_query(
-        "MATCH (u:User {username: $user_2}) RETURN u LIMIT 1", {"user_2": user_2}
+    existing_entity_2 = driver.execute_query(
+        """
+        MATCH (e) 
+        WHERE (e:User OR e:Gym) AND e.username = $entity_2 
+        RETURN e LIMIT 1
+        """,
+        {"entity_2": entity_2}
     ).records
 
-    if existing_user_1 and existing_user_2:
+    if existing_entity_1 and existing_entity_2:
         now = datetime.now()
         driver.execute_query(
             """
-            MERGE (u1:User {username: $user_1})
-            MERGE (u2:User {username: $user_2})
-            CREATE (u1) - [:Follows {start_datetime: $now}] -> (u2)
-            """, 
-        {"user_1": user_1, "user_2": user_2, "now": now})
+            MATCH (e1) WHERE (e1:User OR e1:Gym) AND e1.username = $entity_1
+            MATCH (e2) WHERE (e2:User OR e2:Gym) AND e2.username = $entity_2
+            MERGE (e1)-[:Follows {start_datetime: $now}]->(e2)
+            """,
+            {"entity_1": entity_1, "entity_2": entity_2, "now": now}
+        )
         return None, True, None
     else:
-        return None, False, "User not found."
+        return None, False, "Entity not found."
+    
 
-def remove_follow_relation(driver, user_1, user_2):
-    existing_user_1 = driver.execute_query(
-        "MATCH (u:User {username: $user_1}) RETURN u LIMIT 1", {"user_1": user_1}
+def remove_follow_relation(driver, entity_1, entity_2):
+    existing_entity_1 = driver.execute_query(
+        """
+        MATCH (e) 
+        WHERE (e:User OR e:Gym) AND e.username = $entity_1 
+        RETURN e LIMIT 1
+        """,
+        {"entity_1": entity_1}
     ).records
 
-    existing_user_2 = driver.execute_query(
-        "MATCH (u:User {username: $user_2}) RETURN u LIMIT 1", {"user_2": user_2}
+    existing_entity_2 = driver.execute_query(
+        """
+        MATCH (e) 
+        WHERE (e:User OR e:Gym) AND e.username = $entity_2 
+        RETURN e LIMIT 1
+        """,
+        {"entity_2": entity_2}
     ).records
 
-    if existing_user_1 and existing_user_2:
-        now = datetime.now()
+    if existing_entity_1 and existing_entity_2:
         relation_exists = len(driver.execute_query(
             """
-            MATCH (u1:User {username: $user_1})
-            MATCH (u2:User {username: $user_2})
-            MATCH (u1) - [f:Follows] -> (u2)
+            MATCH (e1)-[f:Follows]->(e2)
+            WHERE (e1:User OR e1:Gym) AND e1.username = $entity_1
+              AND (e2:User OR e2:Gym) AND e2.username = $entity_2
             RETURN f
-            """, 
-        {"user_1": user_1, "user_2": user_2, "now": now}).records) > 0
+            """,
+            {"entity_1": entity_1, "entity_2": entity_2}
+        ).records) > 0
+
         if relation_exists:
             driver.execute_query(
                 """
-                MATCH (u1:User {username: $user_1})
-                MATCH (u2:User {username: $user_2})
-                MATCH (u1) - [f:Follows] -> (u2)
+                MATCH (e1)-[f:Follows]->(e2)
+                WHERE (e1:User OR e1:Gym) AND e1.username = $entity_1
+                  AND (e2:User OR e2:Gym) AND e2.username = $entity_2
                 DELETE f
-                """, 
-            {"user_1": user_1, "user_2": user_2, "now": now})
+                """,
+                {"entity_1": entity_1, "entity_2": entity_2}
+            )
             return None, True, None
-        return None, False, "Not following user."
+        return None, False, "Not following entity."
     else:
-        return None, False, "User not found."
+        return None, False, "Entity not found."
 
 def update_user(driver, name, username, email, password, image_url, weight,styles,levels_by_style, birth_date):
     existing_user = driver.execute_query(
