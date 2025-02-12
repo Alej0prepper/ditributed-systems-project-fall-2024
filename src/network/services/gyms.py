@@ -25,10 +25,8 @@ def create_gym_node(driver, username):
         2. If not found, creates a new gym node with the provided username
     """
         
-    existing_gym = driver.execute_query(
-        "MATCH (g:gym {username: $username}) RETURN id(g) AS gym_id", {"username": username}
-    ).records[0]
-    if existing_gym == 0:
+    existing_gym = driver.execute_query("MATCH (g:gym {username: $username}) RETURN id(g) AS gym_id",{"username": username}).records[0]
+    if len(existing_gym) == 0:
             
         gym = driver.execute_query(
             '''
