@@ -1,15 +1,78 @@
 from datetime import datetime 
 from database.connection import driver
 def create_gym_node(driver, username):
-    gym = driver.execute_query(
-        '''
-        CREATE (g:Gym {username: $username})
-        RETURN id(g) AS gym_id
-    ''', {'username': username}).records[0]
+    """
+    Creates a new Gym node in the Neo4j database if it doesn't exist, otherwise returns the existing node's ID.
 
-    return gym['gym_id']
+    Args:
+        driver: neo4j.Driver
+            The Neo4j database driver connection
+        username (str):
+            The username to identify the gym node
 
+    Returns:
+        int: The ID of the newly created gym node
+        OR
+        tuple: (existing_gym_id, False, error_message) if the gym already exists
+
+    Raises:
+        IndexError: If no records are returned from the initial query
+        neo4j.exceptions.Neo4jError: If database operations fail
+
+    Note:
+        This function performs two separate Cypher queries:
+        1. First checks if a gym with the given username exists
+        2. If not found, creates a new gym node with the provided username
+    """
+        
+    existing_gym = driver.execute_query(
+        "MATCH (g:gym {username: $username}) RETURN id(g) AS gym_id", {"username": username}
+    ).records[0]
+    if existing_gym == 0:
+            
+        gym = driver.execute_query(
+            '''
+            CREATE (g:Gym {username: $username})
+            RETURN id(g) AS gym_id
+        ''', {'username': username}).records[0]
+
+        return gym['gym_id']
+    else:
+        return existing_gym['gym_id'], False, f"Gym with username:{username} already exists."
+    
 def update_gym(driver, name , username, email, description, location,image_url,styles,hashed_password, phone_number=None, ig_profile = None):
+    """
+    Updates an existing gym's details in the Neo4j database.
+
+    Args:
+        driver (neo4j.Driver): The Neo4j database driver connection
+        name (str): The updated name of the gym
+        username (str): The unique identifier for the gym
+        email (str): The gym's contact email
+        description (str): Detailed description of the gym
+        location (dict): Dictionary containing latitude and longitude coordinates
+        image_url (str): URL pointing to the gym's image
+        styles (list): List of martial arts/styles offered by the gym
+        hashed_password (str): Hashed password for security
+        phone_number (str, optional): Contact phone number. Defaults to empty string.
+        ig_profile (str, optional): Instagram profile link. Defaults to empty string.
+
+    Returns:
+        tuple: Contains three elements:
+            - Updated gym record (or username if update fails)
+            - Boolean indicating success/failure
+            - Error message (None if successful)
+
+    Raises:
+        neo4j.exceptions.Neo4jError: If database operations fail
+        KeyError: If location dictionary doesn't contain 'lat' or 'lng'
+
+    Note:
+        This function performs a single Cypher query that:
+        1. Locates the gym node by username
+        2. Updates multiple properties simultaneously
+        3. Returns the updated node record
+    """
 
     phone = phone_number if(phone_number) else ""
     ig = ig_profile if(ig_profile) else ""
@@ -46,7 +109,7 @@ def update_gym(driver, name , username, email, description, location,image_url,s
 
     result = driver.execute_query(query,parameters)
     if(result):
-        return username,True,None
+        return result,True,None
     else:
         return username,False,f"Gym with username {username} not found or update failed"
 
