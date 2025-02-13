@@ -12,9 +12,12 @@ def add_user(driver, name, username, email, image_url, password,weight,styles,le
             """,
             {"name": name, "email": email, "image": image_url, "username": username, "password": password, "weight": weight, "styles": styles, "levels_by_style": levels_by_style, "birth_date": birth_date},
         )
-        return driver.execute_query(
-        "MATCH (u:User {username: $username}) RETURN id(u) as user_id", {"username": username}
-        ).records[0]["user_id"], True, None
+        try: return driver.execute_query(
+        "MATCH (u:User {username: $username}) RETURN u as user", {'username': username}
+        ).records[0]['user'],True,None
+        except: return None,False,Exception("Failed to create user")
+
+        
     else:
         return None, False, Exception("Username already exists.")
 

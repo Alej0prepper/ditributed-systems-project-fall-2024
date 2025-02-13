@@ -1,42 +1,44 @@
 from datetime import datetime 
 from database.connection import driver
-def create_gym_node(driver, username):
+def create_gym_node(driver, username: str):
     """
     Creates a new Gym node in the Neo4j database if it doesn't exist, otherwise returns the existing node's ID.
 
     Args:
-        driver: neo4j.Driver
-            The Neo4j database driver connection
-        username (str):
-            The username to identify the gym node
+        driver (neo4j.Driver): The Neo4j database driver connection
+        username (str): The username to identify the gym node
 
     Returns:
         int: The ID of the newly created gym node
         OR
         tuple: (existing_gym_id, False, error_message) if the gym already exists
-
-    Raises:
-        IndexError: If no records are returned from the initial query
-        neo4j.exceptions.Neo4jError: If database operations fail
-
-    Note:
-        This function performs two separate Cypher queries:
-        1. First checks if a gym with the given username exists
-        2. If not found, creates a new gym node with the provided username
     """
-        
-    existing_gym = driver.execute_query("MATCH (g:gym {username: $username}) RETURN id(g) AS gym_id",{"username": username}).records[0]
-    if len(existing_gym) == 0:
-            
-        gym = driver.execute_query(
-            '''
-            CREATE (g:Gym {username: $username})
-            RETURN id(g) AS gym_id
-        ''', {'username': username}).records[0]
+    
+    # Check if the gym already exists
+    result = driver.execute_query(
+        "MATCH (g:Gym {username: $username}) RETURN id(g) AS gym_id",
+        {"username": username}
+    )
 
-        return gym['gym_id']
-    else:
-        return existing_gym['gym_id'], False, f"Gym with username:{username} already exists."
+    records = result.records
+    print(records)
+    if records != []:  # If a gym node exists, return its ID
+        print ('im entering')    
+        existing_gym_id = records[0]
+        print(existing_gym_id)
+        return existing_gym_id, False, f"Gym with username '{username}' already exists."
+
+    # Create the gym node if it doesn't exist
+    result = driver.execute_query(
+        '''
+        CREATE (g:Gym {username: $username})
+        RETURN id(g) AS gym_id
+        ''',
+        {"username": username}
+    )
+
+    gym_id = result.records[0]['gym_id']
+    return gym_id,False,None 
     
 def update_gym(driver, name , username, email, description, location,image_url,styles,hashed_password, phone_number=None, ig_profile = None):
     """
@@ -112,8 +114,9 @@ def update_gym(driver, name , username, email, description, location,image_url,s
         return username,False,f"Gym with username {username} not found or update failed"
 
 def add_gym(driver,name,username, email,description,image_url,location,styles,hashed_password, phone_number=None, ig_profile = None):
-        create_gym_node(driver, username)
-
+        gym_id,ok,error = create_gym_node(driver, username)
+        if not ok:
+            return gym_id,ok,error
         return update_gym(
             driver,
             name,
@@ -121,7 +124,7 @@ def add_gym(driver,name,username, email,description,image_url,location,styles,ha
             email,
             description,
             location,
-            image_url,
+            image_url if image_url else None,
             styles,
             hashed_password,
             phone_number if phone_number else None,
