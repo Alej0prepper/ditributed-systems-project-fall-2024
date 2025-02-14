@@ -1,5 +1,8 @@
 import secrets
 import os
+import threading
+import chord.node as chord
+from chord.protocol_logic import check_predecessor, stabilize
 from werkzeug.utils import secure_filename
 from flask import Flask, request, jsonify, session, send_from_directory
 from network.controllers.users import delete_user_account, get_all_users_controller, get_users_by_search_term, login_user, register_user
@@ -19,7 +22,11 @@ from network.controllers.users import get_user_by_username_controller
 from network.controllers.users import get_logged_user_controller
 from network.controllers.gyms import get_logged_gym_controller
 from network.controllers.gyms import get_gym_by_username_controller
+from chord.routes import chord_routes
+
 app = Flask(__name__)
+app.register_blueprint(chord_routes)
+
 CORS(app)
 app.secret_key = secrets.token_hex(16) 
 
@@ -899,4 +906,16 @@ def remove_training_styles():
     
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000, debug=True)
+
+    IP = os.getenv("NODE_IP", "127.0.0.1")
+    PORT = int(os.getenv("FLASK_RUN_PORT", "5000"))
+
+    chord.current_node = chord.ChordNode(ip=IP, port=PORT)
+    threading.Thread(target=stabilize, daemon=True).start()
+    threading.Thread(target=check_predecessor, daemon=True).start()
+
+    app.run(
+        host="0.0.0.0", 
+        port=PORT, 
+        debug=True
+    )
