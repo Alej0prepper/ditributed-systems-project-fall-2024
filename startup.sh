@@ -74,7 +74,7 @@ eval sudo docker run -it \
     --name "$APP_CONTAINER" \
     --cap-add NET_ADMIN \
     --network "$NETWORK_NAME" \
-    -p 5000:5000 \
+    -p $FLASK_RUN_PORT:5000 \
     --env-file "$ENV_FILE" \
     -v "$APP_VOLUME" \
     "$APP_IMAGE"
