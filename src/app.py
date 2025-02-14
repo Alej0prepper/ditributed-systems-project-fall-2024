@@ -23,12 +23,15 @@ from network.controllers.users import get_logged_user_controller
 from network.controllers.gyms import get_logged_gym_controller
 from network.controllers.gyms import get_gym_by_username_controller
 from chord.routes import chord_routes
+from network.middlewares.route_to_responsible import route_to_responsible
 
 app = Flask(__name__)
+
 app.register_blueprint(chord_routes)
 
-CORS(app)
 app.secret_key = secrets.token_hex(16) 
+
+CORS(app)
 
 UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'svg'}
@@ -41,12 +44,13 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/uploads/<filename>')
+@route_to_responsible
 def uploaded_file(filename):
     path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-# Endpoint to register a new user
 @app.route('/register', methods=['POST'])
+@route_to_responsible
 def register():
     """
     Register a new user endpoint.
@@ -104,8 +108,8 @@ def register():
         return jsonify({"message": f"User registered successfully. ID: {user_id}"}), 201
     return jsonify({"Error": f"{error}"}), 500
 
-# Endpoint to update logged in user info
 @app.route('/update-user', methods=['PUT'])
+@route_to_responsible
 def updateUser():
     """
     Update logged in user information endpoint.
@@ -152,8 +156,8 @@ def updateUser():
         return jsonify({"message": f"User updated successfully."}), 201
     return jsonify({"Error": f"{error}"}), 500
 
-#delete user account
 @app.route('/delete-user', methods=['DELETE'])
+@route_to_responsible
 def delete_user():
     """
     Delete logged in user account endpoint.
@@ -170,8 +174,8 @@ def delete_user():
         return jsonify({"message": "User deleted successfully."}), 200
     return jsonify({"error": error}), 500
 
-# Endpoint to log in a user
 @app.route('/login', methods=['POST'])
+@route_to_responsible
 def login():
     """
     User login endpoint.
@@ -194,8 +198,8 @@ def login():
     else:
         return jsonify({"error": error}), 401
 
-# Endpoint to log out a user
 @app.route('/logout', methods=['POST'])
+@route_to_responsible
 def logout():
     """
     User logout endpoint.
@@ -212,6 +216,7 @@ def logout():
     return jsonify({"message": "Logged out."}), 201
 
 @app.route('/users',methods=['GET'])
+@route_to_responsible
 def get_all_users():
     """
     Get all users endpoint.
@@ -227,6 +232,7 @@ def get_all_users():
     return jsonify({"error": error}), 500
 
 @app.route('/users/<username>',methods=['GET'])
+@route_to_responsible
 def get_user_by_username(username):
     """
     Get specific user endpoint.
@@ -242,6 +248,7 @@ def get_user_by_username(username):
     return jsonify({"error": error}), 500
 
 @app.route('/gyms/<username>',methods=['GET'])
+@route_to_responsible
 def get_gym_by_username(username):
     """
     Get specific gym endpoint.
@@ -257,6 +264,7 @@ def get_gym_by_username(username):
     return jsonify({"error": error}), 500
 
 @app.route('/users/me',methods=['GET'])
+@route_to_responsible
 def get_my_user():
     """
     Get specific user endpoint.
@@ -271,6 +279,7 @@ def get_my_user():
     return jsonify({"error": error}), 500
 
 @app.route('/gyms/me',methods=['GET'])
+@route_to_responsible
 def get_my_gym():
     """
     Get specific user endpoint.
@@ -285,8 +294,8 @@ def get_my_gym():
         return jsonify({"gym": gym}), 200
     return jsonify({"error": error}), 500
 
-# Endpoint to create a new post
 @app.route('/post', methods=['POST'])
+@route_to_responsible
 def post():
     """
     Create a new post endpoint.
@@ -323,9 +332,8 @@ def post():
     else:
         return jsonify({"error": error}), 500
     
-
-# Endpoint to repost an existing post
 @app.route('/repost', methods=['POST'])
+@route_to_responsible
 def repost():
     """
     Repost an existing post endpoint.
@@ -349,8 +357,8 @@ def repost():
     else:
         return jsonify({"error": error})
 
-# Endpoint to quote an existing post
 @app.route('/quote', methods=['POST'])
+@route_to_responsible
 def quote():
     """
     Quote an existing post endpoint.
@@ -381,8 +389,8 @@ def quote():
     else:
         return jsonify({"error": error})
 
-# Endpoint to delete a post
 @app.route('/delete-post', methods=['DELETE'])
+@route_to_responsible
 def remove_post():
     """
     Delete a post endpoint.
@@ -405,8 +413,8 @@ def remove_post():
         return jsonify({"error": error}), 500 
     return jsonify({"message": "Post deleted successfully"}), 200
 
-# Endpoint to follow a user
 @app.route('/follow', methods=['POST'])
+@route_to_responsible
 def follow():
     """
     Follow a user endpoint.
@@ -430,8 +438,8 @@ def follow():
         return jsonify({"message": f"Now following user {followed_username}"}), 200
     return jsonify({"error": error}), 500
 
-# Endpoint to unfollow a user
 @app.route('/unfollow', methods=['POST'])
+@route_to_responsible
 def unfollow():
     """
     Unfollow a user endpoint.
@@ -454,6 +462,7 @@ def unfollow():
     return jsonify({"error": error}), 500
 
 @app.route('/find-users', methods=['GET'])
+@route_to_responsible
 def get_users():
     """
     Find users endpoint.
@@ -476,6 +485,7 @@ def get_users():
     return jsonify({"error": error}), 500
 
 @app.route('/find-gyms', methods=['GET'])
+@route_to_responsible
 def get_gyms():
     """
     Find gyms endpoint.
@@ -497,8 +507,8 @@ def get_gyms():
         return jsonify({"gyms": gyms}), 200
     return jsonify({"error": error}), 500
 
-# Endpoint to react to a post
 @app.route('/react-post', methods=['POST'])
+@route_to_responsible
 def react_post():
     """
     React to a post endpoint.
@@ -524,8 +534,8 @@ def react_post():
         return jsonify({"message": "Reaction sent"}), 201
     return jsonify({"error": error}), 500
 
-# Endpoint to react to a comment
 @app.route('/react-comment', methods=['POST'])
+@route_to_responsible
 def react_comment():
     """
     React to a comment endpoint.
@@ -549,8 +559,8 @@ def react_comment():
         return jsonify({"message": "Reaction sent"}), 201
     return jsonify({"error": error}), 500
 
-# Endpoint to comment a post
 @app.route('/comment-post', methods=['POST'])
+@route_to_responsible
 def comment():
     """
     Create a comment on a post endpoint.
@@ -580,8 +590,8 @@ def comment():
         return jsonify({"message": f"Comment sent. ID: {comment_id}"}), 201
     return jsonify({"error": error}), 500
 
-# Endpoint to answer a comment
 @app.route('/answer-comment', methods=['POST'])
+@route_to_responsible
 def answer():
     """
     Create a reply to an existing comment endpoint.
@@ -611,8 +621,8 @@ def answer():
         return jsonify({"message": f"Comment sent. ID: {new_comment_id}"}), 201
     return jsonify({"error": error}), 500
 
-# Endpoint to create a gym
 @app.route('/create-gym',methods=['POST'])
+@route_to_responsible
 def create_gym():
     """
     Create a new gym endpoint.
@@ -677,6 +687,7 @@ def create_gym():
     return jsonify({"error": error}), 500
 
 @app.route('/gyms',methods=['GET'])
+@route_to_responsible
 def get_all_gyms():
     """
     Get all gyms endpoint.
@@ -693,9 +704,8 @@ def get_all_gyms():
         return jsonify({"gyms": gyms}), 200
     return jsonify({"error": error}), 500
 
-
-# Endpoint to log in as gym
 @app.route('/gym-login',methods=['POST'])
+@route_to_responsible
 def loginGym():
     """
     Log in a gym account endpoint.
@@ -728,6 +738,7 @@ def loginGym():
     return jsonify({"error": error}), 500
 
 @app.route('/update-gym',methods=['PUT'])
+@route_to_responsible
 def update_gym():
     """
     Update a gym account endpoint.
@@ -788,6 +799,7 @@ def update_gym():
     return jsonify({"error": error}), 500
 
 @app.route('/get-gym-info',methods=['POST'])
+@route_to_responsible
 def get_gym_info():
     """
     Get information about a specific gym.
@@ -812,6 +824,7 @@ def get_gym_info():
     return jsonify({"error": error}), 500
 
 @app.route('/delete-gym',  methods=['DELETE'])  
+@route_to_responsible
 def delete_gym():
     """
     Delete logged in gym account endpoint.
@@ -830,6 +843,7 @@ def delete_gym():
     return jsonify({"error": error}), 500
 
 @app.route('/trains-in', methods=['POST'])
+@route_to_responsible
 def trains_in_endpoint():
     """
     Create a trains-in relationship between logged in user and a gym.
@@ -855,6 +869,7 @@ def trains_in_endpoint():
     return jsonify({"error": error}), 500
 
 @app.route('/add-training-styles', methods=['POST'])
+@route_to_responsible
 def add_training_styles():
     """
     Add training styles to an existing trains-in relationship.
@@ -880,6 +895,7 @@ def add_training_styles():
     return jsonify({"error": error}), 500
 
 @app.route('/remove-training-styles', methods=['POST'])
+@route_to_responsible
 def remove_training_styles():
     """
     Remove training styles from an existing trains-in relationship.
@@ -907,13 +923,13 @@ def remove_training_styles():
 
 if __name__ == '__main__':
 
-    IP = os.getenv("NODE_IP", "127.0.0.1")
+    IP = os.getenv("NODE_IP", "127.0.0.1")  
     PORT = int(os.getenv("FLASK_RUN_PORT", "5000"))
 
     chord.current_node = chord.ChordNode(ip=IP, port=PORT)
     threading.Thread(target=stabilize, daemon=True).start()
     threading.Thread(target=check_predecessor, daemon=True).start()
-
+    
     app.run(
         host="0.0.0.0", 
         port=PORT, 
