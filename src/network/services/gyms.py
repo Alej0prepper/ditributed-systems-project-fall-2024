@@ -1,15 +1,78 @@
 from datetime import datetime 
 from database.connection import driver
-def create_gym_node(driver, username):
-    gym = driver.execute_query(
+def create_gym_node(driver, username: str):
+    """
+    Creates a new Gym node in the Neo4j database if it doesn't exist, otherwise returns the existing node's ID.
+
+    Args:
+        driver (neo4j.Driver): The Neo4j database driver connection
+        username (str): The username to identify the gym node
+
+    Returns:
+        int: The ID of the newly created gym node
+        OR
+        tuple: (existing_gym_id, False, error_message) if the gym already exists
+    """
+    
+    # Check if the gym already exists
+    result = driver.execute_query(
+        "MATCH (g:Gym {username: $username}) RETURN id(g) AS gym_id",
+        {"username": username}
+    )
+
+    records = result.records
+    print(records)
+    if records != []:  # If a gym node exists, return its ID
+        print ('im entering')    
+        existing_gym_id = records[0]
+        print(existing_gym_id)
+        return existing_gym_id, False, f"Gym with username '{username}' already exists."
+
+    # Create the gym node if it doesn't exist
+    result = driver.execute_query(
         '''
         CREATE (g:Gym {username: $username})
         RETURN id(g) AS gym_id
-    ''', {'username': username}).records[0]
+        ''',
+        {"username": username}
+    )
 
-    return gym['gym_id']
-
+    gym_id = result.records[0]['gym_id']
+    return gym_id,False,None 
+    
 def update_gym(driver, name , username, email, description, location,image_url,styles,hashed_password, phone_number=None, ig_profile = None):
+    """
+    Updates an existing gym's details in the Neo4j database.
+
+    Args:
+        driver (neo4j.Driver): The Neo4j database driver connection
+        name (str): The updated name of the gym
+        username (str): The unique identifier for the gym
+        email (str): The gym's contact email
+        description (str): Detailed description of the gym
+        location (dict): Dictionary containing latitude and longitude coordinates
+        image_url (str): URL pointing to the gym's image
+        styles (list): List of martial arts/styles offered by the gym
+        hashed_password (str): Hashed password for security
+        phone_number (str, optional): Contact phone number. Defaults to empty string.
+        ig_profile (str, optional): Instagram profile link. Defaults to empty string.
+
+    Returns:
+        tuple: Contains three elements:
+            - Updated gym record (or username if update fails)
+            - Boolean indicating success/failure
+            - Error message (None if successful)
+
+    Raises:
+        neo4j.exceptions.Neo4jError: If database operations fail
+        KeyError: If location dictionary doesn't contain 'lat' or 'lng'
+
+    Note:
+        This function performs a single Cypher query that:
+        1. Locates the gym node by username
+        2. Updates multiple properties simultaneously
+        3. Returns the updated node record
+    """
 
     phone = phone_number if(phone_number) else ""
     ig = ig_profile if(ig_profile) else ""
@@ -46,13 +109,14 @@ def update_gym(driver, name , username, email, description, location,image_url,s
 
     result = driver.execute_query(query,parameters)
     if(result):
-        return username,True,None
+        return result,True,None
     else:
         return username,False,f"Gym with username {username} not found or update failed"
 
 def add_gym(driver,name,username, email,description,image_url,location,styles,hashed_password, phone_number=None, ig_profile = None):
-        create_gym_node(driver, username)
-
+        gym_id,ok,error = create_gym_node(driver, username)
+        if not ok:
+            return gym_id,ok,error
         return update_gym(
             driver,
             name,
@@ -60,7 +124,7 @@ def add_gym(driver,name,username, email,description,image_url,location,styles,ha
             email,
             description,
             location,
-            image_url,
+            image_url if image_url else None,
             styles,
             hashed_password,
             phone_number if phone_number else None,

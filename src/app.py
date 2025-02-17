@@ -661,7 +661,7 @@ def create_gym():
     if not name or not username or not email or not location or not password or not styles:
         return jsonify({"error": "All fields (name, username, email, location, password and styles) are required"}), 400
     
-    print("image:"+profile_image.filename)
+    if profile_image: print("image:"+profile_image.filename)
     
     gym_id, ok, error = add_gym_controller(name,username,email,description,image_url,location,styles,password,phone_number,ig_profile)
 
