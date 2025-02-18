@@ -1,9 +1,8 @@
 import bcrypt
 from flask import session
-import json
 from network.controllers.trains_in import trains_in
 from network.middlewares.token import generate_token
-from network.services.users import add_user, get_all_users_service, get_user_by_email, get_user_by_username_service
+from network.services.users import add_user, get_all_users_service, get_user_by_email, get_user_by_id_service, get_user_by_username_service
 from network.middlewares.use_db_connection import use_db_connection
 from network.middlewares.auth import needs_authentication
 from network.services.users import create_follow_relation
@@ -15,10 +14,9 @@ import ast
 
 
 @use_db_connection
-def register_user(name, username, email, image_url, password, weight, styles, levels_by_style, birth_date, gyms_ids, driver=None):
-    user_id, ok, error = add_user(driver, name, username, email, image_url, hash_password(password), weight, styles, levels_by_style, birth_date)
+def register_user(_id, name, username, email, image_url, password, weight, styles, levels_by_style, birth_date, gyms_ids, driver=None):
+    user_id, ok, error = add_user(driver, _id, name, username, email, image_url, hash_password(password), weight, styles, levels_by_style, birth_date)
     if ok:
-        login_user(password, email=email)
         if gyms_ids:
             for gym_id in ast.literal_eval(gyms_ids):
                 trains_in([],gym_id)
@@ -38,14 +36,11 @@ def login_user(password, username=None, email=None, driver=None):
     if user is None: 
         return None, False, "User not found."
     
-    session["username"] = user["username"]
-    session["email"] = user["email"]
-
     if not verify_password(password, user["password"]):
         return None, False, "Wrong password"
     
     data = {
-        "token": generate_token(user["username"], user["email"]),
+        "token": generate_token(user["id"], user["username"], user["email"]),
         "role": "user" 
     }
 
@@ -79,9 +74,8 @@ def delete_user_account(driver=None):
 def update_user_account(name, email, password, image_url, weight, styles, levels_by_style, birth_date, driver=None):
     return update_user(driver, name, session["username"], email, hash_password(password), image_url, weight, styles, levels_by_style, birth_date)
 
-@use_db_connection
-def get_users_by_search_term(query, driver=None):
-    return get_users_by_search_term_service(driver, query)
+def get_users_by_search_term(query, users):
+    return get_users_by_search_term_service(users, query)
 
 @use_db_connection
 def get_all_users_controller(query, driver=None):
@@ -96,6 +90,14 @@ def get_user_by_username_controller(username, driver=None):
     return None, False, "User not found."
 
 @use_db_connection
+def get_user_by_id_controller(_id, driver=None):
+    user = get_user_by_id_service(driver, _id)
+    if user:
+        user.pop("password", None)
+        return user, True, None
+    return None, False, "User not found."
+
+@use_db_connection
 @needs_authentication
 def get_logged_user_controller(driver=None):
     user = get_user_by_username_service(driver, session["username"])
@@ -103,4 +105,3 @@ def get_logged_user_controller(driver=None):
         user.pop("password", None)
         return user, True, None
     return None, False, "User not found."
-

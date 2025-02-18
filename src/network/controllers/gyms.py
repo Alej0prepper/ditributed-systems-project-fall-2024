@@ -5,9 +5,10 @@ from network.middlewares.use_db_connection import use_db_connection
 from network.middlewares.auth import needs_authentication
 from network.services.gyms import add_gym, get_all_gyms_service, update_gym, get_gym_info, delete_gym, get_gym_by_email, get_gym_by_username
 from network.services.gyms import get_gyms_by_search_term_service
+from src.network.services.gyms import get_gym_by_id_service
 
 @use_db_connection
-def login_gym(username,email,password,driver = None):
+def login_gym(username, email, password, driver = None):
     if username:
         gym = get_gym_by_username(driver, username)
         
@@ -30,8 +31,8 @@ def login_gym(username,email,password,driver = None):
     return data, True, None
 
 @use_db_connection
-def add_gym_controller(name, username, email, description, image_url, location, styles, password,phone_number = None ,ig_profile = None,driver = None):
-    return add_gym(driver, name, username,email, description, image_url, location, styles, hash_password(password),phone_number,ig_profile)
+def add_gym_controller(name, username, email, description, image_url, location, styles, password,phone_number = None ,ig_profile = None,driver = None, id=None):
+    return add_gym(driver, id, name, username,email, description, image_url, location, styles, hash_password(password),phone_number,ig_profile)
 
 @use_db_connection
 @needs_authentication
@@ -39,9 +40,9 @@ def update_gym_controller(name, username, email, description,image_url, location
     return update_gym(driver, name,username,email, description,image_url, location,styles, hash_password(password),phone_number,ig_profile)
 
 @use_db_connection
-def get_gym_info_controller(gym_id,driver =None):
-    gym_id = int(gym_id)
-    return get_gym_info(driver,gym_id)   
+def get_gym_by_id_controller(id,driver=None):
+    id = int(id)
+    return get_gym_by_id_service(driver,id)   
 
 @use_db_connection
 @needs_authentication
@@ -58,8 +59,8 @@ def verify_password(plain_password: str, hashed_password: bytes) -> bool:
     return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password)
 
 @use_db_connection
-def get_gyms_by_search_term(query, driver=None):
-    return get_gyms_by_search_term_service(driver, query)
+def get_gyms_by_search_term(gyms, query):
+    return get_gyms_by_search_term_service(gyms, query)
 
 @use_db_connection
 def get_all_gyms_controller(driver=None):

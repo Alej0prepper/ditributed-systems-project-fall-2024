@@ -2,12 +2,13 @@ import secrets
 import os
 import threading
 import chord.node as chord
-from chord.protocol_logic import check_predecessor, stabilize
+import json
+import uuid
+from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from flask import Flask, request, jsonify, session, send_from_directory
 from network.controllers.users import delete_user_account, get_all_users_controller, get_users_by_search_term, login_user, register_user
 from network.controllers.posts import create_post, repost_existing_post, quote_existing_post, delete_post
-from flask_cors import CORS
 from network.controllers.users import follow_account
 from network.controllers.users import unfollow_user
 from network.controllers.comments import create_comment_answer, create_post_comment
@@ -17,13 +18,16 @@ from network.controllers.trains_in import trains_in, add_training_styles, remove
 from network.controllers.gyms import login_gym
 from network.controllers.users import update_user_account
 from network.controllers.gyms import get_gyms_by_search_term
-import json
 from network.controllers.users import get_user_by_username_controller
 from network.controllers.users import get_logged_user_controller
 from network.controllers.gyms import get_logged_gym_controller
 from network.controllers.gyms import get_gym_by_username_controller
 from chord.routes import chord_routes
-from network.middlewares.route_to_responsible import route_to_responsible
+from chord.protocol_logic import check_predecessor, stabilize
+from src.network.middlewares.route_to_responsible import route_to_responsible
+from src.network.middlewares.auth import needs_authentication
+from src.network.controllers.users import get_user_by_id_controller
+from src.network.controllers.gyms import get_gym_by_id_controller
 
 app = Flask(__name__)
 
@@ -43,15 +47,14 @@ def allowed_file(filename):
     """Check if the file extension is allowed."""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route('/uploads/<filename>')
-@route_to_responsible
+""" @app.route('/uploads/<filename>')
 def uploaded_file(filename):
-    path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+ """
 
 @app.route('/register', methods=['POST'])
 @route_to_responsible
-def register():
+def register(routing_key=str(uuid.uuid4())):
     """
     Register a new user endpoint.
     
@@ -103,14 +106,15 @@ def register():
     if not email and not username:
         return jsonify({"message": "Either email or username is required."}), 400
 
-    user_id, error = register_user(name, username, email, image_url, password, weight, styles, levels_by_style, birth_date, gyms_ids)
+    user_id, error = register_user(routing_key, name, username, email, image_url, password, weight, styles, levels_by_style, birth_date, gyms_ids)
     if error == None:
         return jsonify({"message": f"User registered successfully. ID: {user_id}"}), 201
     return jsonify({"Error": f"{error}"}), 500
 
-@app.route('/update-user', methods=['PUT'])
+@app.route('/update-user/<id>', methods=['PUT'])
+@needs_authentication
 @route_to_responsible
-def updateUser():
+def updateUser(id, routing_key=None):
     """
     Update logged in user information endpoint.
     
@@ -156,9 +160,10 @@ def updateUser():
         return jsonify({"message": f"User updated successfully."}), 201
     return jsonify({"Error": f"{error}"}), 500
 
-@app.route('/delete-user', methods=['DELETE'])
+@app.route('/delete-user<id>', methods=['DELETE'])
+@needs_authentication
 @route_to_responsible
-def delete_user():
+def delete_user(id, routing_key=None):
     """
     Delete logged in user account endpoint.
     
@@ -176,7 +181,7 @@ def delete_user():
 
 @app.route('/login', methods=['POST'])
 @route_to_responsible
-def login():
+def login(routing_key=None):
     """
     User login endpoint.
     
@@ -198,26 +203,9 @@ def login():
     else:
         return jsonify({"error": error}), 401
 
-@app.route('/logout', methods=['POST'])
-@route_to_responsible
-def logout():
-    """
-    User logout endpoint.
-    
-    Accepts POST request to log out the currently authenticated user.
-    Clears the username and email from the session.
-    No request body required.
-
-    Returns:
-        201: JSON with success message confirming logout
-    """
-    session["username"] = ""
-    session["email"] = ""
-    return jsonify({"message": "Logged out."}), 201
-
 @app.route('/users',methods=['GET'])
 @route_to_responsible
-def get_all_users():
+def get_all_users(routing_key="getAllUsers"):
     """
     Get all users endpoint.
     
@@ -231,9 +219,9 @@ def get_all_users():
         return jsonify({"users": users}), 200
     return jsonify({"error": error}), 500
 
-@app.route('/users/<username>',methods=['GET'])
+@app.route('/users/<id>',methods=['GET'])
 @route_to_responsible
-def get_user_by_username(username):
+def get_user_by_id(id, routing_key=None):
     """
     Get specific user endpoint.
     
@@ -241,15 +229,15 @@ def get_user_by_username(username):
         200: JSON with user
         500: JSON with error if user fetch had an error
     """
-    user, ok, error = get_user_by_username_controller(username)
+    user, ok, error = get_user_by_id_controller(id)
 
     if ok:
         return jsonify({"user": user}), 200
     return jsonify({"error": error}), 500
 
-@app.route('/gyms/<username>',methods=['GET'])
+@app.route('/gyms/<id>',methods=['GET'])
 @route_to_responsible
-def get_gym_by_username(username):
+def get_gym_by_id(id, routing_key=None):
     """
     Get specific gym endpoint.
     
@@ -257,38 +245,7 @@ def get_gym_by_username(username):
         200: JSON with gym
         500: JSON with error if gym fetch had an error
     """
-    gym, ok, error = get_gym_by_username_controller(username)
-
-    if ok:
-        return jsonify({"gym": gym}), 200
-    return jsonify({"error": error}), 500
-
-@app.route('/users/me',methods=['GET'])
-@route_to_responsible
-def get_my_user():
-    """
-    Get specific user endpoint.
-    
-    Returns:
-        200: JSON with user
-        500: JSON with error if user fetch had an error
-    """
-    user, ok, error = get_logged_user_controller()
-    if ok:
-        return jsonify({"user": user}), 200
-    return jsonify({"error": error}), 500
-
-@app.route('/gyms/me',methods=['GET'])
-@route_to_responsible
-def get_my_gym():
-    """
-    Get specific user endpoint.
-    
-    Returns:
-        200: JSON with user
-        500: JSON with error if user fetch had an error
-    """
-    gym, ok, error = get_logged_gym_controller()
+    gym, ok, error = get_gym_by_id_controller(id)
 
     if ok:
         return jsonify({"gym": gym}), 200
@@ -296,7 +253,7 @@ def get_my_gym():
 
 @app.route('/post', methods=['POST'])
 @route_to_responsible
-def post():
+def post(routing_key=str(uuid.uuid4())):
     """
     Create a new post endpoint.
     
@@ -326,28 +283,25 @@ def post():
     if not media_files and not caption:
         return jsonify({"message": "At least one media file or a caption is required."}), 500
 
-    response, ok, error = create_post(media_urls, caption)  # Pass media_urls as a list
+    response, ok, error = create_post(media_urls, caption, id=routing_key)  # Pass media_urls as a list
     if ok:
         return jsonify({"message": f"Post created successfully. ID: {response}"}), 201
     else:
         return jsonify({"error": error}), 500
-    
-@app.route('/repost', methods=['POST'])
+
+@app.route('/repost/<id>', methods=['POST'])
 @route_to_responsible
-def repost():
+def repost(id, routing_key=None):
     """
     Repost an existing post endpoint.
     
-    Accepts POST request with form data containing post ID to repost.
-    Required fields:
-    - reposted_post_id: ID of the post to repost
+    Accepts POST request
 
     Returns:
         201: JSON with success message if repost successful
         500: JSON with error message if repost fails or post ID missing
     """
-    data = request.form
-    reposted_post_id = data.get("reposted_post_id")
+    reposted_post_id = int(id)
     if not reposted_post_id:
         return jsonify({"error": "Reposted post ID is required"}), 500
     reposted_post_id = int(reposted_post_id)
@@ -357,9 +311,9 @@ def repost():
     else:
         return jsonify({"error": error})
 
-@app.route('/quote', methods=['POST'])
+@app.route('/quote/<id>', methods=['POST'])
 @route_to_responsible
-def quote():
+def quote(id, routing_key=None):
     """
     Quote an existing post endpoint.
     
@@ -374,7 +328,7 @@ def quote():
         500: JSON with error message if quote fails or required fields missing
     """
     data = request.form
-    quoted_post_id = int(data.get("quoted_post_id"))
+    quoted_post_id = int(id)
     media = data.get("media")
     caption = data.get("caption")
     if not quoted_post_id:
@@ -389,22 +343,19 @@ def quote():
     else:
         return jsonify({"error": error})
 
-@app.route('/delete-post', methods=['DELETE'])
+@app.route('/delete-post/<id>', methods=['DELETE'])
 @route_to_responsible
-def remove_post():
+def remove_post(id, routing_key=None):
     """
     Delete a post endpoint.
     
-    Accepts DELETE request with form data containing post ID to delete.
-    Required fields:
-    - post_id: ID of the post to delete
+    Accepts DELETE request
 
     Returns:
-        200: JSON with success message if deletion successful
+        200: JSON with success message if deletion successfull
         500: JSON with error message if deletion fails or post ID missing
     """
-    data = request.form
-    post_id = data.get("post_id")
+    post_id = int(id)
     if not post_id:
         return jsonify({"error": "Post ID is required"}), 500
     post_id = int(post_id)
@@ -413,57 +364,52 @@ def remove_post():
         return jsonify({"error": error}), 500 
     return jsonify({"message": "Post deleted successfully"}), 200
 
-@app.route('/follow', methods=['POST'])
+@app.route('/follow/<id>', methods=['POST'])
 @route_to_responsible
-def follow():
+def follow(id, routing_key=None):
     """
-    Follow a user endpoint.
+    Follow user with id: <id>
     
-    Accepts POST request with form data containing username to follow.
-    Required fields:
-    - followed: Username of the user to follow
+    Accepts POST request 
 
     Returns:
-        200: JSON with success message if follow successfull
+        201: JSON with success message if follow successfull
         500: JSON with error message if follow fails or username missing
     """
-    data = request.form
-    followed_username = data.get("followed")
-
+    followed_user, _, _ = get_user_by_id_controller(id)
+    followed_username = followed_user.username
     if not followed_username:
         return jsonify({"error": "Followed username is required"}), 500
     _, ok, error = follow_account(followed_username)
     
     if ok:
-        return jsonify({"message": f"Now following user {followed_username}"}), 200
+        return jsonify({"message": f"Now following user {followed_username}"}), 201
     return jsonify({"error": error}), 500
 
-@app.route('/unfollow', methods=['POST'])
+@app.route('/unfollow<id>', methods=['POST'])
 @route_to_responsible
-def unfollow():
+def unfollow(id, routing_key=None):
     """
-    Unfollow a user endpoint.
+    Unfollow the user with id: <id>.
     
-    Accepts POST request with form data containing username to unfollow.
-    Required fields:
-    - followed: Username of the user to unfollow
+    Accepts POST request
 
     Returns:
-        200: JSON with success message if unfollow successful
+        201: JSON with success message if unfollow successful
         500: JSON with error message if unfollow fails or username missing
     """
-    data = request.form
-    followed_username = data.get("followed")
+    followed_user, _, _ = get_user_by_id_controller(id)
+    followed_username = followed_user.username
     if not followed_username:
         return jsonify({"error": "Followed username is required"}), 500
     _, ok, error = unfollow_user(followed_username)
     if ok:
-        return jsonify({"message": f"Unfollowed user {followed_username}"}), 200
+        return jsonify({"message": f"Unfollowed user {followed_username}"}), 201
     return jsonify({"error": error}), 500
 
 @app.route('/find-users', methods=['GET'])
 @route_to_responsible
-def get_users():
+def get_users(users, routing_key="getAllUsers"):
     """
     Find users endpoint.
     
@@ -477,16 +423,16 @@ def get_users():
     """
     query = request.args.get("query")
     if not query:
-        return jsonify({"error": "Query is required"}), 500    
+        return jsonify({"error": "query is required"}), 500    
     if query == "": return jsonify({"users": []}), 200
-    users, ok, error = get_users_by_search_term(query)
+    users, ok, error = get_users_by_search_term(users, query)
     if ok:
         return jsonify({"users": users}), 200
     return jsonify({"error": error}), 500
 
 @app.route('/find-gyms', methods=['GET'])
 @route_to_responsible
-def get_gyms():
+def get_gyms(gyms, routing_key="getAllGyms"):
     """
     Find gyms endpoint.
     
@@ -502,21 +448,20 @@ def get_gyms():
     if not query:
         return jsonify({"error": "Query is required"}), 500    
     if query == "": return jsonify({"gyms": []}), 200
-    gyms, ok, error = get_gyms_by_search_term(query)
+    gyms, ok, error = get_gyms_by_search_term(gyms, query)
     if ok:
         return jsonify({"gyms": gyms}), 200
     return jsonify({"error": error}), 500
 
-@app.route('/react-post', methods=['POST'])
+@app.route('/react-post/<id>', methods=['POST'])
 @route_to_responsible
-def react_post():
+def react_post(id, routing_key=None):
     """
-    React to a post endpoint.
+    React to a post with id: <id>.
     
-    Accepts POST request with form data containing reaction and post ID.
+    Accepts POST request with form data containing reaction.
     Required fields:
     - reaction: The reaction to add to the post
-    - post_id: ID of the post to react to
 
     Returns:
         201: JSON with success message if reaction successful
@@ -524,7 +469,7 @@ def react_post():
     """
     data = request.form
     reaction = data.get("reaction")
-    post_id = int(data.get("post_id"))
+    post_id = int(id)
     if not reaction:
         return jsonify({"error": "Reaction is required"}), 500
     if not post_id:
@@ -534,16 +479,15 @@ def react_post():
         return jsonify({"message": "Reaction sent"}), 201
     return jsonify({"error": error}), 500
 
-@app.route('/react-comment', methods=['POST'])
+@app.route('/react-comment/<id>', methods=['POST'])
 @route_to_responsible
-def react_comment():
+def react_comment(id, routing_key=None):
     """
     React to a comment endpoint.
     
-    Accepts POST request with form data containing reaction and comment ID.
+    Accepts POST request with form data containing reaction.
     Required fields:
     - reaction: The reaction to add to the comment
-    - comment_id: ID of the comment to react to
 
     Returns:
         201: JSON with success message if reaction successful
@@ -551,7 +495,7 @@ def react_comment():
     """
     data = request.form
     reaction = data.get("reaction")
-    comment_id = int(data.get("comment_id"))
+    comment_id = int(id)
     if not reaction or not comment_id:
         return jsonify({"error": "Reaction and comment ID are required"}), 500
     _, ok, error = react_to_a_comment(reaction, comment_id)
@@ -559,15 +503,14 @@ def react_comment():
         return jsonify({"message": "Reaction sent"}), 201
     return jsonify({"error": error}), 500
 
-@app.route('/comment-post', methods=['POST'])
+@app.route('/comment-post/<id>', methods=['POST'])
 @route_to_responsible
-def comment():
+def comment(id, routing_key=None):
     """
     Create a comment on a post endpoint.
     
     Accepts POST request with form data containing comment details.
-    Required fields:
-    - post_id: ID of the post to comment on
+
     Optional fields:
     - caption: Text content of the comment
     - media: Media content of the comment
@@ -580,7 +523,7 @@ def comment():
     data = request.form
     caption = data.get("caption")
     media = data.get("media")
-    post_id = int(data.get("post_id"))
+    post_id = int(id)
     if not caption and not media:
         return jsonify({"error": "Caption or media is required"}), 500
     if not post_id:
@@ -590,15 +533,14 @@ def comment():
         return jsonify({"message": f"Comment sent. ID: {comment_id}"}), 201
     return jsonify({"error": error}), 500
 
-@app.route('/answer-comment', methods=['POST'])
+@app.route('/answer-comment/<id>', methods=['POST'])
 @route_to_responsible
-def answer():
+def answer(id, routing_key=None):
     """
     Create a reply to an existing comment endpoint.
     
     Accepts POST request with form data containing reply details.
-    Required fields:
-    - comment_id: ID of the comment to reply to
+
     Optional fields:
     - caption: Text content of the reply
     - media: Media content of the reply
@@ -611,7 +553,7 @@ def answer():
     data = request.form
     caption = data.get("caption")
     media = data.get("media")
-    comment_id = int(data.get("comment_id"))
+    comment_id = int(id)
     if not caption and not media:
         return jsonify({"error": "Caption or media is required"}), 500
     if not comment_id:
@@ -623,7 +565,7 @@ def answer():
 
 @app.route('/create-gym',methods=['POST'])
 @route_to_responsible
-def create_gym():
+def create_gym(routing_key=str(uuid.uuid4())):
     """
     Create a new gym endpoint.
     
@@ -678,9 +620,7 @@ def create_gym():
     if not name or not username or not email or not location or not password or not styles:
         return jsonify({"error": "All fields (name, username, email, location, password and styles) are required"}), 400
     
-    print("image:"+profile_image.filename)
-    
-    gym_id, ok, error = add_gym_controller(name,username,email,description,image_url,location,styles,password,phone_number,ig_profile)
+    gym_id, ok, error = add_gym_controller(name,username,email,description,image_url,location,styles,password,phone_number,ig_profile, id=routing_key)
 
     if ok:
         return jsonify({"message": f"Gym created. username: {username}"}), 201
@@ -688,7 +628,7 @@ def create_gym():
 
 @app.route('/gyms',methods=['GET'])
 @route_to_responsible
-def get_all_gyms():
+def get_all_gyms(gyms, routing_key="getAllGyms"):
     """
     Get all gyms endpoint.
     
@@ -698,20 +638,17 @@ def get_all_gyms():
         200: JSON with gyms
         500: JSON with error if gyms fetch had an error
     """
-    gyms, ok, error = get_all_gyms_controller()
-
-    if ok:
-        return jsonify({"gyms": gyms}), 200
-    return jsonify({"error": error}), 500
+    return jsonify({"gyms": gyms}), 200
 
 @app.route('/gym-login',methods=['POST'])
 @route_to_responsible
-def loginGym():
+def loginGym(routing_key=None):
     """
     Log in a gym account endpoint.
     
     Accepts POST request with form data containing login credentials.
     Required fields (at least one of):
+    - id: id for gym account
     - username: Username for gym account
     - email: Email address for gym
     Required field:
@@ -723,6 +660,7 @@ def loginGym():
         500: JSON with error if login fails
     """
     data = request.form
+    id = data.get("id")
     username = data.get("username")
     email = data.get("email")
     password = data.get("password")
@@ -731,15 +669,15 @@ def loginGym():
         return jsonify({"error": "Username or email is required"}), 400
     if not password:
         return jsonify({"error": "Password is required"}), 400
-    data, ok, error = login_gym(username,email,password)
+    data, ok, error = login_gym(id, username,email,password)
 
     if ok:
         return jsonify({"data": data}), 201
     return jsonify({"error": error}), 500
 
-@app.route('/update-gym',methods=['PUT'])
+@app.route('/update-gym/<id>',methods=['PUT'])
 @route_to_responsible
-def update_gym():
+def update_gym(id, routing_key=None):
     """
     Update a gym account endpoint.
     
@@ -798,34 +736,9 @@ def update_gym():
         return jsonify({"message": f"Gym updated with username {session['username']}"}),201
     return jsonify({"error": error}), 500
 
-@app.route('/get-gym-info',methods=['POST'])
+@app.route('/delete-gym/<id>',  methods=['DELETE'])
 @route_to_responsible
-def get_gym_info():
-    """
-    Get information about a specific gym.
-    
-    Accepts POST request with form data containing gym ID.
-    Required fields:
-    - gym_id: ID of the gym to get info for
-    
-    Returns:
-        201: JSON with gym information if successful
-        400: JSON with error if gym ID not provided
-        500: JSON with error if lookup fails
-    """
-    data = request.form
-    gym_id = data.get("gym_id")
-    if not gym_id:
-        return jsonify({"error": "Gym ID is required"}), 400
-    info,ok,error = get_gym_info_controller(gym_id)
-
-    if ok:
-        return jsonify(info),201
-    return jsonify({"error": error}), 500
-
-@app.route('/delete-gym',  methods=['DELETE'])  
-@route_to_responsible
-def delete_gym():
+def delete_gym(id, routing_key=None):
     """
     Delete logged in gym account endpoint.
     
@@ -842,37 +755,37 @@ def delete_gym():
         return jsonify({"message": f"Gym with username {session['username']} deleted succesfully." }), 200
     return jsonify({"error": error}), 500
 
-@app.route('/trains-in', methods=['POST'])
+@app.route('/trains-in/<id>', methods=['POST'])
 @route_to_responsible
-def trains_in_endpoint():
+def trains_in_endpoint(id, routing_key=None):
     """
-    Create a trains-in relationship between logged in user and a gym.
+    Create a trains-in relationship between logged in user and a gym with id: <id>.
     
-    Accepts POST request with form data containing gym and training details.
+    Accepts POST request with form data containing training details.
+
     Required fields:
-    - gym_id: ID of the gym to train at
     - styles: Training styles to associate with relationship
     
     Returns:
-        200: JSON with success message if relationship created
+        201: JSON with success message if relationship created
         400: JSON with error if required fields missing
         500: JSON with error if creation fails
     """
     data = request.form
-    gym_id = data.get("gym_id")
+    gym_id = str(id)
     styles = data.get("styles") 
     if not gym_id or not styles:
         return jsonify({"error": "Gym ID and styles are required"}), 400
     _,ok,error = trains_in(styles,gym_id)
     if ok:
-        return jsonify({"message": f"User trains in gym with ID {gym_id}"})
+        return jsonify({"message": f"User trains in gym with ID {gym_id}"}), 201
     return jsonify({"error": error}), 500
 
-@app.route('/add-training-styles', methods=['POST'])
+@app.route('/add-training-styles/<id>', methods=['POST'])
 @route_to_responsible
-def add_training_styles():
+def add_training_styles(id, routing_key=None):
     """
-    Add training styles to an existing trains-in relationship.
+    Add training styles to an existing trains-in relationship with the gym with id: <id>.
     
     Accepts POST request with form data containing gym and training styles.
     Required fields:
@@ -886,7 +799,7 @@ def add_training_styles():
     """
     data = request.form
     styles = data.get("styles")
-    gym_id = data.get("gym_id")
+    gym_id = str(id)
     if not gym_id or not styles:
         return jsonify({"error": "Gym ID and styles are required"}), 400    
     _,ok,error = add_training_styles(styles,gym_id)
@@ -894,15 +807,14 @@ def add_training_styles():
         return jsonify({"message": f"Styles added to user in a gym with ID {gym_id}"})
     return jsonify({"error": error}), 500
 
-@app.route('/remove-training-styles', methods=['POST'])
+@app.route('/remove-training-styles<id>', methods=['POST'])
 @route_to_responsible
-def remove_training_styles():
+def remove_training_styles(id, routing_key=None):
     """
-    Remove training styles from an existing trains-in relationship.
+    Remove training styles from an existing trains-in relationship with the gym with id: <id>.
     
     Accepts POST request with form data containing gym and training styles.
     Required fields:
-    - gym_id: ID of the gym to remove styles from
     - styles: Training styles to remove from relationship
     
     Returns:
@@ -912,14 +824,13 @@ def remove_training_styles():
     """
     data = request.form
     styles = data.get("styles")
-    gym_id = data.get("gym_id")
+    gym_id = str(id)
     if not gym_id or not styles:
         return jsonify({"error": "Gym ID and styles are required"}), 400
     _,ok,error = remove_training_styles(styles,gym_id)
     if ok:
         return jsonify({"message": f"Styles removed from user in a gym with ID {gym_id}"})
     return jsonify({"error": error}), 500
-    
 
 if __name__ == '__main__':
 

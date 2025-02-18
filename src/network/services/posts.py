@@ -61,19 +61,18 @@ def add_post(driver, media: list[str], caption: str):
 
     return post_id
 
-def post(driver, media, caption, username):
+def post(driver, id, media, caption, username):
     if not media and not caption:
         return None, False, "media and caption can't be None at the same time."    
-    post_id = add_post(driver, media, caption)
+    add_post(driver, media, caption)
     now = datetime.now()
     query = """
-        MATCH (p:Post)
-            WHERE id(p) = $post_id
+        MATCH (p:Post {id: $id})
         MATCH (u:User {username: $username})
         CREATE (u)-[r:Posts {datetime: $now}]->(p)
         RETURN r
     """
-    parameters = {"post_id": post_id, "username": username, "now": now}
+    parameters = {"id": id, "username": username, "now": now}
     
     with driver.session() as session:
         result = session.run(query, parameters)

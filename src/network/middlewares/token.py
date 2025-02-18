@@ -8,6 +8,7 @@ def generate_token(username, email):
     Generates a JWT token for the logged-in user.
     """
     payload = {
+        'id': id,
         'username': username,
         'email': email,
         'exp': datetime.datetime.now() + datetime.timedelta(hours=1)  # Token expires in 1 hour

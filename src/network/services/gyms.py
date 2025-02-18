@@ -3,11 +3,11 @@ from database.connection import driver
 def create_gym_node(driver, username):
     gym = driver.execute_query(
         '''
-        CREATE (g:Gym {username: $username})
-        RETURN id(g) AS gym_id
-    ''', {'username': username}).records[0]
+        CREATE (g:Gym {username: $username, id: $id})
+        RETURN g AS gym
+    ''', {'username': username, 'id': id}).records[0]
 
-    return gym['gym_id']
+    return gym['gym']
 
 def update_gym(driver, name , username, email, description, location,image_url,styles,hashed_password, phone_number=None, ig_profile = None):
 
@@ -50,8 +50,8 @@ def update_gym(driver, name , username, email, description, location,image_url,s
     else:
         return username,False,f"Gym with username {username} not found or update failed"
 
-def add_gym(driver,name,username, email,description,image_url,location,styles,hashed_password, phone_number=None, ig_profile = None):
-        create_gym_node(driver, username)
+def add_gym(driver, id, name,username, email,description,image_url,location,styles,hashed_password, phone_number=None, ig_profile = None):
+        create_gym_node(driver, id, username)
 
         return update_gym(
             driver,
@@ -68,24 +68,23 @@ def add_gym(driver,name,username, email,description,image_url,location,styles,ha
         )
 
 
-def get_gym_info(driver,gym_id):
+def get_gym_by_id_service(driver,id):
     
     query = """
-    MATCH (g:Gym)
-        WHERE id(g) = $gym_id
+    MATCH (g:Gym {id: $id})
         RETURN g
     """
     
     result = driver.execute_query(
         query,
-        {"gym_id": gym_id}
+        {"id": id}
     )
     
     if result:
         gym_node_info = result[0][0][0]
         return dict(gym_node_info._properties),True,None  
     
-    return None,False,f"Cannot find gym with ID {gym_id} "
+    return None,False,f"Cannot find gym with ID {id} "
 
 def delete_gym(driver,username):
 
@@ -144,17 +143,8 @@ def get_gym_by_username(driver, username):
     )
     return user.records[0]["gym"]._properties if len(user.records)!=0 else None
 
-def get_gyms_by_search_term_service(driver, query):
+def get_gyms_by_search_term_service(gyms, query):
     try:
-        gyms = driver.execute_query(
-            """
-            MATCH (u:Gym)
-            WHERE toLower(u.username) CONTAINS toLower($query) 
-            OR toLower(u.name) CONTAINS toLower($query)
-            RETURN u
-            """,
-            {"query": query}
-        ).records
         if len(gyms) > 0:
             gyms = [gym["u"]._properties for gym in gyms]
             for gym in gyms:

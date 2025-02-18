@@ -1,6 +1,6 @@
 from datetime import datetime
 
-def add_user(driver, name, username, email, image_url, password,weight,styles,levels_by_style, birth_date):
+def add_user(driver, _id, name, username, email, image_url, password,weight,styles,levels_by_style, birth_date):
     existing_user = driver.execute_query(
         "MATCH (u:User {username: $username}) RETURN u", {"username": username}
     ).records
@@ -8,9 +8,9 @@ def add_user(driver, name, username, email, image_url, password,weight,styles,le
     if len(existing_user) == 0:
         driver.execute_query(
             """
-                CREATE (u:User {name: $name, email: $email, image: $image,  username: $username, password: $password, weight: $weight, styles: $styles, levels_by_style: $levels_by_style, birth_date: $birth_date})
+                CREATE (u:User {name: $name, id: $id, email: $email, image: $image,  username: $username, password: $password, weight: $weight, styles: $styles, levels_by_style: $levels_by_style, birth_date: $birth_date})
             """,
-            {"name": name, "email": email, "image": image_url, "username": username, "password": password, "weight": weight, "styles": styles, "levels_by_style": levels_by_style, "birth_date": birth_date},
+            {"name": name, "id": _id, "email": email, "image": image_url, "username": username, "password": password, "weight": weight, "styles": styles, "levels_by_style": levels_by_style, "birth_date": birth_date},
         )
         return driver.execute_query(
         "MATCH (u:User {username: $username}) RETURN id(u) as user_id", {"username": username}
@@ -33,6 +33,15 @@ def get_user_by_username_service(driver, username):
             Match (u:User {username: $username}) return u as User
         """,
         {"username": username},
+    )
+    return user.records[0]["User"]._properties if len(user.records)!=0 else None
+
+def get_user_by_id_service(driver, _id):
+    user = driver.execute_query(
+        """
+            Match (u:User {id: $id}) return u as User
+        """,
+        {"id": _id},
     )
     return user.records[0]["User"]._properties if len(user.records)!=0 else None
 
@@ -167,18 +176,8 @@ def delete_user_service(driver, username):
     else:
         return None, False, "User not found."
 
-def get_users_by_search_term_service(driver, query):
-    
+def get_users_by_search_term_service(users, query):
     try:
-        users = driver.execute_query(
-            """
-            MATCH (u:User)
-            WHERE toLower(u.username) CONTAINS toLower($query) 
-            OR toLower(u.name) CONTAINS toLower($query)
-            RETURN u
-            """,
-            {"query": query}
-        ).records
         if len(users) > 0:
             users = [user["u"]._properties for user in users]
             for user in users:
