@@ -1,6 +1,6 @@
 from datetime import datetime 
 from database.connection import driver
-def create_gym_node(driver, username):
+def create_gym_node(driver, id, username):
     gym = driver.execute_query(
         '''
         CREATE (g:Gym {username: $username, id: $id})

@@ -3,9 +3,9 @@ from flask import session
 from network.middlewares.token import generate_token
 from network.middlewares.use_db_connection import use_db_connection
 from network.middlewares.auth import needs_authentication
-from network.services.gyms import add_gym, get_all_gyms_service, update_gym, get_gym_info, delete_gym, get_gym_by_email, get_gym_by_username
+from network.services.gyms import add_gym, get_all_gyms_service, update_gym, delete_gym, get_gym_by_email, get_gym_by_username
 from network.services.gyms import get_gyms_by_search_term_service
-from src.network.services.gyms import get_gym_by_id_service
+from network.services.gyms import get_gym_by_id_service
 
 @use_db_connection
 def login_gym(username, email, password, driver = None):
@@ -24,7 +24,7 @@ def login_gym(username, email, password, driver = None):
         return None, False, "Wrong password"
     
     data = {
-        "token": generate_token(gym["username"], gym["email"]),
+        "token": generate_token(gym["id"], gym["username"], gym["email"]),
         "role": "gym" 
     }
 

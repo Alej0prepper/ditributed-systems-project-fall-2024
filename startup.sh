@@ -1,10 +1,18 @@
-# BEFORE RUNNING THIS SCRIPT YOU SHOULD LOAD THE mma-social-network DOCKER IMAGE
 
 # Load the .env file
 if [ -f .env ]; then
     export $(grep -v '^#' .env | xargs)
 fi
 set -e  # Exit on error
+
+# Check if the network exists, if not create it
+if ! sudo docker network ls | grep -q "$NETWORK_NAME"; then
+    echo "Network $NETWORK_NAME does not exist. Creating..."
+    sudo docker network create $NETWORK_NAME --subnet $NETWORK_SUBNET 
+else
+    echo "Network $NETWORK_NAME already exists. Continuing..."
+fi
+
 
 # Build the Docker image if it doesn't exist
 if ! sudo docker images --format "{{.Repository}}"  "$APP_IMAGE" | grep -qx "$APP_IMAGE"; then
@@ -23,24 +31,15 @@ else
 fi
 
 
-# Check if the network exists, if not create it
-if ! sudo docker network ls | grep "$NETWORK_NAME"; then
-    echo "Network $NETWORK_NAME does not exist. Creating..."
-    sudo docker network create $NETWORK_NAME --subnet $NETWORK_SUBNET 
-else
-    echo "Network $NETWORK_NAME already exists. Continuing..."
-fi
-
-
 # Check if the Neo4j container is already running
 if sudo docker ps --filter "name=$NEO4J_CONTAINER" --filter "status=running" | grep -q "$NEO4J_CONTAINER"; then
     echo "Neo4j container is already running. Stopping..."
-    sudo docker rm $NEO4J_CONTAINER -f
+    sudo docker rm -f $NEO4J_CONTAINER 
 fi
 # Check if the Neo4j container exists but is stopped
 if sudo docker ps -a --filter "name=$NEO4J_CONTAINER" | grep -q "$NEO4J_CONTAINER"; then
     echo "Neo4j container exists but is stopped. Starting..."
-    sudo docker rm $NEO4J_CONTAINER
+    sudo docker rm -f $NEO4J_CONTAINER
     # Ensure it's connected to the network
     sudo docker network connect $NETWORK_NAME $NEO4J_CONTAINER || echo "Neo4j container already connected to $NETWORK_NAME"
 else
@@ -74,7 +73,6 @@ eval sudo docker run -it \
     --name "$APP_CONTAINER" \
     --cap-add NET_ADMIN \
     --network "$NETWORK_NAME" \
-    -p $FLASK_RUN_PORT:5000 \
     --env-file "$ENV_FILE" \
     -v "$APP_VOLUME" \
     "$APP_IMAGE"

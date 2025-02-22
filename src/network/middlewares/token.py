@@ -3,7 +3,7 @@ import jwt
 import datetime
 
 SECRET_KEY = os.getenv('SECRET_KEY', '')
-def generate_token(username, email):
+def generate_token(id, username, email):
     """
     Generates a JWT token for the logged-in user.
     """

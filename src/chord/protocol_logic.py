@@ -1,8 +1,11 @@
+import ast
 import time
-from chord.config import M, STABILIZE_INTERVAL
 import chord.node as chord
 import requests
-
+import socket
+import os
+from chord.config import M, STABILIZE_INTERVAL
+from chord.node import ChordNode
 
 def is_between(key, start, end, inclusive=False):
     if start < end:
@@ -119,3 +122,95 @@ def check_predecessor():
 
         except Exception as e:
             print(f"Predecessor check error: {str(e)}")
+
+def find_k_successors(K):
+    """Find the next `K` successors in the Chord ring."""
+    successors = []
+    current_ip = chord.current_node.to_dict()["ip"]
+    current_port = chord.current_node.to_dict()["port"]
+
+    while K > 0:
+        try:
+            # Request state from the current node
+            response = requests.get(f"http://{current_ip}:{current_port}/state")
+            if response.status_code == 200:
+                node_data = response.json()
+                
+                if node_data["ip"] == chord.current_node.to_dict()["ip"]:
+                    return successors
+                
+                successors.append(ChordNode(node_data["ip"], node_data["port"]))
+
+                # Move to the next node in the ring
+                current_ip = node_data["ip"]
+                current_port = node_data["port"]
+                K -= 1
+            else:
+                print(f"Error: Failed to get state from {current_ip}, status: {response.status_code}")
+                break
+        except requests.exceptions.RequestException as e:
+            print(f"Error: Could not contact {current_ip}: {e}")
+            break
+
+    return successors
+
+system_entities_list = []
+
+MULTICAST_GROUP_DISCOVERY = os.environ.get('MULTICAST_GROUP_DISCOVERY', '')
+DISCOVERY_PORT = int(os.environ.get('DISCOVERY_PORT', ''))
+MULTICAST_GROUP_DATA = os.environ.get('MULTICAST_GROUP_DATA', '')
+DATA_PORT = int(os.environ.get('DATA_PORT', ''))
+
+
+def announce_node_to_router():
+    message = "JOIN"
+    multicast_group = (MULTICAST_GROUP_DISCOVERY, DISCOVERY_PORT)
+    while True:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) as sock:
+            sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+            sock.sendto(message.encode(), multicast_group)
+            print(f"📡 Sent announcement to router in group {MULTICAST_GROUP_DISCOVERY}:{DISCOVERY_PORT} : {message}")
+        time.sleep(30)
+
+def listen_for_chord_updates():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+    sock.bind(('', DATA_PORT))
+    mreq = socket.inet_aton(MULTICAST_GROUP_DATA) + socket.inet_aton('0.0.0.0')
+    sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+
+    while True:
+        data, addr = sock.recvfrom(1024)
+        message = data.decode()
+        if not (message.split(",")[0], message.split(",")[1]) in system_entities_list:
+            update_entities_list(message.split(",")[0], message.split(",")[1])
+            
+        print(f"📥 Received from {addr}: {message}")
+
+def send_chord_update(message):
+    multicast_group = (MULTICAST_GROUP_DATA, DATA_PORT)
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) as sock:
+        sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+        sock.sendto(message.encode(), multicast_group)
+        print(f"🔄 Sent update: {message}")
+
+def send_local_system_entities_copy():
+    while True:
+        for email, id in system_entities_list:
+            send_chord_update(f"{email},{id}")
+        time.sleep(15)
+
+def update_entities_list(email, id):
+    # Append the new entry as a string
+    system_entities_list.append((email,id))
+
+    folder_path = os.path.join(os.getcwd(), "src", "chord")
+    file_path = os.path.join(folder_path, "system_entities_list.txt")
+
+    # Ensure the folder exists, create it if not
+    os.makedirs(folder_path, exist_ok=True)
+
+    with open(file_path, "w") as file:
+        for entity in system_entities_list:
+            file.write(f"{entity[0]} {entity[1]}\n")

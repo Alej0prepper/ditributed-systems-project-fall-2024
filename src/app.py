@@ -13,21 +13,23 @@ from network.controllers.users import follow_account
 from network.controllers.users import unfollow_user
 from network.controllers.comments import create_comment_answer, create_post_comment
 from network.controllers.reactions import react_to_a_comment, react_to_a_post
-from network.controllers.gyms import add_gym_controller, get_all_gyms_controller, update_gym_controller, get_gym_info_controller,delete_gym_controller
+from network.controllers.gyms import add_gym_controller, delete_gym_controller
 from network.controllers.trains_in import trains_in, add_training_styles, remove_training_styles
 from network.controllers.gyms import login_gym
 from network.controllers.users import update_user_account
 from network.controllers.gyms import get_gyms_by_search_term
-from network.controllers.users import get_user_by_username_controller
-from network.controllers.users import get_logged_user_controller
-from network.controllers.gyms import get_logged_gym_controller
-from network.controllers.gyms import get_gym_by_username_controller
 from chord.routes import chord_routes
 from chord.protocol_logic import check_predecessor, stabilize
-from src.network.middlewares.route_to_responsible import route_to_responsible
-from src.network.middlewares.auth import needs_authentication
-from src.network.controllers.users import get_user_by_id_controller
-from src.network.controllers.gyms import get_gym_by_id_controller
+from network.middlewares.route_to_responsible import route_to_responsible
+from network.controllers.users import get_user_by_id_controller
+from network.controllers.gyms import get_gym_by_id_controller, update_gym_controller
+from network.controllers.users import get_logged_user_controller
+from network.controllers.gyms import get_logged_gym_controller
+from network.middlewares.auth import needs_authentication
+from chord.protocol_logic import listen_for_chord_updates
+import chord.protocol_logic as chord_logic
+
+
 
 app = Flask(__name__)
 
@@ -53,8 +55,8 @@ def uploaded_file(filename):
  """
 
 @app.route('/register', methods=['POST'])
-@route_to_responsible
-def register(routing_key=str(uuid.uuid4())):
+@route_to_responsible()
+def register(id=str(uuid.uuid4())):
     """
     Register a new user endpoint.
     
@@ -106,15 +108,16 @@ def register(routing_key=str(uuid.uuid4())):
     if not email and not username:
         return jsonify({"message": "Either email or username is required."}), 400
 
-    user_id, error = register_user(routing_key, name, username, email, image_url, password, weight, styles, levels_by_style, birth_date, gyms_ids)
+    user_id, error = register_user(id, name, username, email, image_url, password, weight, styles, levels_by_style, birth_date, gyms_ids)
     if error == None:
+        user_info = f"{email},{id}"
+        chord_logic.send_chord_update(user_info)
         return jsonify({"message": f"User registered successfully. ID: {user_id}"}), 201
     return jsonify({"Error": f"{error}"}), 500
 
 @app.route('/update-user/<id>', methods=['PUT'])
-@needs_authentication
-@route_to_responsible
-def updateUser(id, routing_key=None):
+@route_to_responsible(routing_key=None)
+def updateUser(id):
     """
     Update logged in user information endpoint.
     
@@ -161,9 +164,8 @@ def updateUser(id, routing_key=None):
     return jsonify({"Error": f"{error}"}), 500
 
 @app.route('/delete-user<id>', methods=['DELETE'])
-@needs_authentication
-@route_to_responsible
-def delete_user(id, routing_key=None):
+@route_to_responsible(routing_key=None)
+def delete_user(id):
     """
     Delete logged in user account endpoint.
     
@@ -180,8 +182,8 @@ def delete_user(id, routing_key=None):
     return jsonify({"error": error}), 500
 
 @app.route('/login', methods=['POST'])
-@route_to_responsible
-def login(routing_key=None):
+@route_to_responsible(routing_key="login")
+def login():
     """
     User login endpoint.
     
@@ -204,8 +206,8 @@ def login(routing_key=None):
         return jsonify({"error": error}), 401
 
 @app.route('/users',methods=['GET'])
-@route_to_responsible
-def get_all_users(routing_key="getAllUsers"):
+@route_to_responsible(routing_key="getAllUsers")
+def get_all_users():
     """
     Get all users endpoint.
     
@@ -220,8 +222,8 @@ def get_all_users(routing_key="getAllUsers"):
     return jsonify({"error": error}), 500
 
 @app.route('/users/<id>',methods=['GET'])
-@route_to_responsible
-def get_user_by_id(id, routing_key=None):
+@route_to_responsible(routing_key=None)
+def get_user_by_id(id):
     """
     Get specific user endpoint.
     
@@ -236,8 +238,8 @@ def get_user_by_id(id, routing_key=None):
     return jsonify({"error": error}), 500
 
 @app.route('/gyms/<id>',methods=['GET'])
-@route_to_responsible
-def get_gym_by_id(id, routing_key=None):
+@route_to_responsible(routing_key=None)
+def get_gym_by_id(id):
     """
     Get specific gym endpoint.
     
@@ -252,8 +254,8 @@ def get_gym_by_id(id, routing_key=None):
     return jsonify({"error": error}), 500
 
 @app.route('/post', methods=['POST'])
-@route_to_responsible
-def post(routing_key=str(uuid.uuid4())):
+@route_to_responsible()
+def post(id=str(uuid.uuid4())):
     """
     Create a new post endpoint.
     
@@ -283,15 +285,46 @@ def post(routing_key=str(uuid.uuid4())):
     if not media_files and not caption:
         return jsonify({"message": "At least one media file or a caption is required."}), 500
 
-    response, ok, error = create_post(media_urls, caption, id=routing_key)  # Pass media_urls as a list
+    response, ok, error = create_post(media_urls, caption, id=id)  # Pass media_urls as a list
     if ok:
         return jsonify({"message": f"Post created successfully. ID: {response}"}), 201
     else:
         return jsonify({"error": error}), 500
 
+@app.route('/users/me',methods=['GET'])
+@route_to_responsible(routing_key="me")
+def get_my_user():
+    """
+    Get specific user endpoint.
+    
+    Returns:
+        200: JSON with user
+        500: JSON with error if user fetch had an error
+    """
+    user, ok, error = get_logged_user_controller()
+    if ok:
+        return jsonify({"user": user}), 200
+    return jsonify({"error": error}), 500
+
+@app.route('/gyms/me',methods=['GET'])
+@route_to_responsible(routing_key="me")
+def get_my_gym():
+    """
+    Get specific user endpoint.
+    
+    Returns:
+        200: JSON with user
+        500: JSON with error if user fetch had an error
+    """
+    gym, ok, error = get_logged_gym_controller()
+
+    if ok:
+        return jsonify({"gym": gym}), 200
+    return jsonify({"error": error}), 500
+
 @app.route('/repost/<id>', methods=['POST'])
-@route_to_responsible
-def repost(id, routing_key=None):
+@route_to_responsible(routing_key=None)
+def repost(id):
     """
     Repost an existing post endpoint.
     
@@ -312,8 +345,8 @@ def repost(id, routing_key=None):
         return jsonify({"error": error})
 
 @app.route('/quote/<id>', methods=['POST'])
-@route_to_responsible
-def quote(id, routing_key=None):
+@route_to_responsible(routing_key=None)
+def quote(id):
     """
     Quote an existing post endpoint.
     
@@ -344,8 +377,8 @@ def quote(id, routing_key=None):
         return jsonify({"error": error})
 
 @app.route('/delete-post/<id>', methods=['DELETE'])
-@route_to_responsible
-def remove_post(id, routing_key=None):
+@route_to_responsible(routing_key=None)
+def remove_post(id):
     """
     Delete a post endpoint.
     
@@ -365,8 +398,8 @@ def remove_post(id, routing_key=None):
     return jsonify({"message": "Post deleted successfully"}), 200
 
 @app.route('/follow/<id>', methods=['POST'])
-@route_to_responsible
-def follow(id, routing_key=None):
+@route_to_responsible(routing_key=None)
+def follow(id):
     """
     Follow user with id: <id>
     
@@ -387,8 +420,8 @@ def follow(id, routing_key=None):
     return jsonify({"error": error}), 500
 
 @app.route('/unfollow<id>', methods=['POST'])
-@route_to_responsible
-def unfollow(id, routing_key=None):
+@route_to_responsible(routing_key=None)
+def unfollow(id):
     """
     Unfollow the user with id: <id>.
     
@@ -408,8 +441,8 @@ def unfollow(id, routing_key=None):
     return jsonify({"error": error}), 500
 
 @app.route('/find-users', methods=['GET'])
-@route_to_responsible
-def get_users(users, routing_key="getAllUsers"):
+@route_to_responsible(routing_key="getAllUsers")
+def get_users(users):
     """
     Find users endpoint.
     
@@ -431,8 +464,8 @@ def get_users(users, routing_key="getAllUsers"):
     return jsonify({"error": error}), 500
 
 @app.route('/find-gyms', methods=['GET'])
-@route_to_responsible
-def get_gyms(gyms, routing_key="getAllGyms"):
+@route_to_responsible(routing_key="getAllGyms")
+def get_gyms(gyms):
     """
     Find gyms endpoint.
     
@@ -454,8 +487,8 @@ def get_gyms(gyms, routing_key="getAllGyms"):
     return jsonify({"error": error}), 500
 
 @app.route('/react-post/<id>', methods=['POST'])
-@route_to_responsible
-def react_post(id, routing_key=None):
+@route_to_responsible(routing_key=None)
+def react_post(id):
     """
     React to a post with id: <id>.
     
@@ -480,8 +513,8 @@ def react_post(id, routing_key=None):
     return jsonify({"error": error}), 500
 
 @app.route('/react-comment/<id>', methods=['POST'])
-@route_to_responsible
-def react_comment(id, routing_key=None):
+@route_to_responsible(routing_key=None)
+def react_comment(id):
     """
     React to a comment endpoint.
     
@@ -504,8 +537,8 @@ def react_comment(id, routing_key=None):
     return jsonify({"error": error}), 500
 
 @app.route('/comment-post/<id>', methods=['POST'])
-@route_to_responsible
-def comment(id, routing_key=None):
+@route_to_responsible(routing_key=None)
+def comment(id):
     """
     Create a comment on a post endpoint.
     
@@ -534,8 +567,8 @@ def comment(id, routing_key=None):
     return jsonify({"error": error}), 500
 
 @app.route('/answer-comment/<id>', methods=['POST'])
-@route_to_responsible
-def answer(id, routing_key=None):
+@route_to_responsible(routing_key=None)
+def answer(id):
     """
     Create a reply to an existing comment endpoint.
     
@@ -564,8 +597,8 @@ def answer(id, routing_key=None):
     return jsonify({"error": error}), 500
 
 @app.route('/create-gym',methods=['POST'])
-@route_to_responsible
-def create_gym(routing_key=str(uuid.uuid4())):
+@route_to_responsible()
+def create_gym(id=str(uuid.uuid4())):
     """
     Create a new gym endpoint.
     
@@ -620,15 +653,17 @@ def create_gym(routing_key=str(uuid.uuid4())):
     if not name or not username or not email or not location or not password or not styles:
         return jsonify({"error": "All fields (name, username, email, location, password and styles) are required"}), 400
     
-    gym_id, ok, error = add_gym_controller(name,username,email,description,image_url,location,styles,password,phone_number,ig_profile, id=routing_key)
+    gym_id, ok, error = add_gym_controller(name,username,email,description,image_url,location,styles,password,phone_number,ig_profile, id=id)
 
     if ok:
+        gym_info = f"{email},{id}"
+        chord_logic.send_chord_update(gym_info)
         return jsonify({"message": f"Gym created. username: {username}"}), 201
     return jsonify({"error": error}), 500
 
 @app.route('/gyms',methods=['GET'])
-@route_to_responsible
-def get_all_gyms(gyms, routing_key="getAllGyms"):
+@route_to_responsible(routing_key="getAllGyms")
+def get_all_gyms(gyms):
     """
     Get all gyms endpoint.
     
@@ -641,8 +676,8 @@ def get_all_gyms(gyms, routing_key="getAllGyms"):
     return jsonify({"gyms": gyms}), 200
 
 @app.route('/gym-login',methods=['POST'])
-@route_to_responsible
-def loginGym(routing_key=None):
+@route_to_responsible(routing_key="login")
+def loginGym():
     """
     Log in a gym account endpoint.
     
@@ -660,7 +695,6 @@ def loginGym(routing_key=None):
         500: JSON with error if login fails
     """
     data = request.form
-    id = data.get("id")
     username = data.get("username")
     email = data.get("email")
     password = data.get("password")
@@ -669,15 +703,15 @@ def loginGym(routing_key=None):
         return jsonify({"error": "Username or email is required"}), 400
     if not password:
         return jsonify({"error": "Password is required"}), 400
-    data, ok, error = login_gym(id, username,email,password)
+    data, ok, error = login_gym(username,email,password)
 
     if ok:
         return jsonify({"data": data}), 201
     return jsonify({"error": error}), 500
 
 @app.route('/update-gym/<id>',methods=['PUT'])
-@route_to_responsible
-def update_gym(id, routing_key=None):
+@route_to_responsible(routing_key=None)
+def update_gym(id):
     """
     Update a gym account endpoint.
     
@@ -737,8 +771,8 @@ def update_gym(id, routing_key=None):
     return jsonify({"error": error}), 500
 
 @app.route('/delete-gym/<id>',  methods=['DELETE'])
-@route_to_responsible
-def delete_gym(id, routing_key=None):
+@route_to_responsible(routing_key=None)
+def delete_gym(id):
     """
     Delete logged in gym account endpoint.
     
@@ -756,8 +790,8 @@ def delete_gym(id, routing_key=None):
     return jsonify({"error": error}), 500
 
 @app.route('/trains-in/<id>', methods=['POST'])
-@route_to_responsible
-def trains_in_endpoint(id, routing_key=None):
+@route_to_responsible(routing_key=None)
+def trains_in_endpoint(id):
     """
     Create a trains-in relationship between logged in user and a gym with id: <id>.
     
@@ -782,8 +816,8 @@ def trains_in_endpoint(id, routing_key=None):
     return jsonify({"error": error}), 500
 
 @app.route('/add-training-styles/<id>', methods=['POST'])
-@route_to_responsible
-def add_training_styles(id, routing_key=None):
+@route_to_responsible(routing_key=None)
+def add_training_styles(id):
     """
     Add training styles to an existing trains-in relationship with the gym with id: <id>.
     
@@ -808,8 +842,8 @@ def add_training_styles(id, routing_key=None):
     return jsonify({"error": error}), 500
 
 @app.route('/remove-training-styles<id>', methods=['POST'])
-@route_to_responsible
-def remove_training_styles(id, routing_key=None):
+@route_to_responsible(routing_key=None)
+def remove_training_styles(id):
     """
     Remove training styles from an existing trains-in relationship with the gym with id: <id>.
     
@@ -832,14 +866,51 @@ def remove_training_styles(id, routing_key=None):
         return jsonify({"message": f"Styles removed from user in a gym with ID {gym_id}"})
     return jsonify({"error": error}), 500
 
+"""@app.route('/replicate', methods=['POST'])
+@use_db_connection
+ def replicate_graph(driver=None):
+    # Receive replicated graph data and store it in Neo4j.
+    data = request.get_json()
+
+    if not data or "nodes" not in data or "relationships" not in data:
+        return jsonify({"error": "Invalid graph data"}), 400
+
+    try:
+        with driver.session() as session:
+            # Insert new nodes
+            for node in data["nodes"]:
+                session.write_transaction(lambda tx: tx.run(
+                    "MERGE (n:Data {id: $id}) SET n += $properties, n.labels = $labels",
+                    id=node["id"], properties=node["properties"], labels=node["labels"]
+                ))
+
+            # Insert new relationships
+            for relationship in data["relationships"]:
+                session.write_transaction(lambda tx: tx.run(
+                    MATCH (a {id: $start}), (b {id: $end})
+                    MERGE (a)-[r:REL {id: $id}]->(b) 
+                    SET r += $properties, r.type = $type
+                    ,
+                    id=relationship["id"], start=relationship["start"], end=relationship["end"],
+                    properties=relationship["properties"], type=relationship["type"]
+                ))
+
+        return jsonify({"message": "Graph replicated successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500 """
+
 if __name__ == '__main__':
 
     IP = os.getenv("NODE_IP", "127.0.0.1")  
     PORT = int(os.getenv("FLASK_RUN_PORT", "5000"))
 
-    chord.current_node = chord.ChordNode(ip=IP, port=PORT)
+    print("Initiating node: ",chord.current_node.to_dict())
     threading.Thread(target=stabilize, daemon=True).start()
     threading.Thread(target=check_predecessor, daemon=True).start()
+    threading.Thread(target=listen_for_chord_updates, daemon=True).start()
+    threading.Thread(target=chord_logic.announce_node_to_router, daemon=True).start()
+    threading.Thread(target=chord_logic.send_local_system_entities_copy, daemon=True).start()
+    #replication_thread = threading.Thread(target=replicate_to_successors, daemon=True).start()
     
     app.run(
         host="0.0.0.0", 
