@@ -14,8 +14,8 @@ import ast
 
 
 @use_db_connection
-def register_user(_id, name, username, email, image_url, password, weight, styles, levels_by_style, birth_date, gyms_ids, driver=None):
-    user_id, ok, error = add_user(driver, _id, name, username, email, image_url, hash_password(password), weight, styles, levels_by_style, birth_date)
+def register_user(_id, name, username, email, image_url, password, weight, styles, levels_by_style, birth_date, gyms_ids,description, driver=None):
+    user_id, ok, error = add_user(driver, _id, name, username, email, image_url, hash_password(password), weight, styles, levels_by_style, birth_date,description)
     if ok:
         if gyms_ids:
             for gym_id in ast.literal_eval(gyms_ids):
@@ -40,7 +40,7 @@ def login_user(password, username=None, email=None, driver=None):
         return None, False, "Wrong password"
     
     data = {
-        "token": generate_token(user["id"], user["username"], user["email"]),
+        "token": generate_stoken(user["id"], user["username"], user["email"]),
         "role": "user" 
     }
 
@@ -71,8 +71,8 @@ def delete_user_account(driver=None):
 
 @use_db_connection
 @needs_authentication
-def update_user_account(name, email, password, image_url, weight, styles, levels_by_style, birth_date, driver=None):
-    return update_user(driver, name, session["username"], email, hash_password(password), image_url, weight, styles, levels_by_style, birth_date)
+def update_user_account(name, email, password, image_url, weight, styles, levels_by_style, birth_date,description, driver=None):
+    return update_user(driver, name, session["username"], email, hash_password(password), image_url, weight, styles, levels_by_style, birth_date,description)
 
 def get_users_by_search_term(query, users):
     return get_users_by_search_term_service(users, query)

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-def add_user(driver, _id, name, username, email, image_url, password,weight,styles,levels_by_style, birth_date):
+def add_user(driver, _id, name, username, email, image_url, password, weight, styles, levels_by_style, birth_date, description):
     existing_user = driver.execute_query(
         "MATCH (u:User {username: $username}) RETURN u", {"username": username}
     ).records
@@ -8,16 +8,27 @@ def add_user(driver, _id, name, username, email, image_url, password,weight,styl
     if len(existing_user) == 0:
         driver.execute_query(
             """
-                CREATE (u:User {name: $name, id: $id, email: $email, image: $image,  username: $username, password: $password, weight: $weight, styles: $styles, levels_by_style: $levels_by_style, birth_date: $birth_date})
+                CREATE (u:User {name: $name, id: $id, email: $email, image: $image, username: $username, password: $password, weight: $weight, styles: $styles, levels_by_style: $levels_by_style, birth_date: $birth_date, description: $description})
             """,
-            {"name": name, "id": _id, "email": email, "image": image_url, "username": username, "password": password, "weight": weight, "styles": styles, "levels_by_style": levels_by_style, "birth_date": birth_date},
+            {
+                "name": name, 
+                "id": _id, 
+                "email": email, 
+                "image": image_url, 
+                "username": username, 
+                "password": password, 
+                "weight": weight, 
+                "styles": styles, 
+                "levels_by_style": levels_by_style, 
+                "birth_date": birth_date,
+                "description": description
+            },
         )
         return driver.execute_query(
-        "MATCH (u:User {username: $username}) RETURN id(u) as user_id", {"username": username}
+            "MATCH (u:User {username: $username}) RETURN id(u) as user_id", {"username": username}
         ).records[0]["user_id"], True, None
     else:
         return None, False, Exception("Username already exists.")
-
 def get_user_by_email(driver, email):
     user = driver.execute_query(
         """
@@ -124,7 +135,7 @@ def remove_follow_relation(driver, entity_1, entity_2):
     else:
         return None, False, "Entity not found."
 
-def update_user(driver, name, username, email, password, image_url, weight,styles,levels_by_style, birth_date):
+def update_user(driver, name, username, email, password, image_url, weight, styles, levels_by_style, birth_date, description):
     existing_user = driver.execute_query(
         "MATCH (u:User {username: $username}) RETURN u LIMIT 1", 
         {"username": username}
@@ -135,14 +146,17 @@ def update_user(driver, name, username, email, password, image_url, weight,style
             """
             MATCH (u:User {username: $username}) 
             SET u.name = $name, u.email = $email, u.password = $password, u.image = $image_url, 
-                u.weight = $weight, u.styles = $styles, u.levels_by_style = $levels_by_style, u.birth_date = $birth_date
+                u.weight = $weight, u.styles = $styles, u.levels_by_style = $levels_by_style, 
+                u.birth_date = $birth_date, u.description = $description
             """,
             {"name": name, "email": email, "username": username, "password": password, "image_url": image_url, 
-             "weight": weight, "styles": styles, "levels_by_style": levels_by_style, "birth_date": birth_date}
+             "weight": weight, "styles": styles, "levels_by_style": levels_by_style, "birth_date": birth_date,
+             "description": description}
         )
         return username, True, None
     else:
         return None, False, "User not found."
+
 
 def delete_user_service(driver, username):
     existing_user = driver.execute_query(
