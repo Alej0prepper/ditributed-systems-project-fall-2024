@@ -901,19 +901,17 @@ def remove_training_styles(id):
 
 if __name__ == '__main__':
 
-    IP = os.getenv("NODE_IP", "127.0.0.1")  
-    PORT = int(os.getenv("FLASK_RUN_PORT", "5000"))
 
     print("Initiating node: ",chord.current_node.to_dict())
     threading.Thread(target=stabilize, daemon=True).start()
     threading.Thread(target=check_predecessor, daemon=True).start()
     threading.Thread(target=listen_for_chord_updates, daemon=True).start()
-    threading.Thread(target=chord_logic.announce_node_to_router, daemon=True).start()
     threading.Thread(target=chord_logic.send_local_system_entities_copy, daemon=True).start()
+    threading.Thread(target=chord_logic.announce_node_to_router, daemon=True).start()
     #replication_thread = threading.Thread(target=replicate_to_successors, daemon=True).start()
-    
+
     app.run(
         host="0.0.0.0", 
-        port=PORT, 
+        port=5000, 
         debug=True
     )

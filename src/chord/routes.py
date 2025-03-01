@@ -8,13 +8,10 @@ chord_routes = Blueprint('chord', __name__)
 
 @chord_routes.route('/find_successor', methods=['POST'])
 def find_successor_endpoint():
-    """ print("\n[find_successor_endpoint] Received request") """
     try:
         data = request.json
         key = int(data['key'])
-        """ print(f"Looking for successor of {key}") """
         successor = find_successor(key)
-        """ print(f"Returning successor: {successor}") """
         return jsonify(successor)
     except (KeyError, ValueError) as e:
         print(f"Invalid request: {str(e)}")
@@ -33,45 +30,60 @@ def join_network():
         )
         successor = response.json()
         
+        
         # Set initial state
         with chord.current_node.lock:
             chord.current_node.successor = successor
-            chord.current_node.predecessor = None
-            
-            # Immediate notification to successor
-            requests.post(
-                f"http://{successor['ip']}:{successor['port']}/notify",
-                json=chord.current_node.to_dict()
-            )
-            
+            # If successor is self (single-node network), set predecessor to self
+            if successor['id'] == chord.current_node.id:
+                chord.current_node.predecessor = chord.current_node.to_dict()
+            else:
+                chord.current_node.predecessor = None
+
+            # Notify successor only if it's not self
+            if successor['id'] != chord.current_node.id:
+                try:
+                    requests.post(
+                        f"http://{successor['ip']}:{successor['port']}/notify",
+                        json=chord.current_node.to_dict()
+                    )
+                except requests.RequestException as e:
+                    print(f"Notify failed: {e}")
+        
         return jsonify(chord.current_node.to_dict())
     
     except Exception as e:
+        print(f"Join failed: {str(e)}")
         return jsonify({"error": str(e)}), 500
     
-    except Exception as e:
-        print(f"Join failed: {str(e)}")
-        return jsonify({"error": str(e)}), 503
-
 @chord_routes.route('/notify', methods=['POST'])
 def handle_notify():
-    candidate = request.json
-    with chord.current_node.lock:
-        # Always accept first notification
-        if chord.current_node.predecessor is None:
-            chord.current_node.predecessor = candidate
-            print(f"Set initial predecessor to {candidate['id']}")
-        # Update if candidate is between current predecessor and self
-        elif is_between(candidate['id'], chord.current_node.predecessor['id'], chord.current_node.id):
-            chord.current_node.predecessor = candidate
-            print(f"Updated predecessor to {candidate['id']}")
-            
-        # Ensure successor is set if null
-        if chord.current_node.successor is None:
-            chord.current_node.successor = candidate
-            print(f"Set successor to {candidate['id']}")
-            
-    return jsonify({"status": "ok"})
+    try:
+        candidate = request.json
+        with chord.current_node.lock:
+            # Always accept first notification if predecessor is None
+            if chord.current_node.predecessor is None:
+                chord.current_node.predecessor = candidate
+                print(f"Set initial predecessor to {candidate['id']}")
+            else:
+                # Check if candidate is between current predecessor and self
+                if is_between(
+                    candidate['id'], 
+                    chord.current_node.predecessor['id'], 
+                    chord.current_node.id
+                ):
+                    chord.current_node.predecessor = candidate
+                    print(f"Updated predecessor to {candidate['id']}")
+
+            # If successor is None (e.g., during recovery), set it
+            if chord.current_node.successor is None:
+                chord.current_node.successor = candidate
+                print(f"Set successor to {candidate['id']}")
+
+        return jsonify({"status": "ok"})
+    except Exception as e:
+        print(f"Error in notify: {e}")
+        return jsonify({"error": str(e)}), 500
 
 @chord_routes.route('/finger', methods=['GET'])
 def get_finger():

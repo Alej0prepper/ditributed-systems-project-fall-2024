@@ -1,11 +1,9 @@
-import ast
 import time
 import chord.node as chord
 import requests
 import socket
 import os
 from chord.config import M, STABILIZE_INTERVAL
-from chord.node import ChordNode
 
 def is_between(key, start, end, inclusive=False):
     if start < end:
@@ -25,7 +23,7 @@ def find_successor(key):
             if entry and is_between(entry['id'], chord.current_node.id, key):
                 # Verify if the finger entry is alive
                 try:
-                    requests.get(f"http://{entry['ip']}:{entry['port']}/state", timeout=2)
+                    requests.get(f"http://{entry['ip']}:{entry['port']}/state")
                     closest = entry
                     break
                 except requests.RequestException:
@@ -46,7 +44,7 @@ def stabilize():
         try:
             # 1. Get current state snapshot
             with chord.current_node.lock:
-                successor = chord.current_node.successor.copy() if chord.current_node.successor else None
+                successor = chord.current_node.successor.copy() if chord.current_node.successor and chord.current_node.successor["id"] != chord.current_node.id else None
                 node_id = chord.current_node.id
                 local_state = chord.current_node.to_dict()
 
@@ -55,8 +53,7 @@ def stabilize():
                 try:
                     # Get successor's state
                     response = requests.get(
-                        f"http://{successor['ip']}:{successor['port']}/state",
-                        timeout=2
+                        f"http://{successor['ip']}:{successor['port']}/state"
                     )
                     successor_state = response.json()
                     successor_predecessor = successor_state.get("predecessor")
@@ -66,8 +63,7 @@ def stabilize():
                         # Check if the predecessor is actually alive
                         try:
                             requests.get(
-                                f"http://{successor_predecessor['ip']}:{successor_predecessor['port']}/state",
-                                timeout=2
+                                f"http://{successor_predecessor['ip']}:{successor_predecessor['port']}/state"
                             )
                             predecessor_alive = True
                         except requests.RequestException:
@@ -83,7 +79,6 @@ def stabilize():
                     requests.post(
                         f"http://{successor['ip']}:{successor['port']}/notify",
                         json=local_state,
-                        timeout=2
                     )
 
                 except requests.RequestException as e:
@@ -112,8 +107,7 @@ def check_predecessor():
                 try:
                     # Check predecessor liveness
                     requests.get(
-                        f"http://{predecessor['ip']}:{predecessor['port']}/state",
-                        timeout=2
+                        f"http://{predecessor['ip']}:{predecessor['port']}/state"
                     )
                 except requests.RequestException:
                     print(f"Predecessor {predecessor['id']} is dead. Removing.")
@@ -163,14 +157,20 @@ DATA_PORT = int(os.environ.get('DATA_PORT', ''))
 
 
 def announce_node_to_router():
-    message = "JOIN"
     multicast_group = (MULTICAST_GROUP_DISCOVERY, DISCOVERY_PORT)
+    message = "JOIN"
     while True:
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) as sock:
-            sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
-            sock.sendto(message.encode(), multicast_group)
-            print(f"📡 Sent announcement to router in group {MULTICAST_GROUP_DISCOVERY}:{DISCOVERY_PORT} : {message}")
-        time.sleep(30)
+        with chord.current_node.lock:
+            if chord.current_node.successor is not None and chord.current_node.predecessor is not None:
+                return
+            else:
+                with socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) as sock:
+                    sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)        
+                    sock.sendto(message.encode(), multicast_group)
+                    print(f"📡 Sent join request to router")
+                time.sleep(STABILIZE_INTERVAL)
 
 def listen_for_chord_updates():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)

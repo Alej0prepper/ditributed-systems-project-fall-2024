@@ -1,9 +1,9 @@
 import hashlib
 import os
 from chord.config import M
+import socket
 import threading
 
-# --- Node State Management ---
 class ChordNode:
     def __init__(self, ip, port):
         self.ip = ip
@@ -44,7 +44,12 @@ class ChordNode:
 def get_hash(key):
     return int(hashlib.sha1(key.encode()).hexdigest(), 16) % (2**M)
 
-IP = os.getenv("NODE_IP", "127.0.0.1")  
+def get_local_ip():
+    hostname = socket.gethostname()
+    local_ip = socket.gethostbyname(hostname)
+    return local_ip
+
+IP = get_local_ip()  
 PORT = int(os.getenv("FLASK_RUN_PORT", "5000"))
 
 current_node = ChordNode(ip=IP, port=PORT)

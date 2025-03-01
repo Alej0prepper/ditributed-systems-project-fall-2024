@@ -4,7 +4,7 @@ import os
 import requests
 from flask import request, jsonify
 from network.middlewares.token import validate_token
-from chord.node import get_hash
+import chord.node as chord_node 
 import inspect
 import chord.protocol_logic as chord_logic
 
@@ -62,7 +62,7 @@ def route_to_responsible(routing_key=None):
                 return jsonify({"error": "Invalid routing key"}), 400
 
             print("Routing key:", local_routing_key)
-            key = get_hash(local_routing_key)
+            key = chord_node.get_hash(local_routing_key)
             print("Computed hash:", key)
 
             # Determine the responsible node in the Chord ring
@@ -70,7 +70,7 @@ def route_to_responsible(routing_key=None):
             print("Responsible node:", responsible_node)
 
             # Retrieve self-identity
-            self_ip = os.getenv("NODE_IP", "127.0.0.1")
+            self_ip = chord_node.current_node.to_dict()["ip"]
             self_port = int(os.getenv("FLASK_RUN_PORT", "5000"))
 
             if responsible_node["ip"] == self_ip and responsible_node["port"] == self_port:
