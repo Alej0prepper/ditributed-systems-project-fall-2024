@@ -841,7 +841,7 @@ def add_training_styles(id):
         return jsonify({"message": f"Styles added to user in a gym with ID {gym_id}"})
     return jsonify({"error": error}), 500
 
-@app.route('/remove-training-styles<id>', methods=['POST'])
+@app.route('/remove-training-styles/<id>', methods=['POST'])
 @route_to_responsible(routing_key=None)
 def remove_training_styles(id):
     """
