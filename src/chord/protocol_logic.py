@@ -4,6 +4,7 @@ import requests
 import socket
 import os
 from chord.config import M, STABILIZE_INTERVAL
+from chord.node import ChordNode
 
 def is_between(key, start, end, inclusive=False):
     if start < end:
@@ -44,10 +45,10 @@ def stabilize():
         try:
             # 1. Get current state snapshot
             with chord.current_node.lock:
-                successor = chord.current_node.successor.copy() if chord.current_node.successor and chord.current_node.successor["id"] != chord.current_node.id else None
+                successor = chord.current_node.successor.copy() if chord.current_node.successor else None
                 node_id = chord.current_node.id
                 local_state = chord.current_node.to_dict()
-
+            
             # 2. Check successor's predecessor
             if successor:
                 try:
@@ -160,9 +161,14 @@ def announce_node_to_router():
     multicast_group = (MULTICAST_GROUP_DISCOVERY, DISCOVERY_PORT)
     message = "JOIN"
     while True:
-        with chord.current_node.lock:
-            if chord.current_node.successor is not None and chord.current_node.predecessor is not None:
-                return
+        current_ip = chord.current_node.to_dict()["ip"]
+        current_port = chord.current_node.to_dict()["port"]
+        try:
+            response = requests.get(f"http://{current_ip}:{current_port}/state")
+            node_data = response.json()
+            print(node_data)
+            if node_data['successor'] is not None and node_data['predecessor'] is not None:
+                break
             else:
                 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) as sock:
                     sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
@@ -171,6 +177,8 @@ def announce_node_to_router():
                     sock.sendto(message.encode(), multicast_group)
                     print(f"📡 Sent join request to router")
                 time.sleep(STABILIZE_INTERVAL)
+        except:
+            pass
 
 def listen_for_chord_updates():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)

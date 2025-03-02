@@ -12,6 +12,7 @@ def find_successor_endpoint():
         data = request.json
         key = int(data['key'])
         successor = find_successor(key)
+        print("returned succeessor:", successor['id'])
         return jsonify(successor)
     except (KeyError, ValueError) as e:
         print(f"Invalid request: {str(e)}")
@@ -96,6 +97,7 @@ def chord_gui():
 
 @chord_routes.route('/state', methods=['GET'])
 def get_state():
+    print(chord.current_node.predecessor["id"] if chord.current_node.predecessor else None, chord.current_node.id, chord.current_node.successor["id"] if chord.current_node.successor else None)
     return jsonify(chord.current_node.to_dict())
 
 @chord_routes.route('/network_size', methods=['GET'])

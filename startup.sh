@@ -8,11 +8,12 @@ set -e  # Exit on error
 # Check if the network exists, if not create it
 if ! sudo docker network ls | grep -q "$NETWORK_NAME"; then
     echo "Network $NETWORK_NAME does not exist. Creating..."
-    sudo docker network create $NETWORK_NAME --subnet $NETWORK_SUBNET 
+    docker network create \
+    --subnet $NETWORK_SUBNET \
+    $NETWORK_NAME
 else
     echo "Network $NETWORK_NAME already exists. Continuing..."
 fi
-
 
 # Build the Docker image if it doesn't exist
 if ! sudo docker images --format "{{.Repository}}"  "$APP_IMAGE" | grep -qx "$APP_IMAGE"; then
