@@ -73,6 +73,7 @@ def register(id=str(uuid.uuid4())):
     - birth_date
     - gyms_ids
     - image
+    - description`  
 
     
     Returns:
@@ -91,6 +92,7 @@ def register(id=str(uuid.uuid4())):
     levels_by_style = data.get("levels_by_style")
     gyms_ids = data.get("gyms_ids")
     birth_date = data.get("birthDate")
+    description = data.get("description")
 
     profile_image = request.files.get("image")
     image_url = None
@@ -108,7 +110,7 @@ def register(id=str(uuid.uuid4())):
     if not email and not username:
         return jsonify({"message": "Either email or username is required."}), 400
 
-    user_id, error = register_user(id, name, username, email, image_url, password, weight, styles, levels_by_style, birth_date, gyms_ids)
+    user_id, error = register_user(id, name, username, email, image_url, password, weight, styles, levels_by_style, birth_date, gyms_ids,description)
     if error == None:
         user_info = f"{email},{id}"
         chord_logic.send_chord_update(user_info)
@@ -132,6 +134,7 @@ def updateUser(id):
     - levels_by_style
     - birthDate
     - image
+    - description
     At least one field is required for update.
     Returns:
         201: JSON with success message if update successful
@@ -145,6 +148,8 @@ def updateUser(id):
     styles = data.get("styles")
     levels_by_style = data.get("levels_by_style")  
     birth_date = data.get("birthDate")  
+    description = data.get("description")
+
 
     profile_image = request.files.get("image")
     image_url = None
@@ -155,10 +160,10 @@ def updateUser(id):
         profile_image.save(image_path)
         image_url = 'uploads/' + filename
 
-    if name is None and email is None and password is None and weight is None and styles is None and levels_by_style is None:
+    if name is None and email is None and password is None and weight is None and styles is None and levels_by_style is None and description is None:
         return jsonify({"error": "At least one field is required for update"}), 400
     
-    _, ok, error = update_user_account(name, email, password, image_url, weight, styles, levels_by_style, birth_date)
+    _, ok, error = update_user_account(name, email, password, image_url, weight, styles, levels_by_style, birth_date,description)
     if ok:
         return jsonify({"message": f"User updated successfully."}), 201
     return jsonify({"Error": f"{error}"}), 500
@@ -439,6 +444,48 @@ def unfollow(id):
     if ok:
         return jsonify({"message": f"Unfollowed user {followed_username}"}), 201
     return jsonify({"error": error}), 500
+@app.route('/follow_gym/<id>', methods=['POST'])
+@route_to_responsible(routing_key=None)
+def follow_gym_by_id(id):
+    """
+    Follow gym with id: <id>
+    
+    Accepts POST request 
+
+    Returns:
+        201: JSON with success message if follow successful
+        500: JSON with error message if follow fails or id missing
+    """
+    gym, _, _ = get_gym_by_id_controller(id)
+    if not gym:
+        return jsonify({"error": "Gym id is required"}), 500
+    gym_username = gym["username"]
+    _, ok, error = follow_account(gym_username, "Gym")
+    
+    if ok:
+        return jsonify({"message": f"Now following gym {gym_username}"}), 201
+    return jsonify({"error": error}), 500
+@app.route('/unfollow_gym/<id>', methods=['POST'])
+@route_to_responsible(routing_key=None)
+def unfollow_gym_by_id(id):
+    """
+    Unfollow the gym with id: <id>.
+    
+    Accepts POST request
+
+    Returns:
+        201: JSON with success message if unfollow successful
+        500: JSON with error message if unfollow fails or id missing
+    """
+    gym, _, _ = get_gym_by_id_controller(id)
+    if not gym:
+        return jsonify({"error": "Gym id is required"}), 500
+    gym_username = gym["username"]
+    _, ok, error = unfollow_user(driver, session["username"], gym_username)
+    if ok:
+        return jsonify({"message": f"Unfollowed gym {gym_username}"}), 201
+    return jsonify({"error": error}), 500
+
 
 @app.route('/find-users', methods=['GET'])
 @route_to_responsible(routing_key="getAllUsers")
