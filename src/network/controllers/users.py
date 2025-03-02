@@ -56,8 +56,8 @@ def verify_password(plain_password: str, hashed_password: bytes) -> bool:
 
 @use_db_connection
 @needs_authentication
-def follow_account(followed_username, driver=None):
-    return create_follow_relation(driver, session["username"], followed_username)
+def follow_account(followed_username,followed_type, driver=None):
+    return create_follow_relation(driver, session["username"], followed_username,"User",followed_type)
 
 @use_db_connection
 @needs_authentication

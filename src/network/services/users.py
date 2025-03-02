@@ -56,7 +56,10 @@ def get_user_by_id_service(driver, _id):
     )
     return user.records[0]["User"]._properties if len(user.records)!=0 else None
 
-def create_follow_relation(driver, entity_1, entity_2):
+
+
+def create_follow_relation(driver, entity_1, entity_2, type_entity_1=None, type_entity_2=None):
+    # Primero, verifica si las entidades existen
     existing_entity_1 = driver.execute_query(
         """
         MATCH (e) 
@@ -75,6 +78,56 @@ def create_follow_relation(driver, entity_1, entity_2):
         {"entity_2": entity_2}
     ).records
 
+    # Si no existen ninguna de las dos, lanza error
+    if not existing_entity_1 and not existing_entity_2:
+        return None, False, "Both entities not found."
+
+    # Si existe una de las dos, crea la otra
+    if existing_entity_1 and not existing_entity_2:
+        # Asumiendo que type_entity_2 es 'User' o 'Gym'
+        if type_entity_2 == 'User':
+            driver.execute_query(
+                "CREATE (e:User {username: $entity_2})",
+                {"entity_2": entity_2}
+            )
+        elif type_entity_2 == 'Gym':
+            # Para crear una gimnasio, necesitarías más datos, pero por simplicidad...
+            driver.execute_query(
+                "CREATE (e:Gym {username: $entity_2})",
+                {"entity_2": entity_2}
+            )
+        existing_entity_2 = driver.execute_query(
+            """
+            MATCH (e) 
+            WHERE (e:User OR e:Gym) AND e.username = $entity_2 
+            RETURN e LIMIT 1
+            """,
+            {"entity_2": entity_2}
+        ).records
+
+    if existing_entity_2 and not existing_entity_1:
+        # Asumiendo que type_entity_1 es 'User' o 'Gym'
+        if type_entity_1 == 'User':
+            driver.execute_query(
+                "CREATE (e:User {username: $entity_1})",
+                {"entity_1": entity_1}
+            )
+        elif type_entity_1 == 'Gym':
+            # Para crear una gimnasio, necesitarías más datos, pero por simplicidad...
+            driver.execute_query(
+                "CREATE (e:Gym {username: $entity_1})",
+                {"entity_1": entity_1}
+            )
+        existing_entity_1 = driver.execute_query(
+            """
+            MATCH (e) 
+            WHERE (e:User OR e:Gym) AND e.username = $entity_1 
+            RETURN e LIMIT 1
+            """,
+            {"entity_1": entity_1}
+        ).records
+
+    # Si ambas entidades existen, crea la relación
     if existing_entity_1 and existing_entity_2:
         now = datetime.now()
         driver.execute_query(
@@ -87,7 +140,8 @@ def create_follow_relation(driver, entity_1, entity_2):
         )
         return None, True, None
     else:
-        return None, False, "Entity not found."
+        return None, False, "Entity creation failed."
+
     
 
 def remove_follow_relation(driver, entity_1, entity_2):

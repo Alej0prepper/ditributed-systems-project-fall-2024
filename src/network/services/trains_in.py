@@ -1,9 +1,39 @@
 
-def trains_in_service(driver, styles, username, gym_id):
+def trains_in_service(driver, styles, username=None, gym_username=None):
+    # Primero, verifica si el usuario y la gimnasio existen
+    user_exists = driver.execute_query(
+        "MATCH (u:User {username: $username}) RETURN u", 
+        {"username": username} if username else {}
+    ).records if username else []
+    
+    gym_exists = driver.execute_query(
+        "MATCH (g:Gym {username: $gym_username}) RETURN g", 
+        {"gym_username": gym_username} if gym_username else {}
+    ).records if gym_username else []
+
+    # Si no existe el usuario, crea un shadow de él
+    if username and not user_exists:
+        driver.execute_query(
+            "CREATE (u:User {username: $username})",
+            {"username": username}
+        )
+        user_exists = True  # Después de crearlo
+
+    # Si no existe la gimnasio, crea un shadow
+    if gym_username and not gym_exists:
+        driver.execute_query(
+            "CREATE (g:Gym {username: $gym_username})",
+            {"gym_username": gym_username}
+        )
+        gym_exists = True  # Después de crearla
+
+    if not user_exists or not gym_exists:
+        return None, False, "User or Gym not found or creation failed"
+
+    # Si ambos existen, crea la relación
     query = '''
     MATCH (u:User {username: $username})
-    MATCH (g:Gym)
-    WHERE id(g) = $gym_id
+    MATCH (g:Gym {username: $gym_username})
     MERGE (u) -[r:Trains_in]-> (g)
     SET r.styles = $styles
     RETURN r
@@ -12,7 +42,7 @@ def trains_in_service(driver, styles, username, gym_id):
     parameters = {
         "styles": styles,
         "username": username,
-        "gym_id": gym_id
+        "gym_username": gym_username
     }
 
     try:
@@ -20,7 +50,7 @@ def trains_in_service(driver, styles, username, gym_id):
         if result:
             return None, True, None
         else:
-            return None, False, f"User {username} or Gym with ID {gym_id} not found or update failed"
+            return None, False, f"User {username} or Gym with username {gym_username} not found or update failed"
     except Exception as e:
         return None, False, str(e)
 

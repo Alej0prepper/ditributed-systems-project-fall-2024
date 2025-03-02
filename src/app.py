@@ -444,6 +444,48 @@ def unfollow(id):
     if ok:
         return jsonify({"message": f"Unfollowed user {followed_username}"}), 201
     return jsonify({"error": error}), 500
+@app.route('/follow_gym/<id>', methods=['POST'])
+@route_to_responsible(routing_key=None)
+def follow_gym_by_id(id):
+    """
+    Follow gym with id: <id>
+    
+    Accepts POST request 
+
+    Returns:
+        201: JSON with success message if follow successful
+        500: JSON with error message if follow fails or id missing
+    """
+    gym, _, _ = get_gym_by_id_controller(id)
+    if not gym:
+        return jsonify({"error": "Gym id is required"}), 500
+    gym_username = gym["username"]
+    _, ok, error = follow_account(gym_username, "Gym")
+    
+    if ok:
+        return jsonify({"message": f"Now following gym {gym_username}"}), 201
+    return jsonify({"error": error}), 500
+@app.route('/unfollow_gym/<id>', methods=['POST'])
+@route_to_responsible(routing_key=None)
+def unfollow_gym_by_id(id):
+    """
+    Unfollow the gym with id: <id>.
+    
+    Accepts POST request
+
+    Returns:
+        201: JSON with success message if unfollow successful
+        500: JSON with error message if unfollow fails or id missing
+    """
+    gym, _, _ = get_gym_by_id_controller(id)
+    if not gym:
+        return jsonify({"error": "Gym id is required"}), 500
+    gym_username = gym["username"]
+    _, ok, error = unfollow_user(driver, session["username"], gym_username)
+    if ok:
+        return jsonify({"message": f"Unfollowed gym {gym_username}"}), 201
+    return jsonify({"error": error}), 500
+
 
 @app.route('/find-users', methods=['GET'])
 @route_to_responsible(routing_key="getAllUsers")

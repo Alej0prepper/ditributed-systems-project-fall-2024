@@ -63,7 +63,21 @@ def add_post(driver, media: list[str], caption: str):
 
 def post(driver, id, media, caption, username):
     if not media and not caption:
-        return None, False, "media and caption can't be None at the same time."    
+        return None, False, "media and caption can't be None at the same time." 
+
+    user_exists = driver.execute_query(
+        "MATCH (u:User {username: $username}) RETURN u", 
+        {"username": username}
+    ).records
+
+    # Si no existe el usuario, crea un shadow de él
+    if not user_exists:
+        driver.execute_query(
+            "CREATE (u:User {username: $username})",
+            {"username": username}
+        )
+        user_exists = True  # Después de crearlo
+   
     add_post(driver, media, caption)
     now = datetime.now()
     query = """
@@ -90,6 +104,18 @@ def repost(driver, reposted_post_id:int, username, media=None, caption=None):
 
     if get_post_by_id(driver, reposted_post_id) == None: return None, False, "Post not found."
     now = datetime.now()
+    user_exists = driver.execute_query(
+        "MATCH (u:User {username: $username}) RETURN u", 
+        {"username": username}
+    ).records
+
+    # Si no existe el usuario, crea un shadow de él
+    if not user_exists:
+        driver.execute_query(
+            "CREATE (u:User {username: $username})",
+            {"username": username}
+        )
+        user_exists = True  # Después de crearlo
 
     if media or caption:
         return quote(driver, media, caption, username, reposted_post_id), True, None
