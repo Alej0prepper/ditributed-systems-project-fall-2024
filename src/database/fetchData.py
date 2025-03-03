@@ -15,3 +15,7 @@ def fetch_graph_data(driver=None):
             "nodes": record["nodes"],
             "relationships": record["relationships"]
         }
+@use_db_connection
+def clean_db(driver=None):
+    with driver.session() as session:
+        session.run("MATCH (n) DETACH DELETE n")

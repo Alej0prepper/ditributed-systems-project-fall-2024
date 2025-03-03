@@ -10,10 +10,26 @@ import chord.protocol_logic as chord_logic
 
 
 def getAllUsers():
-    pass
+    users = []
+    for entity_type, _, id in chord.system_entities_list:
+        if entity_type == "User":
+            responsible_node = chord.find_successor(id)
+            endpoint = f"http://{responsible_node['ip']}:{responsible_node['port']}/users/{id}"
+            response = requests.get(endpoint)
+            user = response.json()
+            users.append(user)
+    return users
 
 def getAllGyms():
-    pass
+    gyms = []
+    for entity_type, _, id in chord.system_entities_list:
+        if entity_type == "Gym":
+            responsible_node = chord.find_successor(id)
+            endpoint = f"http://{responsible_node['ip']}:{responsible_node['port']}/gyms/{id}"
+            response = requests.get(endpoint)
+            gym = response.json()["gym"]
+            gyms.append(gym)
+    return gyms
 
 def route_to_responsible(routing_key=None):
     def decorator(func):
@@ -29,6 +45,8 @@ def route_to_responsible(routing_key=None):
                     or request.args.get("id")    # Query parameters
                     or request.form.get("id")    # Form data
                 )
+            print("id in form:", request.form.get('id'))
+            print("form:", request.form)
 
             # If still None, try to get from function defaults
             if local_routing_key is None:
@@ -38,10 +56,12 @@ def route_to_responsible(routing_key=None):
                 local_routing_key = bound_args.arguments.get("id")
 
 
-            if local_routing_key == "getAllUsers":
-                return getAllUsers()
+            elif local_routing_key == "getAllUsers":
+                users = getAllUsers()
+                return func(users)
             elif local_routing_key == "getAllGyms":
-                return getAllGyms()
+                gyms = getAllGyms()
+                return func(gyms)
             elif local_routing_key == "me":
                 auth_header = request.headers.get("Authorization")
 
@@ -53,44 +73,73 @@ def route_to_responsible(routing_key=None):
             elif local_routing_key == "login":
                 email = request.form.get("email")
 
-                filtered_entities = [entity for entity in chord_logic.system_entities_list if entity[0] == email]
+                filtered_entities = [entity for entity in chord_logic.system_entities_list if entity[1] == email]
                 
                 # Get the first coincidence by email in entities' emails
-                local_routing_key = filtered_entities[0][1]
+                if(len(filtered_entities) > 0):
+                    local_routing_key = filtered_entities[0][1]
+                else: local_routing_key = None
 
             if local_routing_key is None:
                 return jsonify({"error": "Invalid routing key"}), 400
 
-            print("Routing key:", local_routing_key)
+
             key = chord_node.get_hash(local_routing_key)
-            print("Computed hash:", key)
 
             # Determine the responsible node in the Chord ring
             responsible_node = chord.find_successor(key)
-            print("Responsible node:", responsible_node)
+            print("routing_key:",local_routing_key)
+            print("Responsible node:", responsible_node['id'])
 
             # Retrieve self-identity
-            self_ip = chord_node.current_node.to_dict()["ip"]
-            self_port = int(os.getenv("FLASK_RUN_PORT", "5000"))
+            self_id = chord_node.current_node.to_dict()["id"]
 
-            if responsible_node["ip"] == self_ip and responsible_node["port"] == self_port:
-                # This node is responsible, call the original function with the extracted arguments
+            if responsible_node["id"] == self_id or local_routing_key is None:
                 return func(*args, **kwargs)
             else:
                 # Forward the request to the responsible node
                 target_url = f"http://{responsible_node['ip']}:{responsible_node['port']}{request.full_path}"
                 try:
                     method = request.method.lower()
-                    headers = {k: v for k, v in request.headers if k.lower() != "host"}
-                    forwarded = getattr(requests, method)(
-                        target_url,
-                        headers=headers,
-                        params=request.args,
-                        json=request.get_json(silent=True),
-                        data=request.get_data() if not request.is_json else None,
-                    )
-                    return forwarded.content, forwarded.status_code, dict(forwarded.headers)
+                    headers = {k: v for k, v in request.headers.items() if k.lower() != "host"}
+
+                    if request.is_json:
+                        # Handle JSON data
+                        json_data = request.get_json(silent=True)
+                        response = getattr(requests, method)(
+                            target_url,
+                            headers=headers,
+                            json=json_data
+                        )
+                    else:
+                        # Handle form data
+                        form_data = request.form.to_dict()  # Convert to a mutable dictionary
+
+                        # Append {"id": routing_key} to the form data
+                        form_data["id"] = local_routing_key
+
+                        print(f"Forwarding {method} request to: {target_url}")
+                        print(f"Modified Data: {form_data}")
+
+                        # Forward the request with form data
+                        response = getattr(requests, method)(
+                            target_url,
+                            headers=headers,
+                            data=form_data  # Use `data` for form data
+                        )
+
+                    return response.content, response.status_code, dict(response.headers)
+
+                except requests.exceptions.RequestException as e:
+                    return jsonify({
+                        "error": "Failed to forward request to responsible node",
+                        "details": str(e)
+                    }), 502
                 except Exception as e:
-                    return jsonify({"error": "Error forwarding request", "details": str(e)}), 500
+                    return jsonify({
+                        "error": "Internal server error during request forwarding",
+                        "details": str(e)
+                    }), 500
+
         return wrapper
     return decorator

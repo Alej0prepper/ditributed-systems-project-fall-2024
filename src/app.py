@@ -7,7 +7,7 @@ import uuid
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from flask import Flask, request, jsonify, session, send_from_directory
-from network.controllers.users import delete_user_account, get_all_users_controller, get_users_by_search_term, login_user, register_user
+from network.controllers.users import delete_user_account, get_users_by_search_term, login_user, register_user
 from network.controllers.posts import create_post, repost_existing_post, quote_existing_post, delete_post
 from network.controllers.users import follow_account
 from network.controllers.users import unfollow_user
@@ -25,9 +25,10 @@ from network.controllers.users import get_user_by_id_controller
 from network.controllers.gyms import get_gym_by_id_controller, update_gym_controller
 from network.controllers.users import get_logged_user_controller
 from network.controllers.gyms import get_logged_gym_controller
-from network.middlewares.auth import needs_authentication
 from chord.protocol_logic import listen_for_chord_updates
 import chord.protocol_logic as chord_logic
+from network.middlewares.use_db_connection import use_db_connection
+from chord.replication import replicate_to_owners
 
 
 
@@ -212,7 +213,7 @@ def login():
 
 @app.route('/users',methods=['GET'])
 @route_to_responsible(routing_key="getAllUsers")
-def get_all_users():
+def get_all_users(users):
     """
     Get all users endpoint.
     
@@ -220,11 +221,10 @@ def get_all_users():
         200: JSON with users
         500: JSON with error if users fetch had an error
     """
-    users, ok, error = get_all_users_controller()
 
-    if ok:
+    if users:
         return jsonify({"users": users}), 200
-    return jsonify({"error": error}), 500
+    return jsonify({"error"}), 500
 
 @app.route('/users/<id>',methods=['GET'])
 @route_to_responsible(routing_key=None)
@@ -672,6 +672,12 @@ def create_gym(id=str(uuid.uuid4())):
     name = data.get("name")
     username = data.get("username")
     email = data.get("email")
+    
+    print("Receiving request in create gym")
+
+    if email in [email if entity == "Gym" else None for entity, email, id in chord_logic.system_entities_list]:
+        return jsonify({"error": "There is another gym using that email"}), 400
+
 
     location = data.get("location") 
     if isinstance(location, str): 
@@ -697,8 +703,24 @@ def create_gym(id=str(uuid.uuid4())):
         image_url = 'uploads/' + filename
 
     
-    if not name or not username or not email or not location or not password or not styles:
-        return jsonify({"error": "All fields (name, username, email, location, password and styles) are required"}), 400
+    required_fields = {
+        "name": name,
+        "username": username,
+        "email": email,
+        "location": location,
+        "password": password,
+        "styles": styles,
+    }
+
+    # Identify missing fields
+    missing_fields = [field for field, value in required_fields.items() if not value]
+
+    # Return error if any field is missing
+    if missing_fields:
+        return jsonify({
+            "error": "Missing required fields",
+            "missing_fields": missing_fields
+        }), 400
     
     gym_id, ok, error = add_gym_controller(name,username,email,description,image_url,location,styles,password,phone_number,ig_profile, id=id)
 
@@ -913,49 +935,53 @@ def remove_training_styles(id):
         return jsonify({"message": f"Styles removed from user in a gym with ID {gym_id}"})
     return jsonify({"error": error}), 500
 
-"""@app.route('/replicate', methods=['POST'])
+@app.route('/replicate', methods=['POST'])
 @use_db_connection
- def replicate_graph(driver=None):
+def replicate_graph(driver=None):
     # Receive replicated graph data and store it in Neo4j.
     data = request.get_json()
+    print(data)
 
-    if not data or "nodes" not in data or "relationships" not in data:
+    if not data or ("nodes" not in data and "relationships" not in data):
         return jsonify({"error": "Invalid graph data"}), 400
 
     try:
         with driver.session() as session:
             # Insert new nodes
             for node in data["nodes"]:
-                session.write_transaction(lambda tx: tx.run(
-                    "MERGE (n:Data {id: $id}) SET n += $properties, n.labels = $labels",
+                print("Merging: ", node)
+                session.execute_write(lambda tx: tx.run(
+                    "MERGE (n {id: $id}) SET n += $properties, n.labels = $labels",
                     id=node["id"], properties=node["properties"], labels=node["labels"]
                 ))
 
             # Insert new relationships
             for relationship in data["relationships"]:
-                session.write_transaction(lambda tx: tx.run(
-                    MATCH (a {id: $start}), (b {id: $end})
-                    MERGE (a)-[r:REL {id: $id}]->(b) 
-                    SET r += $properties, r.type = $type
-                    ,
-                    id=relationship["id"], start=relationship["start"], end=relationship["end"],
-                    properties=relationship["properties"], type=relationship["type"]
+                session.execute_write(lambda tx: tx.run(
+                    """
+                        MATCH (a {id: $start}), (b {id: $end})
+                        MERGE (a)-[r:REL {id: $id}]->(b) 
+                        SET r += $properties, r.type = $type
+                        ,
+                        id=relationship["id"], start=relationship["start"], end=relationship["end"],
+                        properties=relationship["properties"], type=relationship["type"]
+                    """
                 ))
 
         return jsonify({"message": "Graph replicated successfully"}), 200
     except Exception as e:
-        return jsonify({"error": str(e)}), 500 """
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-
 
     print("Initiating node: ",chord.current_node.to_dict())
     threading.Thread(target=stabilize, daemon=True).start()
     threading.Thread(target=check_predecessor, daemon=True).start()
     threading.Thread(target=listen_for_chord_updates, daemon=True).start()
-    threading.Thread(target=chord_logic.send_local_system_entities_copy, daemon=True).start()
+    #threading.Thread(target=chord_logic.send_local_system_entities_copy, daemon=True).start()
     threading.Thread(target=chord_logic.announce_node_to_router, daemon=True).start()
-    #replication_thread = threading.Thread(target=replicate_to_successors, daemon=True).start()
+    replication_thread = threading.Thread(target=replicate_to_owners, daemon=True).start()
+    
 
     app.run(
         host="0.0.0.0", 

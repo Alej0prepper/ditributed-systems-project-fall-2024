@@ -5,8 +5,9 @@ import os
 load_dotenv()
 AUTH_CREDS = os.getenv('NEO4J_AUTH')
 DB_HOST = os.getenv('NEO4J_URI_HOST')
+DB_PORT = os.getenv('NEO4J_HOST_PORT')
 
-URI = "neo4j://"+DB_HOST+":7687"
+URI = f"neo4j://{DB_HOST}:{DB_PORT}"
 AUTH = (AUTH_CREDS.split("/")[0], AUTH_CREDS.split("/")[1])
 driver = None
 session = None
@@ -23,3 +24,4 @@ def close_db_connection():
         session.close()
     if driver is not None:
         driver.close()
+

@@ -12,7 +12,6 @@ def find_successor_endpoint():
         data = request.json
         key = int(data['key'])
         successor = find_successor(key)
-        print("returned succeessor:", successor['id'])
         return jsonify(successor)
     except (KeyError, ValueError) as e:
         print(f"Invalid request: {str(e)}")

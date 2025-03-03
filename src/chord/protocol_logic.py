@@ -5,6 +5,7 @@ import socket
 import os
 from chord.config import M, STABILIZE_INTERVAL
 from chord.node import ChordNode
+from database.fetchData import fetch_graph_data
 
 def is_between(key, start, end, inclusive=False):
     if start < end:
@@ -129,7 +130,7 @@ def find_k_successors(K):
             # Request state from the current node
             response = requests.get(f"http://{current_ip}:{current_port}/state")
             if response.status_code == 200:
-                node_data = response.json()
+                node_data = response.json().get("successor")
                 
                 if node_data["ip"] == chord.current_node.to_dict()["ip"]:
                     return successors
@@ -166,7 +167,6 @@ def announce_node_to_router():
         try:
             response = requests.get(f"http://{current_ip}:{current_port}/state")
             node_data = response.json()
-            print(node_data)
             if node_data['successor'] is not None and node_data['predecessor'] is not None:
                 break
             else:
@@ -175,7 +175,7 @@ def announce_node_to_router():
                     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)        
                     sock.sendto(message.encode(), multicast_group)
-                    print(f"📡 Sent join request to router")
+                    # print(f"📡 Sent join request to router")
                 time.sleep(STABILIZE_INTERVAL)
         except:
             pass
@@ -191,27 +191,33 @@ def listen_for_chord_updates():
     while True:
         data, addr = sock.recvfrom(1024)
         message = data.decode()
-        if not (message.split(",")[0], message.split(",")[1]) in system_entities_list:
-            update_entities_list(message.split(",")[0], message.split(",")[1])
-            
-        print(f"📥 Received from {addr}: {message}")
+        print("Received message: ",message)
+        if not (message.split(",")[0], message.split(",")[1], message.split(",")[2]) in system_entities_list:
+            update_entities_list(message.split(",")[0], message.split(",")[1], message.split(",")[2])
 
 def send_chord_update(message):
     multicast_group = (MULTICAST_GROUP_DATA, DATA_PORT)
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) as sock:
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
         sock.sendto(message.encode(), multicast_group)
-        print(f"🔄 Sent update: {message}")
 
 def send_local_system_entities_copy():
     while True:
-        for email, id in system_entities_list:
-            send_chord_update(f"{email},{id}")
-        time.sleep(15)
+        try:
+            db_data = fetch_graph_data()
+            for node_info in db_data["nodes"]:
+                if "Gym" in node_info['labels'] or "User" in node_info['labels']:
+                    if not (node_info['labels'][0], node_info['properties']['email'], node_info['properties']['id']) in system_entities_list:
+                        update_entities_list(node_info['labels'][0], node_info['properties']['email'], node_info['properties']['id'])
+                        print(f"sending: {node_info['labels'][0]},{node_info['properties']['email']},{node_info['properties']['id']}")
+                        send_chord_update(f"{node_info['labels'][0]},{node_info['properties']['email']},{node_info['properties']['id']}")
+        except:
+            pass
+        time.sleep(STABILIZE_INTERVAL)
 
-def update_entities_list(email, id):
+def update_entities_list(entity_type, email, id):
     # Append the new entry as a string
-    system_entities_list.append((email,id))
+    system_entities_list.append((entity_type, email, id))
 
     folder_path = os.path.join(os.getcwd(), "src", "chord")
     file_path = os.path.join(folder_path, "system_entities_list.txt")
@@ -221,4 +227,4 @@ def update_entities_list(email, id):
 
     with open(file_path, "w") as file:
         for entity in system_entities_list:
-            file.write(f"{entity[0]} {entity[1]}\n")
+            file.write(f"{entity[0]}: {entity[1]} {entity[2]}\n")

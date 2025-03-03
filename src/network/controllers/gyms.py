@@ -41,7 +41,6 @@ def update_gym_controller(name, username, email, description,image_url, location
 
 @use_db_connection
 def get_gym_by_id_controller(id,driver=None):
-    id = int(id)
     return get_gym_by_id_service(driver,id)   
 
 @use_db_connection

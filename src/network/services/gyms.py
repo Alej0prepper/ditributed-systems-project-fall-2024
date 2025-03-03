@@ -82,6 +82,8 @@ def get_gym_by_id_service(driver,id):
     
     if result:
         gym_node_info = result[0][0][0]
+        del gym_node_info._properties["password"]
+        print(dict(gym_node_info._properties))
         return dict(gym_node_info._properties),True,None  
     
     return None,False,f"Cannot find gym with ID {id} "
