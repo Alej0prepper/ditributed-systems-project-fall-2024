@@ -5,7 +5,7 @@ from network.services.posts import post, repost, delete_post_service
 
 @use_db_connection
 @needs_authentication
-def create_post(id, media, caption, driver=None):
+def create_post(media, caption, driver=None, id=None):
     return post(driver, id, media, caption, session["username"])
 
 @use_db_connection

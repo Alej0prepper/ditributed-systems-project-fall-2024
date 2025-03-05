@@ -91,7 +91,7 @@ def post(driver, id, media, caption, username):
     with driver.session() as session:
         result = session.run(query, parameters)
         if result != None: 
-            return post_id, True, None
+            return id, True, None
         return None, False, "There was a DB related error."
 
 

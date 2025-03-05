@@ -40,8 +40,9 @@ def login_user(password, username=None, email=None, driver=None):
         return None, False, "Wrong password"
     
     data = {
-        "token": generate_stoken(user["id"], user["username"], user["email"]),
-        "role": "user" 
+        "token": generate_token(user["id"], user["username"], user["email"]),
+        "role": "user", 
+        "id": user['id'] 
     }
 
     return data, True, None

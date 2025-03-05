@@ -25,7 +25,8 @@ def login_gym(username, email, password, driver = None):
     
     data = {
         "token": generate_token(gym["id"], gym["username"], gym["email"]),
-        "role": "gym" 
+        "role": "gym", 
+        "id": gym['id'] 
     }
 
     return data, True, None

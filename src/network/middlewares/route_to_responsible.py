@@ -113,10 +113,13 @@ def route_to_responsible(routing_key=None):
                         )
                     else:
                         # Handle form data
-                        form_data = request.form.to_dict()  # Convert to a mutable dictionary
+                        form_data = request.form  # Keep as ImmutableMultiDict to preserve multi-values
+                        form_data = form_data.to_dict()  # Convert to dict if modification is needed
+                        form_data["id"] = local_routing_key  # Add your parameter
 
-                        # Append {"id": routing_key} to the form data
-                        form_data["id"] = local_routing_key
+                        # Ensure the correct Content-Type for form data
+                        headers = {k: v for k, v in request.headers.items() if k.lower() != "host"}
+                        headers["Content-Type"] = "application/x-www-form-urlencoded"  # Set explicitly
 
                         print(f"Forwarding {method} request to: {target_url}")
                         print(f"Modified Data: {form_data}")
@@ -125,7 +128,7 @@ def route_to_responsible(routing_key=None):
                         response = getattr(requests, method)(
                             target_url,
                             headers=headers,
-                            data=form_data  # Use `data` for form data
+                            data=form_data  # Use `data` for form-urlencoded
                         )
 
                     return response.content, response.status_code, dict(response.headers)
