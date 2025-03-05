@@ -87,8 +87,6 @@ def post(driver, id, media, caption, username, email):
         if em == email:
             entity_type = et
             break
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-    print( entity_type)
     if entity_type is None:
         return None, False, "No entity type found for the provided email."
 
