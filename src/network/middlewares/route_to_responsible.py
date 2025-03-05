@@ -78,7 +78,9 @@ def route_to_responsible(routing_key=None):
                 # Get the first coincidence by email in entities' emails
                 if(len(filtered_entities) > 0):
                     local_routing_key = filtered_entities[0][1]
-                else: local_routing_key = None
+                else: 
+                    print(f"Couldn't get {email} in {[entity for entity in chord_logic.system_entities_list]}")
+                    local_routing_key = None
 
             if local_routing_key is None:
                 return jsonify({"error": "Invalid routing key"}), 400
