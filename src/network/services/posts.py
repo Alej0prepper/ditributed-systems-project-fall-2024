@@ -61,12 +61,24 @@ def add_post(driver, media: list[str], caption: str):
     )
 
     return post_id
-
 def post(driver, id, media, caption, username, email):
+    """
+    Crea un nuevo post y establece la relación con la entidad correspondiente.
+    
+    :param driver: Conexión al grafo de Neo4j.
+    :param id: ID del post (no se usa en este contexto, se genera automáticamente).
+    :param media: Lista de URLs de medios.
+    :param caption: Texto del post.
+    :param username: Nombre de usuario de la entidad.
+    :param email: Correo electrónico de la entidad.
+    :return: ID del post, éxito de la operación y mensaje de error (si corresponde).
+    """
+    
+    # Verificar parámetros obligatorios
     if not media and not caption:
         return None, False, "Media and caption can't be None at the same time."
     
-    if not driver or not id or not username or not email:
+    if not driver or not username or not email:
         return None, False, "All required parameters must be provided."
 
     # Obtener el tipo de entidad basado en el correo electrónico
@@ -75,55 +87,80 @@ def post(driver, id, media, caption, username, email):
         if em == email:
             entity_type = et
             break
-
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    print( entity_type)
     if entity_type is None:
         return None, False, "No entity type found for the provided email."
 
     try:
         # Verificar si la entidad existe en la base de datos
-        query = """
+        query = f"""
             MATCH (e:{entity_type} {{email: $email}}) RETURN e
-        """.format(entity_type=entity_type)
+        """
         parameters = {"email": email}
         entity_exists = driver.execute_query(query, parameters).records
 
-        # Si no existe la entidad, crearla shadow
+        # Si no existe la entidad, crearla
         if not entity_exists:
-            query = """
+            query = f"""
                 CREATE (e:{entity_type} {{email: $email, username: $username}})
-            """.format(entity_type=entity_type)
+            """
             parameters = {"email": email, "username": username}
             driver.execute_query(query, parameters)
 
         # Crear el post
-        add_post(driver, media, caption)
+        post_id = add_post(driver, media, caption)
 
         # Establecer la relación entre la entidad y el post
         now = datetime.now()
-        query = """
-            MATCH (p:Post {{id: $id}})
+        query = f"""
+            MATCH (p:Post )
+             WHERE id(p) = $post_id
             MATCH (e:{entity_type} {{email: $email}})
             CREATE (e)-[r:Posts {{datetime: $now}}]->(p)
             RETURN r
-        """.format(entity_type=entity_type)
-        parameters = {"id": id, "email": email, "now": now}
+        """
+        parameters = {"post_id": post_id, "email": email, "now": now}
 
         with driver.session() as session:
             result = session.run(query, parameters)
             if result:
-                return id, True, None
+                return post_id, True, None
             else:
                 return None, False, "There was a DB related error."
     except Exception as e:
         return None, False, str(e)
 
 
-def quote(driver, media, caption, username,email, quoted_post_id):
-    new_post_id, _, _ = post(driver, media, caption, username,email)
+def quote(driver, media, caption, username, email, quoted_post_id):
+    """
+    Crea un nuevo post como cita y establece la relación con el post original.
+    
+    :param driver: Conexión al grafo de Neo4j.
+    :param media: Lista de URLs de medios.
+    :param caption: Texto del post.
+    :param username: Nombre de usuario de la entidad.
+    :param email: Correo electrónico de la entidad.
+    :param quoted_post_id: ID del post citado.
+    :return: ID del nuevo post.
+    """
+    new_post_id, _, _ = post(driver, None, media, caption, username, email)
     update_post(driver, new_post_id, media, caption, quoted_post_id)
     return new_post_id
 
 def repost(driver, reposted_post_id: int, username, email, media=None, caption=None):
+    """
+    Crea un nuevo repost y establece la relación con el post original.
+    
+    :param driver: Conexión al grafo de Neo4j.
+    :param reposted_post_id: ID del post que se va a repostear.
+    :param username: Nombre de usuario de la entidad.
+    :param email: Correo electrónico de la entidad.
+    :param media: Lista de URLs de medios (opcional).
+    :param caption: Texto del post (opcional).
+    :return: ID del post reposteado, éxito de la operación y mensaje de error (si corresponde).
+    """
+    
     if get_post_by_id(driver, reposted_post_id) is None:
         return None, False, "Post not found."
 
@@ -133,22 +170,22 @@ def repost(driver, reposted_post_id: int, username, email, media=None, caption=N
         if em == email:
             entity_type = et
             break
-
+   
     if entity_type is None:
         return None, False, "No se encontró el tipo de entidad para el correo electrónico proporcionado."
 
     # Verificar si la entidad existe en la base de datos
-    query = """
+    query = f"""
         MATCH (e:{entity_type} {{email: $email}}) RETURN e
-    """.format(entity_type=entity_type)
+    """
     parameters = {"email": email}
     entity_exists = driver.execute_query(query, parameters).records
 
     # Si no existe la entidad, crearla
     if not entity_exists:
-        query = """
+        query = f"""
             CREATE (e:{entity_type} {{email: $email, username: $username}})
-        """.format(entity_type=entity_type)
+        """
         parameters = {"email": email, "username": username}
         driver.execute_query(query, parameters)
 
@@ -158,19 +195,19 @@ def repost(driver, reposted_post_id: int, username, email, media=None, caption=N
 
     # Crear el repost
     now = datetime.now()
-    query = """
+    query = f"""
         MATCH (p:Post)
             WHERE id(p) = $reposted_post_id
         MATCH (e:{entity_type} {{email: $email}})
-        CREATE (e) -[r:Reposts {{datetime: $now}}]->  (p)
+        CREATE (e)-[r:Reposts {{datetime: $now}}]->(p)
         RETURN e, p
-    """.format(entity_type=entity_type)
+    """
     parameters = {"reposted_post_id": reposted_post_id, "email": email, "now": now}
 
-    driver.execute_query(query, parameters)
+    with driver.session() as session:
+        session.run(query, parameters)
 
     return reposted_post_id, True, None
-
 
 def get_post_by_id(driver, post_id):
     post = driver.execute_query(
