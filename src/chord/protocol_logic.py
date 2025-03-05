@@ -208,10 +208,16 @@ def send_local_system_entities_copy():
             for node_info in db_data["nodes"]:
                 try:
                     if "Gym" in node_info['labels'] or "User" in node_info['labels']:
-                        if not (node_info['labels'][0], node_info['properties']['email'], node_info['properties']['id']) in system_entities_list:
-                            update_entities_list(node_info['labels'][0], node_info['properties']['email'], node_info['properties']['id'])
-                            print(f"sending: {node_info['labels'][0]},{node_info['properties']['email']},{node_info['properties']['id']}")
-                            send_chord_update(f"{node_info['labels'][0]},{node_info['properties']['email']},{node_info['properties']['id']}")
+                        entity_type = "Gym" if "Gym" in node_info['labels'] else "User"
+                        if not (entity_type, node_info['properties']['email'], node_info['properties']['id']) in system_entities_list:
+                            update_entities_list(entity_type, node_info['properties']['email'], node_info['properties']['id'])
+                            print(f"sending: {entity_type},{node_info['properties']['email']},{node_info['properties']['id']}")
+                            send_chord_update(f"{entity_type},{node_info['properties']['email']},{node_info['properties']['id']}")
+                    if "Post" in node_info['labels']:
+                        if not ("Post", node_info['properties']['email'], node_info['properties']['id']) in system_entities_list:
+                            update_entities_list("Post", node_info['properties']['email'], node_info['properties']['id'])
+                            print(f"sending: Post,{node_info['properties']['email']},{node_info['properties']['id']}")
+                            send_chord_update(f"Post,{node_info['properties']['email']},{node_info['properties']['id']}")
                 except:
                   continue
         except Exception as e:
