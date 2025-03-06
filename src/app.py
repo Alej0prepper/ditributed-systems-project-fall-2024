@@ -8,7 +8,7 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from flask import Flask, request, jsonify, session, send_from_directory
 from network.controllers.users import delete_user_account, get_users_by_search_term, login_user, register_user
-from network.controllers.posts import create_post, repost_existing_post, quote_existing_post, delete_post
+from network.controllers.posts import create_post, repost_existing_post, quote_existing_post, delete_post, get_post_by_id_controller, get_post_by_user_id_controller, get_user_by_post_id_controller
 from network.controllers.users import follow_account
 from network.controllers.users import unfollow_user
 from network.controllers.comments import create_comment_answer, create_post_comment
@@ -29,6 +29,7 @@ from chord.protocol_logic import listen_for_chord_updates
 import chord.protocol_logic as chord_logic
 from network.middlewares.use_db_connection import use_db_connection
 from chord.replication import replicate_to_owners
+from utils.utils import convert_node_to_dict
 
 
 
@@ -241,6 +242,21 @@ def get_user_by_id(id):
     if ok:
         return jsonify({"user": user}), 200
     return jsonify({"error": error}), 500
+
+@app.route('/posts',methods=['GET'])
+@route_to_responsible(routing_key="getAllUserPosts")
+def get_all_user_posts(posts):
+    """
+    Get all user posts endpoint.
+    
+    Returns:
+        200: JSON with users
+        500: JSON with error if users fetch had an error
+    """
+
+    if posts:
+        return jsonify({"posts":posts}), 200
+    return jsonify({"error"}), 500
 
 @app.route('/gyms/<id>',methods=['GET'])
 @route_to_responsible(routing_key=None)
@@ -935,6 +951,61 @@ def remove_training_styles(id):
     if ok:
         return jsonify({"message": f"Styles removed from user in a gym with ID {gym_id}"})
     return jsonify({"error": error}), 500
+
+@app.route('/posts/<id>', methods=['GET'])
+@route_to_responsible(routing_key=None)
+def get_post_by_id(id):
+    """
+    Get a post by its ID endpoint.
+
+    Accepts GET request
+
+    Returns:
+        200: JSON with the post if found
+        404: JSON with error message if post ID is missing or post not found
+        500: JSON with error message if retrieval fails
+    """
+    post_id = int(id) # quitar el parseo
+    if not post_id:
+        return jsonify({"error": "Post ID is required"}), 404
+    
+    post = get_post_by_id_controller(post_id)
+    post_dict = convert_node_to_dict(post['p'])
+    print(post_dict)
+    if not post:
+        return jsonify({"error": "Post not found"}), 404
+    user = get_user_by_post_id_controller(post_id)
+    # print(user)
+    user_dict = convert_node_to_dict(user)
+    post_dict["userId"] = user_dict["id"]
+    
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    return jsonify(post_dict), 200
+
+@app.route('/posts/user/<int:user_id>', methods=['GET'])
+# @route_to_responsible(routing_key=None)
+def get_posts_by_user_id(user_id, driver=None):
+    """
+    Retrieves the posts made by a user identified by their ID. Requires authentication.
+
+    :param user_id: ID of the user.
+    :param driver: Graph connection (optional, managed automatically by the decorator).
+    :return: JSON response with the user's posts, or an error message if applicable.
+    """
+    posts, ok, error = get_post_by_user_id_controller(user_id)
+    if not ok:
+        return jsonify({"error": error}), 404 if "not found" in error else 500
+    posts_dict = {}
+    posts_dict = [convert_node_to_dict(post) for post in posts]
+
+    for post in posts_dict:
+        userId = convert_node_to_dict(get_user_by_post_id_controller(post["id"]))["id"]
+        post["userId"] = user_id
+    
+
+    
+    return jsonify({"posts": posts_dict}), 200
+
 
 @app.route('/replicate', methods=['POST'])
 @use_db_connection
