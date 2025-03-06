@@ -147,7 +147,6 @@ def find_k_successors(K):
         except requests.exceptions.RequestException as e:
             print(f"Error: Could not contact {current_ip}: {e}")
             break
-
     return successors
 
 system_entities_list = []

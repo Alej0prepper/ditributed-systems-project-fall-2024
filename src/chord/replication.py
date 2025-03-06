@@ -20,7 +20,7 @@ def replicate_to_owners(driver=None):
             nodes = graph_data["nodes"]
             edges = graph_data["relationships"]
 
-            for edge in edges:
+            """ for edge in edges:
                 print("Edge: ",edge)
                 if edge['start'] is None or edge['end'] is None:
                     continue
@@ -37,10 +37,8 @@ def replicate_to_owners(driver=None):
                     response = requests.post(url, json={"edges":[edge]})
                     if response.status_code == 200:
                         driver.execute_query(
-                            """
                             MATCH (u:{id:$id})
                             DETACH DELETE u
-                            """,
                             {"id": edge["id"]}
                         )
                         print(f"Replicated info to its owner: {successor_ip}:{successor_port}, status: {response.status_code}")
@@ -48,9 +46,8 @@ def replicate_to_owners(driver=None):
                         print(f"Failed to replicate info to its owner: {successor_ip}:{successor_port}, status: {response.status_code}")
                 except Exception as e:
                     print(f"Failed to replicate info to its owner: {successor_ip}:{successor_port}, status: {response.status_code}")
-
+ """
             for node in nodes:
-                print("Node: ",node)
                 successor = chord_logic.find_successor(get_hash(node["id"]))
                 successor_ip = successor["ip"]
                 successor_port = successor["port"]
@@ -72,9 +69,9 @@ def replicate_to_owners(driver=None):
                         )
                         print(f"Replicated info to its owner: {successor_ip}:{successor_port}")
                     else:
-                        print(f"Failed to replicate info to its owner: {successor_ip}:{successor_port}, status: {response.status_code}")
+                        print(f"Failed to replicate info to its owner: {successor_ip}:{successor_port}, error: {response.status_code}")
                 except Exception as e:
-                    print(f"Failed to replicate info to its owner: {successor_ip}:{successor_port}, status: {response.status_code}")
+                    print(e)
 
         except Exception as e:
             print(f"Replication error: {e}")
@@ -85,6 +82,8 @@ def replicate_to_owners(driver=None):
 def replicate_to_k_successors(data):
     # Find `k` successors in the Chord ring
     successors = chord_logic.find_k_successors(K)
+    print(f"Successors: {successors}")
+
 
     for successor in successors:
             successor_ip = successor.ip
@@ -92,6 +91,9 @@ def replicate_to_k_successors(data):
             try:
                 url = f"http://{successor_ip}:{successor_port}/replicate"
                 response = requests.post(url, json=data)
-                print(f"Replicated graph to {successor_ip}:{successor_port}, status: {response.status_code}")
+                if response.status_code == 200:
+                    print(f"Replicated graph to {successor_ip}:{successor_port}")
+                else:
+                    print(response.json())
             except Exception as e:
                 print(f"Failed to replicate to {successor_ip}:{successor_port}: {e}")

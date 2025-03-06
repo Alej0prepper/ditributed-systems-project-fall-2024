@@ -1,15 +1,18 @@
 from datetime import datetime
 import chord.protocol_logic as chord
+import uuid
 
 def create_post_node(driver):
-    post = driver.execute_query(
+    post_id = str(uuid.uuid4())
+
+    driver.execute_query(
         """
-        CREATE (p:Post)
-        RETURN id(p) AS post_id
-        """
-    ).records[0]
+        CREATE (p:Post {id: $post_id})
+        """,
+        {"post_id": post_id}
+    ).records
     
-    return post["post_id"]
+    return post_id
 
 def update_post(driver, post_id, media: list[str], caption: str, quoted_post_id: str = None):
     """
@@ -23,8 +26,7 @@ def update_post(driver, post_id, media: list[str], caption: str, quoted_post_id:
     """
     if not quoted_post_id:
         query = """
-            MATCH (p:Post)
-                WHERE id(p) = $post_id
+            MATCH (p:Post{ id: $post_id })
                 SET p.media = $media,
                     p.caption = $caption
                 RETURN p
@@ -111,8 +113,7 @@ def post(driver, media, caption, username, email):
         # Establecer la relación entre la entidad y el post
         now = datetime.now()
         query = f"""
-            MATCH (p:Post )
-             WHERE id(p) = $post_id
+            MATCH (p:Post {{id: $post_id}})
             MATCH (e:{entity_type} {{email: $email}})
             CREATE (e)-[r:Posts {{datetime: $now}}]->(p)
             RETURN r

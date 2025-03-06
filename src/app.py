@@ -944,7 +944,7 @@ def replicate_graph(driver=None):
     print(data)
 
     if not data or ("nodes" not in data and "relationships" not in data):
-        return jsonify({"error": "Invalid graph data"}), 400
+        return jsonify({"error": "Invalid or inexistent graph data"}), 400
 
     try:
         with driver.session() as session:
@@ -952,8 +952,8 @@ def replicate_graph(driver=None):
             for node in data["nodes"]:
                 print("Merging: ", node)
                 session.execute_write(lambda tx: tx.run(
-                    "MERGE (n {id: $id}) SET n += $properties, n.labels = $labels",
-                    id=node["id"], properties=node["properties"], labels=node["labels"]
+                    "MERGE (n:{$label} {id: $id}) SET n += $properties, n.labels = $labels",
+                    id=node["id"], properties=node["properties"], label=node["labels"][0]
                 ))
 
             # Insert new relationships
@@ -981,7 +981,7 @@ if __name__ == '__main__':
     threading.Thread(target=listen_for_chord_updates, daemon=True).start()
     threading.Thread(target=chord_logic.send_local_system_entities_copy, daemon=True).start()
     threading.Thread(target=chord_logic.announce_node_to_router, daemon=True).start()
-    #threading.Thread(target=replicate_to_owners, daemon=True).start()
+    threading.Thread(target=replicate_to_owners, daemon=True).start()
     
 
     app.run(
