@@ -276,7 +276,7 @@ def get_gym_by_id(id):
 
 @app.route('/post', methods=['POST'])
 @route_to_responsible()
-def post(id=str(uuid.uuid4())):
+def post():
     """
     Create a new post endpoint.
     
@@ -284,6 +284,7 @@ def post(id=str(uuid.uuid4())):
     Required fields (at least one must be present):
     - media: One or more media files for the post
     - caption: Text caption for the post (optional)
+    - userId: The posting user's id
 
     Returns:
         201: JSON with success message and post ID if creation successful
@@ -306,7 +307,7 @@ def post(id=str(uuid.uuid4())):
     if not media_files and not caption:
         return jsonify({"message": "At least one media file or a caption is required."}), 500
 
-    response, ok, error = create_post(media_urls, caption, id=id)  # Pass media_urls as a list
+    response, ok, error = create_post(media_urls, caption)  # Pass media_urls as a list
     if ok:
         return jsonify({"message": f"Post created successfully. ID: {response}"}), 201
     else:

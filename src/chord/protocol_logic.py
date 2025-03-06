@@ -177,7 +177,8 @@ def announce_node_to_router():
                     sock.sendto(message.encode(), multicast_group)
                     # print(f"📡 Sent join request to router")
                 time.sleep(STABILIZE_INTERVAL)
-        except:
+        except Exception as e:
+            print(e)
             pass
 
 def listen_for_chord_updates():

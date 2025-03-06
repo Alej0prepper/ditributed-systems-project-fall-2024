@@ -7,13 +7,14 @@ from network.middlewares.token import validate_token
 import chord.node as chord_node 
 import inspect
 import chord.protocol_logic as chord_logic
+from chord.node import get_hash
 
 
 def getAllUsers():
     users = []
-    for entity_type, _, id in chord.system_entities_list:
+    for entity in chord.system_entities_list:
         if entity_type == "User":
-            responsible_node = chord.find_successor(id)
+            responsible_node = chord.find_successor(get_hash(id))
             endpoint = f"http://{responsible_node['ip']}:{responsible_node['port']}/users/{id}"
             response = requests.get(endpoint)
             user = response.json()
@@ -22,14 +23,35 @@ def getAllUsers():
 
 def getAllGyms():
     gyms = []
-    for entity_type, _, id in chord.system_entities_list:
-        if entity_type == "Gym":
-            responsible_node = chord.find_successor(id)
+    for entity in chord.system_entities_list:
+        if entity[0] == "Gym":
+            responsible_node = chord.find_successor(get_hash(id))
             endpoint = f"http://{responsible_node['ip']}:{responsible_node['port']}/gyms/{id}"
             response = requests.get(endpoint)
             gym = response.json()["gym"]
             gyms.append(gym)
     return gyms
+
+def getAllPosts():
+    posts = []
+    for entity in chord.system_entities_list:
+        if entity[0] == "Post":
+            responsible_node = chord.find_successor(get_hash(id))
+            endpoint = f"http://{responsible_node['ip']}:{responsible_node['port']}/posts/{id}"
+            response = requests.get(endpoint)
+            post = response.json()["post"]
+            posts.append(post)
+    return posts
+    
+def getAllUserPosts(userId):
+    posts = []
+    for entity in chord.system_entities_list:
+        if entity[0] == "Post":
+            responsible_node = chord.find_successor(get_hash(userId))
+            endpoint = f"http://{responsible_node['ip']}:{responsible_node['port']}/posts/{userId}"
+            response = requests.get(endpoint)
+            posts = response.json()["posts"]
+    return posts
 
 def route_to_responsible(routing_key=None):
     def decorator(func):
@@ -43,7 +65,8 @@ def route_to_responsible(routing_key=None):
                 local_routing_key = (
                     request.view_args.get("id")  # Route parameters
                     or request.args.get("id")    # Query parameters
-                    or request.form.get("id")    # Form data
+                    or request.form.get("id")
+                    or request.form.get("userId")
                 )
             print("id in form:", request.form.get('id'))
             print("form:", request.form)
@@ -62,6 +85,11 @@ def route_to_responsible(routing_key=None):
             elif local_routing_key == "getAllGyms":
                 gyms = getAllGyms()
                 return func(gyms)
+            elif local_routing_key == "getAllPosts":
+                posts = getAllPosts()
+            elif local_routing_key == "getAllUserPosts":
+                posts = getAllUserPosts(request.form.get("userId"))
+                return func(posts)
             elif local_routing_key == "me":
                 auth_header = request.headers.get("Authorization")
 

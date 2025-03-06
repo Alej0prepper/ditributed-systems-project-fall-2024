@@ -61,12 +61,11 @@ def add_post(driver, media: list[str], caption: str):
     )
 
     return post_id
-def post(driver, id, media, caption, username, email):
+def post(driver, media, caption, username, email):
     """
     Crea un nuevo post y establece la relación con la entidad correspondiente.
     
     :param driver: Conexión al grafo de Neo4j.
-    :param id: ID del post (no se usa en este contexto, se genera automáticamente).
     :param media: Lista de URLs de medios.
     :param caption: Texto del post.
     :param username: Nombre de usuario de la entidad.
