@@ -9,7 +9,7 @@ from network.services.users import create_follow_relation
 from network.services.users import remove_follow_relation
 from network.services.users import update_user
 from network.services.users import get_users_by_search_term_service
-from network.services.users import delete_user_service
+from network.services.users import delete_user_service, get_follows_by_user_id_service, get_followers_by_user_id_service
 import ast
 
 
@@ -106,3 +106,33 @@ def get_logged_user_controller(driver=None):
         user.pop("password", None)
         return user, True, None
     return None, False, "User not found."
+
+
+from flask import session
+
+@use_db_connection
+def get_follows_by_user_id_controller(user_id, driver=None):
+    """
+    Controller to get the list of users followed by the logged-in user.
+    Requires authentication.
+    """
+    follows, success, error = get_follows_by_user_id_service(driver, user_id)
+
+    if success:
+        # Optionally, remove sensitive information (e.g., password) from followed users
+        for follow in follows:
+            if "password" in follow:
+                del follow["password"]
+        return follows, True, None
+    else:
+        return None, False, error
+@use_db_connection
+def get_followers_by_user_id_controller(user_id,driver = None):
+    followers,success,error = get_followers_by_user_id_service(driver,user_id)
+    if success:
+        for follower in followers:
+            if "password" in follower:
+                del follower["password"]
+        return followers,True,None
+    else: 
+        return None,False,error
