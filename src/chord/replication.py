@@ -1,5 +1,6 @@
 import time
 import requests
+import base64
 import chord.protocol_logic as chord_logic
 import chord.node as chord
 from database.fetchData import fetch_graph_data
@@ -58,7 +59,10 @@ def replicate_to_owners(driver=None):
                 
                 try:
                     url = f"http://{successor_ip}:{successor_port}/replicate"
-                    response = requests.post(url, json={"nodes":[node]})
+                    json_serialized_node = node
+                    if "password" in node['properties'].keys():
+                        json_serialized_node['properties']['password'] = base64.b64encode(node['properties']['password']).decode('utf-8')
+                    response = requests.post(url, json={"nodes":[json_serialized_node]})
                     if response.status_code == 200:
                         driver.execute_query(
                             """

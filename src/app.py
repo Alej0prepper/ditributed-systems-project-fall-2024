@@ -4,6 +4,8 @@ import threading
 import chord.node as chord
 import json
 import uuid
+import base64
+import json
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from flask import Flask, request, jsonify, session, send_from_directory
@@ -1012,16 +1014,18 @@ def get_posts_by_user_id(user_id, driver=None):
 def replicate_graph(driver=None):
     # Receive replicated graph data and store it in Neo4j.
     data = request.get_json()
-    print(data)
+    print("Receiving to replicate:",data)
 
     if not data or ("nodes" not in data and "relationships" not in data):
-        return jsonify({"error": "Invalid or inexistent graph data"}), 400
+        return jsonify({"error": "Invalid or inexistent graph"}), 400
 
     try:
         with driver.session() as session:
             # Insert new nodes
             for node in data["nodes"]:
-                print("Merging: ", node)
+                if "password" in node['properties'].keys():
+                    node['properties']['password'] = base64.b64decode(node['properties']["password"])
+                print("After password decode(if proceed):",node)
                 session.execute_write(lambda tx: tx.run(
                     "MERGE (n:{$label} {id: $id}) SET n += $properties, n.labels = $labels",
                     id=node["id"], properties=node["properties"], label=node["labels"][0]
