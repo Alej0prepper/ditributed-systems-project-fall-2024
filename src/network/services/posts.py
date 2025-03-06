@@ -219,6 +219,46 @@ def get_post_by_id(driver, post_id):
 
     return post[0] if post else None
 
+def get_posts_by_user_id(driver, user_id):
+
+    result = driver.execute_query(
+        """
+        MATCH (u:User)-[:Posts]->(p:Post)
+        WHERE id(u) = $user_id
+        RETURN p
+
+        """,
+        {"user_id":user_id}
+    ).records
+    if not result:
+        return None,False,f"user with id {user_id} cannot be found"
+    posts = [record["p"] for record in result]
+
+    return posts,True,None
+
+def get_user_by_post_id(driver, post_id):
+    """
+    Obtiene el usuario que hizo un post por el ID del post.
+    
+    :param driver: Conexión a Neo4j.
+    :param post_id: ID del post.
+    :return: Nodo del usuario que hizo el post, o None si no se encuentra.
+    """
+    query = """
+        MATCH (u:User)-[:Posts]->(p:Post)
+        WHERE id(p) = $post_id
+        RETURN u
+    """
+    result = driver.execute_query(query, {"post_id": post_id}).records
+    
+    if not result:
+        return None
+    
+    return result[0]["u"]
+
+
+
+
 def delete_post_service(driver, post_id, username):
     if get_post_by_id(driver, post_id) == None: return None, False, "Post not found."
       
@@ -261,3 +301,4 @@ def delete_post_service(driver, post_id, username):
         )
         return None, True, None
     return None, False, "Action not allowed, must be post's owner"
+
