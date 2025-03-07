@@ -973,15 +973,12 @@ def get_post_by_id(id):
     
     post = get_post_by_id_controller(post_id)
     post_dict = convert_node_to_dict(post['p'])
-    print(post_dict)
     if not post:
         return jsonify({"error": "Post not found"}), 404
     user = get_user_by_post_id_controller(post_id)
-    # print(user)
     user_dict = convert_node_to_dict(user)
     post_dict["userId"] = user_dict["id"]
     
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     return jsonify(post_dict), 200
 
 @app.route('/posts/user/<int:user_id>', methods=['GET'])
@@ -1021,31 +1018,42 @@ def replicate_graph(driver=None):
 
     try:
         with driver.session() as session:
-            # Insert new nodes
-            for node in data["nodes"]:
-                if "password" in node['properties'].keys():
-                    node['properties']['password'] = base64.b64decode(node['properties']["password"])
-                print("After password decode(if proceed):",node)
-                session.execute_write(lambda tx: tx.run(
-                    "MERGE (n:{$label} {id: $id}) SET n += $properties, n.labels = $labels",
-                    id=node["id"], properties=node["properties"], label=node["labels"][0]
-                ))
+            if "nodes" in data.keys():
+                # Insert new nodes
+                for node in data["nodes"]:
+                    if "password" in node['properties'].keys():
+                        node['properties']['password'] = base64.b64decode(node['properties']["password"])
+                    session.execute_write(lambda tx: tx.run(
+                        f"""
+                        MERGE (n:{node['labels'][0]} {{id: $id}})
+                        ON CREATE SET n = $properties
+                        ON MATCH SET n += $properties
+                        RETURN n
+                        """,
+                        id=node["id"], properties=node["properties"]
+                    ))
 
-            # Insert new relationships
-            for relationship in data["relationships"]:
-                session.execute_write(lambda tx: tx.run(
-                    """
-                        MATCH (a {id: $start}), (b {id: $end})
-                        MERGE (a)-[r:REL {id: $id}]->(b) 
-                        SET r += $properties, r.type = $type
-                        ,
-                        id=relationship["id"], start=relationship["start"], end=relationship["end"],
-                        properties=relationship["properties"], type=relationship["type"]
-                    """
-                ))
+
+
+            if "relationships" in data.keys():
+                # Insert new relationships
+                for relationship in data["relationships"]:
+                    session.execute_write(lambda tx: tx.run(
+                         f"""
+                            MATCH (a {{id: $start}}), (b {{id: $end}})
+                            MERGE (a)-[r:{relationship["type"]}]->(b)
+                            ON CREATE SET r = $properties
+                            ON MATCH SET r += $properties
+                            RETURN r
+                        """,
+                        {"start": relationship["start"], "end": relationship["end"],
+                        "properties": relationship["properties"]}
+                    ))
+
 
         return jsonify({"message": "Graph replicated successfully"}), 200
     except Exception as e:
+        print("Error replicating graph:", e)
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':

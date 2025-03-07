@@ -6,7 +6,7 @@ RUN apk update && apk add --no-cache iproute2 build-base
 
 COPY . .
 
-RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
 EXPOSE 5000
 
