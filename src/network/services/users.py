@@ -275,3 +275,54 @@ def get_all_users_service(driver, query):
             return [],True,None 
     except Exception as e:
         return [],False,e
+
+def get_follows_by_user_id_service(driver, user_id):
+    try:
+        follows = driver.execute_query(
+            """
+            MATCH (u)-[r:Follows]->(t)
+            WHERE id(u) = $user_id
+            RETURN t
+            """,
+            {"user_id": user_id}
+        ).records
+        
+        if len(follows) > 0:
+            # Extract properties of the followed entities (Users or Gyms)
+            followed_entities = [record["t"]._properties for record in follows]
+            return followed_entities, True, None
+        else:
+            return [], True, f"user with id {user_id} doesn't have follows"
+    except Exception as e:
+        return [], False, e
+    
+def get_followers_by_user_id_service(driver, user_id):
+    try:
+        followers = driver.execute_query(
+            """
+            MATCH (f)-[r:Follows]->(u)
+            WHERE id(u) = $user_id
+            RETURN f, labels(f) AS entityType, id(f) AS followerId
+            """,
+            {"user_id": user_id}
+        ).records
+
+        if len(followers) > 0:
+            follower_entities = []
+            for record in followers:
+                follower_node = record["f"]
+                entity_type = (record["entityType"][0])
+                follower_id = record["followerId"]
+                follower_properties = follower_node._properties
+
+                # Add the entity type and ID to the properties dictionary
+                follower_properties["entityType"] = entity_type
+                follower_properties["userId"] = follower_id
+
+                follower_entities.append(follower_properties)
+
+            return follower_entities, True, None
+        else:
+            return [], True, f"user with id {user_id} has no followers"
+    except Exception as e:
+        return [], False, e

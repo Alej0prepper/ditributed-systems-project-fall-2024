@@ -12,7 +12,7 @@ from flask import Flask, request, jsonify, session, send_from_directory
 from network.controllers.users import delete_user_account, get_users_by_search_term, login_user, register_user
 from network.controllers.posts import create_post, repost_existing_post, quote_existing_post, delete_post, get_post_by_id_controller, get_post_by_user_id_controller, get_user_by_post_id_controller
 from network.controllers.users import follow_account
-from network.controllers.users import unfollow_user
+from network.controllers.users import unfollow_user, get_follows_by_user_id_controller
 from network.controllers.comments import create_comment_answer, create_post_comment
 from network.controllers.reactions import react_to_a_comment, react_to_a_post
 from network.controllers.gyms import add_gym_controller, delete_gym_controller
@@ -25,7 +25,7 @@ from chord.protocol_logic import check_predecessor, stabilize
 from network.middlewares.route_to_responsible import route_to_responsible
 from network.controllers.users import get_user_by_id_controller
 from network.controllers.gyms import get_gym_by_id_controller, update_gym_controller
-from network.controllers.users import get_logged_user_controller
+from network.controllers.users import get_logged_user_controller,get_followers_by_user_id_controller
 from network.controllers.gyms import get_logged_gym_controller
 from chord.protocol_logic import listen_for_chord_updates
 import chord.protocol_logic as chord_logic
@@ -1001,6 +1001,76 @@ def get_posts_by_user_id(user_id, driver=None):
         userId = convert_node_to_dict(get_user_by_post_id_controller(post["id"]))["id"]
         post["userId"] = user_id
     
+
+@app.route('/follows/<int:user_id>', methods=['GET'])
+
+def get_follows_by_user(user_id):
+    """
+    Retrieves the list of users followed by a specified user ID.
+    Requires authentication.
+
+    Args:
+        user_id (int): The ID of the user whose follows are to be retrieved.
+
+    Returns:
+        200: JSON array of followed user objects if successful
+        404: JSON with error message if user not found or no follows
+        500: JSON with error message if retrieval fails
+    """
+    try:
+
+        follows, ok, error = get_follows_by_user_id_controller(user_id)
+        if ok:
+            return jsonify(follows), 200
+        else:
+            return jsonify({"error": error}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+
+@app.route('/followers/<int:user_id>', methods=['GET'])
+def get_followers_by_user(user_id):
+    """
+    Retrieves the list of users following a specified user ID.
+    Requires authentication.
+
+    Args:
+        user_id (int): The ID of the user whose followers are to be retrieved.
+
+    Returns:
+        200: JSON array of follower user objects if successful
+        404: JSON with error message if user not found or no followers
+        500: JSON with error message if retrieval fails
+    """
+    try:
+        followers, success, error = get_followers_by_user_id_controller( user_id)
+
+        if success:
+            return jsonify(followers), 200
+        elif "no followers" in error:
+            return jsonify({"error": error}, 404)
+        else:
+            return jsonify({"error": error}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     
     return jsonify({"posts": posts_dict}), 200
