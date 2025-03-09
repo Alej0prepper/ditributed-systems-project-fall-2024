@@ -41,5 +41,6 @@ def get_post_by_user_id_controller(user_id,driver = None):
 def get_user_by_post_id_controller(post_id,driver = None):
     return get_user_by_post_id(driver,post_id)
 
+@use_db_connection
 def get_publisher_by_post_id_controller(post_id,driver=None):
     return get_publisher_by_post_id(driver,post_id)

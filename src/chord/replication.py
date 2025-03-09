@@ -22,53 +22,77 @@ def replicate_to_owners(driver=None):
             nodes = graph_data["nodes"]
             edges = graph_data["relationships"]
 
+            owners_data = dict()
+
             for node in nodes:
-                successor = chord_logic.find_successor(get_hash(node["id"]))
+                successor = chord_logic.find_successor(get_hash(
+                    node["id"] if not node["id"] is None else
+                    node['userId'] if "Comment" in node["labels"] or "Reaction" in node["labels"] else None
+                ))
                 successor_ip = successor["ip"]
                 successor_port = successor["port"]
 
-                if successor_ip == chord.current_node.to_dict()["ip"]:
-                    node = serialize_data(node)
-                    replicate_to_k_successors({"nodes":[node]})
+                if (successor_ip, successor_port) in owners_data.keys():
+                    owners_data[(successor_ip, successor_port)].append(serialize_data(node))
+                else:
+                    owners_data[(successor_ip, successor_port)] = [serialize_data(node)]
+
+            for succ_ip, succ_port in owners_data.keys():
+                # Current node is info owner
+                if succ_ip == chord.current_node.to_dict()["ip"]:
+                    replicate_to_k_successors({"nodes": owners_data[(succ_ip, succ_port)]})
                     continue
                 
+                # Send to owner
                 try:
-                    url = f"http://{successor_ip}:{successor_port}/replicate"
-                    json_serialized_node = node
+                    url = f"http://{succ_ip}:{succ_port}/replicate"
+                    print(f"Replicating to {succ_ip}:{succ_port} with data: {owners_data[(succ_ip, succ_port)]}")
 
-                    json_serialized_node = serialize_data(node)
-
-                    print(f"Replicating to {successor_ip}:{successor_port} with data: {json_serialized_node}")
-
-                    response = requests.post(url, json={"nodes":[json_serialized_node]})
+                    response = requests.post(url, json={"nodes":owners_data[(succ_ip, succ_port)]})
                 except Exception as e:
-                    print(f"Failed to replicate info to its owner: {successor_ip}:{successor_port}, status: {response.status_code}")
+                    print(f"Failed to replicate info to its owner: {succ_ip}:{succ_port}, status: {response.status_code}")
 
+            owners_data = dict()
 
             for edge in edges:
-                if edge['start'] is None or edge['end'] is None:
+                get_relation_start_node(edge["id"])
+                """ if edge['start'] is None or edge['end'] is None:
                     continue
-                successor = chord_logic.find_successor(get_hash(edge['start']))
+                successor = chord_logic.find_successor(get_hash(edge["start"] if not edge['start'] is None else driver))
                 successor_ip = successor["ip"]
-                successor_port = successor["port"]
 
-                if successor_ip == chord.current_node.to_dict()["ip"]:
-                    edge = serialize_data(edge)
-                    replicate_to_k_successors({"relationships":[edge]})
+                if successor_ip in owners_data.keys():
+                    owners_data[successor_ip].append(serialize_data(edge))
+                else:
+                    owners_data[successor_ip] = [serialize_data(edge)] """
+
+            for succ_ip, succ_port in owners_data.keys():
+                
+
+                if succ_ip == chord.current_node.to_dict()["ip"]:
+                    replicate_to_k_successors({"relationships": owners_data[(succ_ip, succ_port)]})
                     continue
                 
                 try:
-                    url = f"http://{successor_ip}:{successor_port}/replicate"
-                    response = requests.post(url, json={"relationships":[edge]})
+                    url = f"http://{succ_ip}:{succ_port}/replicate"
+                    response = requests.post(url, json={"relationships": owners_data[(succ_ip, succ_port)]})
                 except Exception as e:
-                    print(f"Failed to replicate info to its owner: {successor_ip}:{successor_port}, status: {response.status_code}")
-
+                    print(f"Failed to replicate info to its owner: {succ_ip}:{succ_port}, status: {response.status_code}")
             
         except Exception as e:
             print(f"Replication error: {e}")
 
         time.sleep(STABILIZE_INTERVAL*10)
 
+def get_relation_start_node(driver, relation_id):
+    node = driver.execute_query(
+    """
+        MATCH (u) -[r {id: $relation_id}]-> (m)
+        RETURN u
+    """ ,
+    {"relation_id": relation_id}
+    )
+    print(node)
 
 def replicate_to_k_successors(data):
     # Find `k` successors in the Chord ring

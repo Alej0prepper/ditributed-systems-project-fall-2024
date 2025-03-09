@@ -21,8 +21,7 @@ def comment(driver, caption, media, username, answered_comment_id=None, commente
 
     if answered_comment_id:
         query = """
-            MATCH (c: Comment)
-                WHERE id(c) = $answered_comment_id 
+            MATCH (c: Comment {id: $answered_comment_id})
             RETURN c
         """
         params = {
@@ -34,8 +33,7 @@ def comment(driver, caption, media, username, answered_comment_id=None, commente
     
     if commented_post_id:
         query = """
-            MATCH (c: Post)
-                WHERE id(c) = $commented_post_id 
+            MATCH (c: Post {id: $commented_post_id })
             RETURN c
         """
         params = {

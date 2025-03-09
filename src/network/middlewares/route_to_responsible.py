@@ -17,7 +17,7 @@ def getAllUsers():
             responsible_node = chord.find_successor(get_hash(entity[2]))
             endpoint = f"http://{responsible_node['ip']}:{responsible_node['port']}/users/{entity[2]}"
             response = requests.get(endpoint)
-            user = response.json()
+            user = response.json()["user"]
             users.append(user)
     return users
 
@@ -39,7 +39,6 @@ def getAllPosts():
             responsible_node = chord.find_successor(get_hash(entity[2]))
             endpoint = f"http://{responsible_node['ip']}:{responsible_node['port']}/posts/{entity[2]}"
             response = requests.get(endpoint)
-            print(f"Preguntando por {entity[2]}: ",response.json())
             post = response.json()["post"]
             posts.append(post)
     return posts
@@ -47,9 +46,9 @@ def getAllPosts():
 def getAllUserPosts(userId):
     user_posts = []
     all_posts = getAllPosts()
-    print("Todos:",all_posts)
     for post in all_posts:
-        print(post)
+        if post['publisherId'] == userId:
+            user_posts.append(post)
     return user_posts
 
 def route_to_responsible(routing_key=None):
@@ -84,6 +83,7 @@ def route_to_responsible(routing_key=None):
                 return func(gyms)
             elif local_routing_key == "getAllPosts":
                 posts = getAllPosts()
+                return func(posts)
             elif local_routing_key == "getAllUserPosts":
                 posts = getAllUserPosts(request.view_args.get("id"))
                 return func(posts)
