@@ -13,7 +13,7 @@ from network.controllers.users import delete_user_account, get_users_by_search_t
 from network.controllers.posts import create_post, repost_existing_post, quote_existing_post, delete_post, get_post_by_id_controller, get_post_by_user_id_controller, get_user_by_post_id_controller, get_publisher_by_post_id_controller
 from network.controllers.users import follow_account
 from network.controllers.users import unfollow_user, get_follows_by_user_id_controller
-from network.controllers.comments import create_comment_answer, create_post_comment
+from network.controllers.comments import create_comment_answer, create_post_comment, get_comments_controller
 from network.controllers.reactions import react_to_a_comment, react_to_a_post
 from network.controllers.gyms import add_gym_controller, delete_gym_controller
 from network.controllers.trains_in import trains_in, add_training_styles, remove_training_styles
@@ -1041,6 +1041,34 @@ def get_followers_by_user(id):
             return jsonify({"error": error}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+from flask import jsonify
+
+@app.route('/comments/<int:target_id>', methods=['GET'])
+def get_comments(target_id):
+    """
+    Retrieves all comments and replies for a specific post or comment.
+    
+    Args:
+        target_id (int): ID of the post/comment to retrieve comments from
+
+    Returns:
+        200: JSON array of comment objects if successful
+        404: JSON with error message if post/comment not found
+        500: JSON with error message if retrieval fails
+    """
+    try:
+        comments, success, error = get_comments_controller(target_id)
+        
+        if success:
+            return jsonify(comments), 200
+        else:
+            return jsonify({"error": error}), 500
+            
+    except Exception as e:
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
+
 
 
 @app.route('/replicate', methods=['POST'])

@@ -97,3 +97,80 @@ def answer_comment(driver, caption, media, username, answered_comment_id):
 
 def comment_post(driver, caption, media, username, commented_post_id):
     return comment(driver, caption, media, username, commented_post_id=commented_post_id)
+
+    def get_comments(driver, target_id):
+        """
+        Obtiene todos los comentarios de un post o comentario.
+
+        Este servicio verifica si el ID proporcionado pertenece a un post o un comentario.
+        Luego, devuelve una lista de todos los comentarios y respuestas asociadas, 
+        incluyendo metadatos como el ID del comentario, fecha de creación, texto del comentario, 
+        medios adjuntos y el autor.
+
+        Args:
+            driver: Conexión al grafo de Neo4j.
+            target_id (int): ID del post o comentario del que se quieren obtener los comentarios.
+
+        Returns:
+            tuple: 
+                - comments (list): Lista de diccionarios con información de cada comentario.
+                - success (bool): Indica si la operación fue exitosa.
+                - error (str): Mensaje de error si la operación falló.
+
+        Raises:
+            Exception: Si ocurre un error durante la ejecución de la consulta.
+
+        Notes:
+            - Si el ID no pertenece a un post o comentario existente, devuelve un mensaje de error.
+            - Los comentarios se ordenan por fecha de creación.
+        """
+    # Verificar si es un Post
+    post_check = driver.execute_query(
+        "MATCH (p:Post) WHERE id(p) = $target_id RETURN p",
+        target_id=target_id
+    )
+    
+    if post_check.records:
+        query = """
+            MATCH (p:Post) WHERE id(p) = $target_id
+            MATCH (p)-[:Has*]->(c:Comment)
+            MATCH (u:User)-[:Comments]->(c)
+            RETURN id(c) AS id, c.datetime AS datetime, 
+                   c.caption AS caption, c.media AS media, 
+                   u.username AS username
+            ORDER BY c.datetime
+        """
+    else:
+        # Verificar si es un Comment
+        comment_check = driver.execute_query(
+            "MATCH (c:Comment) WHERE id(c) = $target_id RETURN c",
+            target_id=target_id
+        )
+        
+        if not comment_check.records:
+            return None, False, "Post o comentario no encontrado"
+        
+        query = """
+            MATCH (c1:Comment) WHERE id(c1) = $target_id
+            MATCH (c1)-[:Has*1..]->(c:Comment)
+            MATCH (u:User)-[:Comments]->(c)
+            RETURN id(c) AS id, c.datetime AS datetime, 
+                   c.caption AS caption, c.media AS media, 
+                   u.username AS username
+            ORDER BY c.datetime
+        """
+    
+    try:
+        result = driver.execute_query(query, target_id=target_id)
+        comments = [{
+            "id": record["id"],
+            "datetime": record["datetime"].isoformat(),
+            "caption": record["caption"],
+            "media": record["media"],
+            "userId": record["username"]
+        } for record in result.records]
+        
+        return comments, True, None
+    
+    except Exception as e:
+        return None, False, str(e)
