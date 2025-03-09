@@ -13,9 +13,9 @@ from chord.node import get_hash
 def getAllUsers():
     users = []
     for entity in chord.system_entities_list:
-        if entity_type == "User":
-            responsible_node = chord.find_successor(get_hash(id))
-            endpoint = f"http://{responsible_node['ip']}:{responsible_node['port']}/users/{id}"
+        if entity[0] == "User":
+            responsible_node = chord.find_successor(get_hash(entity[2]))
+            endpoint = f"http://{responsible_node['ip']}:{responsible_node['port']}/users/{entity[2]}"
             response = requests.get(endpoint)
             user = response.json()
             users.append(user)
@@ -25,9 +25,11 @@ def getAllGyms():
     gyms = []
     for entity in chord.system_entities_list:
         if entity[0] == "Gym":
-            responsible_node = chord.find_successor(get_hash(id))
-            endpoint = f"http://{responsible_node['ip']}:{responsible_node['port']}/gyms/{id}"
+            responsible_node = chord.find_successor(get_hash(entity[2]))
+            endpoint = f"http://{responsible_node['ip']}:{responsible_node['port']}/gyms/{entity[2]}"
             response = requests.get(endpoint)
+            print(responsible_node)
+            print(response)
             gym = response.json()["gym"]
             gyms.append(gym)
     return gyms
@@ -36,8 +38,8 @@ def getAllPosts():
     posts = []
     for entity in chord.system_entities_list:
         if entity[0] == "Post":
-            responsible_node = chord.find_successor(get_hash(id))
-            endpoint = f"http://{responsible_node['ip']}:{responsible_node['port']}/posts/{id}"
+            responsible_node = chord.find_successor(get_hash(entity[2]))
+            endpoint = f"http://{responsible_node['ip']}:{responsible_node['port']}/posts/{entity[2]}"
             response = requests.get(endpoint)
             post = response.json()["post"]
             posts.append(post)

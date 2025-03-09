@@ -207,7 +207,7 @@ def send_local_system_entities_copy():
             db_data = fetch_graph_data()
             for node_info in db_data["nodes"]:
                 try:
-                    if "Gym" in node_info['labels'] or "User" in node_info['labels']:
+                    if "Gym" in node_info['labels'] or "User" in node_info['labels'] or "Post" in node_info['labels']:
                         entity_type = "Gym" if "Gym" in node_info['labels'] else "User"
                         if not (entity_type, node_info['properties']['email'], node_info['properties']['id']) in system_entities_list:
                             update_entities_list(entity_type, node_info['properties']['email'], node_info['properties']['id'])
