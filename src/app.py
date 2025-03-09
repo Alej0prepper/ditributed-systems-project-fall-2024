@@ -10,12 +10,12 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from flask import Flask, request, jsonify, session, send_from_directory
 from network.controllers.users import delete_user_account, get_users_by_search_term, login_user, register_user
-from network.controllers.posts import create_post, repost_existing_post, quote_existing_post, delete_post, get_post_by_id_controller, get_post_by_user_id_controller, get_user_by_post_id_controller, get_publisher_by_post_id_controller
+from network.controllers.posts import create_post, repost_existing_post, quote_existing_post, delete_post, get_post_by_id_controller, get_post_by_user_id_controller, get_user_by_post_id_controller, get_publisher_by_post_id_controller, get_count_reposts_and_quotes_controller
 from network.controllers.users import follow_account
 from network.controllers.users import unfollow_user, get_follows_by_user_id_controller
 from network.controllers.comments import create_comment_answer, create_post_comment, get_comments_controller
 from network.controllers.reactions import react_to_a_comment, react_to_a_post
-from network.controllers.gyms import add_gym_controller, delete_gym_controller
+from network.controllers.gyms import add_gym_controller, delete_gym_controller, get_gym_trainees_by_id_controller, delete_reaction_controller
 from network.controllers.trains_in import trains_in, add_training_styles, remove_training_styles
 from network.controllers.gyms import login_gym
 from network.controllers.users import update_user_account
@@ -567,11 +567,13 @@ def react_post(id):
     """
     data = request.form
     reaction = data.get("reaction")
-    post_id = int(id)
+    post_id = id
     if not reaction:
         return jsonify({"error": "Reaction is required"}), 500
     if not post_id:
         return jsonify({"error": "Post ID is required"}), 500
+    if reaction == "":
+       return delete_reaction_controller(reacted_post_id = post_id)
     _, ok, error = react_to_a_post(reaction, post_id)
     if ok:
         return jsonify({"message": "Reaction sent"}), 201
@@ -593,7 +595,9 @@ def react_comment(id):
     """
     data = request.form
     reaction = data.get("reaction")
-    comment_id = int(id)
+    comment_id = id
+    if reaction == "":
+        return delete_reaction_controller(reacted_comment_id = comment_id)
     if not reaction or not comment_id:
         return jsonify({"error": "Reaction and comment ID are required"}), 500
     _, ok, error = react_to_a_comment(reaction, comment_id)
@@ -1068,6 +1072,76 @@ def get_comments(target_id):
             
     except Exception as e:
         return jsonify({"error": f"Server error: {str(e)}"}), 500
+
+
+@app.route('/reactions/<target_id>', methods=['GET'])
+@use_db_connection
+@needs_authentication
+def get_reactions(target_id, driver=None):
+    """
+    Endpoint para obtener reacciones de un post o comentario.
+
+    :param target_id: ID del post o comentario.
+    :param driver: Conexión al grafo.
+    :return: JSON con las reacciones.
+    """
+    try:
+        reactions = get_reactions_controller(target_id, driver)
+        return jsonify({"reactions": reactions})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/gym/trainees/<gym_id>', methods=['GET'])
+@use_db_connection
+def get_gym_trainees_by_id(gym_id, driver=None):
+    """
+    Endpoint to retrieve trainees of a gym by its ID.
+    
+    :param gym_id: ID of the gym.
+    :return: JSON response with trainees or error.
+    """
+    try:
+        trainees, success, error = get_gym_trainees_by_id_controller(gym_id, driver)
+        if not success:
+            return jsonify({"error": error}), 404
+        return jsonify({"trainees": trainees}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+@app.route('/quotes/<post_id>', methods=['GET'])
+@use_db_connection
+def get_count_quotes_and_reposts(post_id, driver=None):
+    """
+    Endpoint to retrieve the number of reposts and quotes of a post.
+    
+    :param post_id: ID of the post.
+    :return: JSON response with counts or error.
+    """
+    try:
+        data, success, error = get_count_reposts_and_quotes_controller(post_id, driver)
+        if not success:
+            return jsonify({"error": error}), 404
+        return jsonify(data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

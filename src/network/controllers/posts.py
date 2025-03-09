@@ -1,7 +1,7 @@
 from network.middlewares.auth import needs_authentication
 from network.middlewares.use_db_connection import use_db_connection
 from flask import session
-from network.services.posts import post, repost, delete_post_service, get_post_by_id, get_posts_by_user_id, get_user_by_post_id, get_publisher_by_post_id
+from network.services.posts import post, repost, delete_post_service, get_post_by_id, get_posts_by_user_id, get_user_by_post_id, get_publisher_by_post_id, get_count_reposts_and_quotes_service
 
 @use_db_connection
 @needs_authentication
@@ -43,3 +43,14 @@ def get_user_by_post_id_controller(post_id,driver = None):
 
 def get_publisher_by_post_id_controller(post_id,driver=None):
     return get_publisher_by_post_id(driver,post_id)
+
+@use_db_connection
+def get_count_reposts_and_quotes_controller(post_id, driver=None):
+    """
+    Controller to retrieve reposts and quotes count of a post.
+    
+    :param post_id: ID of the post.
+    :param driver: Connection to the graph.
+    :return: Tuple (data, success, error).
+    """
+    return get_count_reposts_and_quotes_service(driver, post_id)

@@ -179,3 +179,44 @@ def get_all_gyms_service(driver):
 
     except Exception as e:
         return [], False, e
+
+def get_gym_trainees_by_id_service(driver, gym_id):
+    """
+    Retrieves all users training at a specific gym by its ID.
+
+    :param driver: Connection to the graph.
+    :param gym_id: ID of the gym.
+    :return: Tuple (trainees, success, error).
+    """
+    try:
+        # Check if the gym exists
+        gym_exists = driver.execute_query(
+            "MATCH (g:Gym) WHERE g.id = $gym_id RETURN g",
+            {"gym_id": gym_id}
+        ).records
+
+        if not gym_exists:
+            return [], False, "Gym not found"
+
+        # Get users training at the gym
+        result = driver.execute_query(
+            """
+            MATCH (g:Gym) WHERE g.id = $gym_id
+            MATCH (g)<-[:TRAINS_AT]-(u:User)
+            RETURN ID(u) AS id, u
+            """,
+            {"gym_id": gym_id}
+        )
+
+        trainees = []
+        for record in result.records:
+            trainee_data = {
+                "id": record["id"],
+                **{k: v for k, v in record["u"]._properties.items() if k != "password"}
+            }
+            trainees.append(trainee_data)
+
+        return trainees, True, None
+
+    except Exception as e:
+        return [], False, str(e)

@@ -313,3 +313,38 @@ def delete_post_service(driver, post_id, username):
         return None, True, None
     return None, False, "Action not allowed, must be post's owner"
 
+def get_count_reposts_and_quotes_service(driver, post_id):
+    """
+    Retrieves the number of reposts and quotes of a post.
+
+    :param driver: Connection to the graph.
+    :param post_id: ID of the post.
+    :return: Tuple (data, success, error).
+    """
+    try:
+        # Consulta para obtener el número de reposts
+        reposts_query = """
+            MATCH (p:Post <-[:Reposted_by]-(u)
+            WHERE id(p) == $post_id
+            RETURN COUNT(u) AS reposts_count
+        """
+        reposts_result = driver.execute_query(reposts_query, {"post_id": post_id})
+        reposts_count = reposts_result.records[0]["reposts_count"] if reposts_result.records else 0
+
+        # Consulta para obtener el número de quotes
+        quotes_query = """
+            MATCH (p:Post)<-[:Quoted_by]-(q)
+            WHERE id(p) == $post_id
+            RETURN COUNT(q) AS quotes_count
+        """
+        quotes_result = driver.execute_query(quotes_query, {"post_id": post_id})
+        quotes_count = quotes_result.records[0]["quotes_count"] if quotes_result.records else 0
+
+        data = {
+            "reposts": reposts_count,
+            "quotes": quotes_count
+        }
+        return data, True, None
+
+    except Exception as e:
+        return None, False, str(e)

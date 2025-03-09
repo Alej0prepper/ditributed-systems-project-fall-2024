@@ -82,3 +82,15 @@ def get_gym_by_username_controller(username, driver=None):
         gym.pop("password", None)
         return gym, True, None
     return None, False, "Gym not found."
+
+@use_db_connection
+@needs_authentication
+def get_gym_trainees_by_id_controller(driver=None):
+    """
+    Controller to retrieve trainees of a gym by its ID.
+    
+    :param gym_id: ID of the gym.
+    :param driver: Connection to the graph.
+    :return: Tuple (trainees, success, error).
+    """
+    return get_gym_trainees_by_id_service(driver, session["id"])
