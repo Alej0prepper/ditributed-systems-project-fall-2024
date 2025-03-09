@@ -250,6 +250,24 @@ def get_user_by_post_id(driver, post_id):
     
     return result[0]["u"]
 
+def get_publisher_by_post_id(driver, post_id):
+    """
+    Obtiene el usuario que hizo un post por el ID del post.
+    
+    :param driver: Conexión a Neo4j.
+    :param post_id: ID del post.
+    :return: Nodo del usuario que hizo el post, o None si no se encuentra.
+    """
+    query = """
+        MATCH (u)-[:Posts]->(p:Post {id:$post_id})
+        RETURN u
+    """
+    result = driver.execute_query(query, {"post_id": post_id}).records
+    
+    if not result:
+        return None
+    
+    return result[0]["u"]
 
 
 

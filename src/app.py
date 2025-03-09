@@ -10,7 +10,7 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from flask import Flask, request, jsonify, session, send_from_directory
 from network.controllers.users import delete_user_account, get_users_by_search_term, login_user, register_user
-from network.controllers.posts import create_post, repost_existing_post, quote_existing_post, delete_post, get_post_by_id_controller, get_post_by_user_id_controller, get_user_by_post_id_controller
+from network.controllers.posts import create_post, repost_existing_post, quote_existing_post, delete_post, get_post_by_id_controller, get_post_by_user_id_controller, get_user_by_post_id_controller, get_publisher_by_post_id_controller
 from network.controllers.users import follow_account
 from network.controllers.users import unfollow_user, get_follows_by_user_id_controller
 from network.controllers.comments import create_comment_answer, create_post_comment
@@ -974,9 +974,9 @@ def get_post_by_id(id):
     post_dict = convert_node_to_dict(post)
     if not post:
         return jsonify({"error": "Post not found"}), 404
-    user = get_user_by_post_id_controller(post_id)
-    user_dict = convert_node_to_dict(user)
-    post_dict["userId"] = user_dict["id"]
+    publisher = get_publisher_by_post_id_controller(post_id)
+    publisher_dict = convert_node_to_dict(publisher)
+    post_dict["userId"] = publisher_dict["id"]
     
     return jsonify({"posts":post_dict}), 200
 
