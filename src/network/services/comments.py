@@ -1,17 +1,18 @@
 from datetime import datetime
 
 # Comments
-def create_comment_node(driver, caption, media):
+def create_comment_node(driver, caption, media,userId):
     now = datetime.now()
 
     query = """
-        CREATE (c:Comment {datetime: $now, caption: $caption, media: $media}) 
-        RETURN id(c) as comment_id
+        CREATE (c:Comment {datetime: $now, caption: $caption, media: $media,userId: $userId}) 
+        RETURN c as comment
     """
     params = {
         "now": now,
         "caption": caption,
-        "media": media
+        "media": media,
+        "userId":userId
     }
 
     comment_id = driver.execute_query(query, params).records[0]["comment_id"]
@@ -98,32 +99,32 @@ def answer_comment(driver, caption, media, username, answered_comment_id):
 def comment_post(driver, caption, media, username, commented_post_id):
     return comment(driver, caption, media, username, commented_post_id=commented_post_id)
 
-    def get_comments(driver, target_id):
-        """
-        Obtiene todos los comentarios de un post o comentario.
+def get_comments(driver, target_id):
+    """
+    Obtiene todos los comentarios de un post o comentario.
 
-        Este servicio verifica si el ID proporcionado pertenece a un post o un comentario.
-        Luego, devuelve una lista de todos los comentarios y respuestas asociadas, 
-        incluyendo metadatos como el ID del comentario, fecha de creación, texto del comentario, 
-        medios adjuntos y el autor.
+    Este servicio verifica si el ID proporcionado pertenece a un post o un comentario.
+    Luego, devuelve una lista de todos los comentarios y respuestas asociadas, 
+    incluyendo metadatos como el ID del comentario, fecha de creación, texto del comentario, 
+    medios adjuntos y el autor.
 
-        Args:
-            driver: Conexión al grafo de Neo4j.
-            target_id (int): ID del post o comentario del que se quieren obtener los comentarios.
+    Args:
+        driver: Conexión al grafo de Neo4j.
+        target_id (int): ID del post o comentario del que se quieren obtener los comentarios.
 
-        Returns:
-            tuple: 
-                - comments (list): Lista de diccionarios con información de cada comentario.
-                - success (bool): Indica si la operación fue exitosa.
-                - error (str): Mensaje de error si la operación falló.
+    Returns:
+        tuple: 
+            - comments (list): Lista de diccionarios con información de cada comentario.
+            - success (bool): Indica si la operación fue exitosa.
+            - error (str): Mensaje de error si la operación falló.
 
-        Raises:
-            Exception: Si ocurre un error durante la ejecución de la consulta.
+    Raises:
+        Exception: Si ocurre un error durante la ejecución de la consulta.
 
-        Notes:
-            - Si el ID no pertenece a un post o comentario existente, devuelve un mensaje de error.
-            - Los comentarios se ordenan por fecha de creación.
-        """
+    Notes:
+        - Si el ID no pertenece a un post o comentario existente, devuelve un mensaje de error.
+        - Los comentarios se ordenan por fecha de creación.
+    """
     # Verificar si es un Post
     post_check = driver.execute_query(
         "MATCH (p:Post) WHERE id(p) = $target_id RETURN p",
@@ -162,13 +163,15 @@ def comment_post(driver, caption, media, username, commented_post_id):
     
     try:
         result = driver.execute_query(query, target_id=target_id)
-        comments = [{
-            "id": record["id"],
-            "datetime": record["datetime"].isoformat(),
-            "caption": record["caption"],
-            "media": record["media"],
-            "userId": record["username"]
-        } for record in result.records]
+        comments = [
+            {
+                "id": record["id"],
+                "datetime": record["datetime"].isoformat(),
+                "caption": record["caption"],
+                "media": record["media"],
+                "userId": record["username"]
+            } for record in result.records
+        ]
         
         return comments, True, None
     
