@@ -15,8 +15,7 @@ def convert_node_to_dict(node):
 def get_post_by_id(driver, post_id):
     post = driver.execute_query(
         """
-        MATCH (p:Post)
-            WHERE id(p) = $post_id
+        MATCH (p:Post {id: $post_id})
         RETURN p
         """,
         {"post_id": post_id}

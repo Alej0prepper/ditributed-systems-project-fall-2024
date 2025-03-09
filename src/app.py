@@ -31,8 +31,7 @@ from chord.protocol_logic import listen_for_chord_updates
 import chord.protocol_logic as chord_logic
 from network.middlewares.use_db_connection import use_db_connection
 from chord.replication import replicate_to_owners
-from utils.utils import convert_node_to_dict
-
+from common_utils.utils import convert_node_to_dict
 
 
 app = Flask(__name__)
@@ -246,7 +245,7 @@ def get_user_by_id(id):
     return jsonify({"error": error}), 500
 
 @app.route('/posts',methods=['GET'])
-@route_to_responsible(routing_key="getAllUserPosts")
+@route_to_responsible(routing_key="getAllPosts")
 def get_all_user_posts(posts):
     """
     Get all user posts endpoint.
@@ -694,7 +693,7 @@ def create_gym(id=str(uuid.uuid4())):
     
     print("Receiving request in create gym")
 
-    if email in [email if entity == "Gym" else None for entity, email, id in chord_logic.system_entities_list]:
+    if email in [email if entity == "Gym" else None for entity, email, id in chord_logic.system_entities_set]:
         return jsonify({"error": "There is another gym using that email"}), 400
 
 
@@ -967,50 +966,39 @@ def get_post_by_id(id):
         404: JSON with error message if post ID is missing or post not found
         500: JSON with error message if retrieval fails
     """
-    post_id = int(id) # quitar el parseo
+    post_id = id
     if not post_id:
         return jsonify({"error": "Post ID is required"}), 404
     
     post = get_post_by_id_controller(post_id)
-    post_dict = convert_node_to_dict(post['p'])
+    post_dict = convert_node_to_dict(post)
     if not post:
         return jsonify({"error": "Post not found"}), 404
     user = get_user_by_post_id_controller(post_id)
     user_dict = convert_node_to_dict(user)
     post_dict["userId"] = user_dict["id"]
     
-    return jsonify(post_dict), 200
+    return jsonify({"posts":post_dict}), 200
 
-@app.route('/posts/user/<int:user_id>', methods=['GET'])
-# @route_to_responsible(routing_key=None)
-def get_posts_by_user_id(user_id, driver=None):
+@app.route('/posts/user/<id>', methods=['GET'])
+@route_to_responsible(routing_key="getAllUserPosts")
+def get_posts_by_user_id(posts):
     """
-    Retrieves the posts made by a user identified by their ID. Requires authentication.
+    Retrieves the posts made by a user identified by their ID.
 
-    :param user_id: ID of the user.
-    :param driver: Graph connection (optional, managed automatically by the decorator).
     :return: JSON response with the user's posts, or an error message if applicable.
     """
-    posts, ok, error = get_post_by_user_id_controller(user_id)
-    if not ok:
-        return jsonify({"error": error}), 404 if "not found" in error else 500
-    posts_dict = {}
-    posts_dict = [convert_node_to_dict(post) for post in posts]
-
-    for post in posts_dict:
-        userId = convert_node_to_dict(get_user_by_post_id_controller(post["id"]))["id"]
-        post["userId"] = user_id
+    return jsonify({"posts":posts}), 200
     
 
-@app.route('/follows/<int:user_id>', methods=['GET'])
-
-def get_follows_by_user(user_id):
+@app.route('/follows/<id>', methods=['GET'])
+@route_to_responsible(routing_key=None)
+def get_follows_by_user(id):
     """
     Retrieves the list of users followed by a specified user ID.
-    Requires authentication.
 
     Args:
-        user_id (int): The ID of the user whose follows are to be retrieved.
+        id (int): The ID of the user whose follows are to be retrieved.
 
     Returns:
         200: JSON array of followed user objects if successful
@@ -1019,23 +1007,23 @@ def get_follows_by_user(user_id):
     """
     try:
 
-        follows, ok, error = get_follows_by_user_id_controller(user_id)
+        follows, ok, error = get_follows_by_user_id_controller(id)
         if ok:
-            return jsonify(follows), 200
+            return jsonify({"follows":follows}), 200
         else:
             return jsonify({"error": error}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
 
-@app.route('/followers/<int:user_id>', methods=['GET'])
-def get_followers_by_user(user_id):
+@app.route('/followers/<id>', methods=['GET'])
+@route_to_responsible(routing_key=None)
+def get_followers_by_user(id):
     """
     Retrieves the list of users following a specified user ID.
-    Requires authentication.
 
     Args:
-        user_id (int): The ID of the user whose followers are to be retrieved.
+        id (int): The ID of the user whose followers are to be retrieved.
 
     Returns:
         200: JSON array of follower user objects if successful
@@ -1043,37 +1031,16 @@ def get_followers_by_user(user_id):
         500: JSON with error message if retrieval fails
     """
     try:
-        followers, success, error = get_followers_by_user_id_controller( user_id)
+        followers, success, error = get_followers_by_user_id_controller(id)
 
         if success:
-            return jsonify(followers), 200
+            return jsonify({"followers":followers}), 200
         elif "no followers" in error:
             return jsonify({"error": error}, 404)
         else:
             return jsonify({"error": error}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-    return jsonify({"posts": posts_dict}), 200
 
 
 @app.route('/replicate', methods=['POST'])

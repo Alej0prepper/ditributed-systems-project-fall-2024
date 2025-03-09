@@ -26,8 +26,7 @@ def reaction_exist(driver,username, reacted_comment_id=None, reacted_post_id = N
     elif(reacted_post_id):
         query = """
                 MATCH (u:User{username: $username})
-                MATCH (p:Post)
-                    WHERE id(p) = $reacted_post_id
+                MATCH (p:Post {id:$reacted_post_id})
                     MATCH (p) -[r:Reacted_by]-> (u)
                     RETURN r
             """
@@ -57,8 +56,7 @@ def delete_reaction(driver, username, reacted_comment_id=  None, reacted_post_id
     elif(reacted_post_id):
         query = """
                 MATCH (u:User{username: $username})
-                MATCH (p:Post)
-                    WHERE id(p) = $reacted_post_id
+                MATCH (p:Post {id:$reacted_post_id})
                     MATCH (p) -[r:Reacted_by]-> (u)
                     DELETE r
                     
@@ -132,7 +130,7 @@ def react_to_a_post_service(driver, reaction_type, username, reacted_post_id):
     ).records
 
     post_exists = driver.execute_query(
-        "MATCH (p:Post) WHERE id(p) = $reacted_post_id RETURN p", 
+        "MATCH (p:Post {id:$reacted_post_id}) RETURN p", 
         {"reacted_post_id": reacted_post_id}
     ).records
     if not user_exists and not post_exists:
@@ -163,8 +161,7 @@ def react_to_a_post_service(driver, reaction_type, username, reacted_post_id):
     # Crea la nueva reacción
     query = """
         MATCH (u:User{username: $username})
-        MATCH (p:Post)
-            WHERE id(p) = $reacted_post_id
+        MATCH (p:Post {id:$reacted_post_id})
         CREATE (p) -[:Reacted_by {reaction_type: $reaction_type}]-> (u)
     """
     params = {

@@ -12,7 +12,7 @@ from chord.node import get_hash
 
 def getAllUsers():
     users = []
-    for entity in chord.system_entities_list:
+    for entity in chord.system_entities_set:
         if entity[0] == "User":
             responsible_node = chord.find_successor(get_hash(entity[2]))
             endpoint = f"http://{responsible_node['ip']}:{responsible_node['port']}/users/{entity[2]}"
@@ -23,37 +23,34 @@ def getAllUsers():
 
 def getAllGyms():
     gyms = []
-    for entity in chord.system_entities_list:
+    for entity in chord.system_entities_set:
         if entity[0] == "Gym":
             responsible_node = chord.find_successor(get_hash(entity[2]))
             endpoint = f"http://{responsible_node['ip']}:{responsible_node['port']}/gyms/{entity[2]}"
             response = requests.get(endpoint)
-            print(responsible_node)
-            print(response)
             gym = response.json()["gym"]
             gyms.append(gym)
     return gyms
 
 def getAllPosts():
     posts = []
-    for entity in chord.system_entities_list:
+    for entity in chord.system_entities_set:
         if entity[0] == "Post":
             responsible_node = chord.find_successor(get_hash(entity[2]))
             endpoint = f"http://{responsible_node['ip']}:{responsible_node['port']}/posts/{entity[2]}"
             response = requests.get(endpoint)
+            print(f"Preguntando por {entity[2]}: ",response.json())
             post = response.json()["post"]
             posts.append(post)
     return posts
     
 def getAllUserPosts(userId):
-    posts = []
-    for entity in chord.system_entities_list:
-        if entity[0] == "Post":
-            responsible_node = chord.find_successor(get_hash(userId))
-            endpoint = f"http://{responsible_node['ip']}:{responsible_node['port']}/posts/{userId}"
-            response = requests.get(endpoint)
-            posts = response.json()["posts"]
-    return posts
+    user_posts = []
+    all_posts = getAllPosts()
+    print("Todos:",all_posts)
+    for post in all_posts:
+        print(post)
+    return user_posts
 
 def route_to_responsible(routing_key=None):
     def decorator(func):
@@ -70,8 +67,6 @@ def route_to_responsible(routing_key=None):
                     or request.form.get("id")
                     or request.form.get("userId")
                 )
-            print("id in form:", request.form.get('id'))
-            print("form:", request.form)
 
             # If still None, try to get from function defaults
             if local_routing_key is None:
@@ -90,7 +85,7 @@ def route_to_responsible(routing_key=None):
             elif local_routing_key == "getAllPosts":
                 posts = getAllPosts()
             elif local_routing_key == "getAllUserPosts":
-                posts = getAllUserPosts(request.form.get("userId"))
+                posts = getAllUserPosts(request.view_args.get("id"))
                 return func(posts)
             elif local_routing_key == "me":
                 auth_header = request.headers.get("Authorization")
@@ -103,13 +98,12 @@ def route_to_responsible(routing_key=None):
             elif local_routing_key == "login":
                 email = request.form.get("email")
 
-                filtered_entities = [entity for entity in chord_logic.system_entities_list if entity[1] == email]
+                filtered_entities = [entity for entity in chord_logic.system_entities_set if entity[1] == email]
                 
                 # Get the first coincidence by email in entities' emails
                 if(len(filtered_entities) > 0):
                     local_routing_key = filtered_entities[0][1]
                 else: 
-                    print(f"Couldn't get {email} in {[entity for entity in chord_logic.system_entities_list]}")
                     local_routing_key = None
 
             if local_routing_key is None:
@@ -120,8 +114,6 @@ def route_to_responsible(routing_key=None):
 
             # Determine the responsible node in the Chord ring
             responsible_node = chord.find_successor(key)
-            print("routing_key:",local_routing_key)
-            print("Responsible node:", responsible_node['id'])
 
             # Retrieve self-identity
             self_id = chord_node.current_node.to_dict()["id"]

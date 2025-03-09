@@ -25,8 +25,8 @@ def add_user(driver, _id, name, username, email, image_url, password, weight, st
             },
         )
         return driver.execute_query(
-            "MATCH (u:User {username: $username}) RETURN id(u) as user_id", {"username": username}
-        ).records[0]["user_id"], True, None
+            "MATCH (u:User {username: $username}) RETURN u as user", {"username": username}
+        ).records[0]["user"], True, None
     else:
         return None, False, Exception("Username already exists.")
 def get_user_by_email(driver, email):
@@ -280,8 +280,7 @@ def get_follows_by_user_id_service(driver, user_id):
     try:
         follows = driver.execute_query(
             """
-            MATCH (u)-[r:Follows]->(t)
-            WHERE id(u) = $user_id
+            MATCH (u {id:$user_id})-[r:Follows]->(t)
             RETURN t
             """,
             {"user_id": user_id}
@@ -300,8 +299,7 @@ def get_followers_by_user_id_service(driver, user_id):
     try:
         followers = driver.execute_query(
             """
-            MATCH (f)-[r:Follows]->(u)
-            WHERE id(u) = $user_id
+            MATCH (f)-[r:Follows]->(u {id:$user_id})
             RETURN f, labels(f) AS entityType, id(f) AS followerId
             """,
             {"user_id": user_id}

@@ -33,10 +33,8 @@ def update_post(driver, post_id, media: list[str], caption: str, quoted_post_id:
         """
     else:
         query = """
-            MATCH (p:Post)
-                WHERE id(p) = $post_id
-            MATCH (q:Post)
-                WHERE id(q) = $quoted_post_id
+            MATCH (p:Post {id:$post_id})
+            MATCH (q:Post {id:$quoted_post_id})
             SET p.media = $media,
                 p.caption = $caption
             CREATE (p) -[:Quotes]-> (q)
@@ -84,7 +82,7 @@ def post(driver, media, caption, username, email):
 
     # Obtener el tipo de entidad basado en el correo electrónico
     entity_type = None
-    for et, em, _ in chord.system_entities_list:
+    for et, em, _ in chord.system_entities_set:
         if em == email:
             entity_type = et
             break
@@ -164,7 +162,7 @@ def repost(driver, reposted_post_id: int, username, email, media=None, caption=N
 
     # Obtener el tipo de entidad basado en el correo electrónico
     entity_type = None
-    for et, em, _ in chord.system_entities_list:
+    for et, em, _ in chord.system_entities_set:
         if em == email:
             entity_type = et
             break
@@ -194,8 +192,7 @@ def repost(driver, reposted_post_id: int, username, email, media=None, caption=N
     # Crear el repost
     now = datetime.now()
     query = f"""
-        MATCH (p:Post)
-            WHERE id(p) = $reposted_post_id
+        MATCH (p:Post {{id: $reposted_post_id}})
         MATCH (e:{entity_type} {{email: $email}})
         CREATE (e)-[r:Reposts {{datetime: $now}}]->(p)
         RETURN e, p
@@ -208,23 +205,21 @@ def repost(driver, reposted_post_id: int, username, email, media=None, caption=N
     return reposted_post_id, True, None
 
 def get_post_by_id(driver, post_id):
+
     post = driver.execute_query(
         """
-        MATCH (p:Post)
-            WHERE id(p) = $post_id
+        MATCH (p:Post {id: $post_id})
         RETURN p
         """,
         {"post_id": post_id}
     ).records
-
-    return post[0] if post else None
+    return post[0]["p"] if post else None
 
 def get_posts_by_user_id(driver, user_id):
 
     result = driver.execute_query(
         """
-        MATCH (u:User)-[:Posts]->(p:Post)
-        WHERE id(u) = $user_id
+        MATCH (u:User {id:$user_id})-[:Posts]->(p:Post)
         RETURN p
 
         """,
@@ -245,8 +240,7 @@ def get_user_by_post_id(driver, post_id):
     :return: Nodo del usuario que hizo el post, o None si no se encuentra.
     """
     query = """
-        MATCH (u:User)-[:Posts]->(p:Post)
-        WHERE id(p) = $post_id
+        MATCH (u:User)-[:Posts]->(p:Post {id:$post_id})
         RETURN u
     """
     result = driver.execute_query(query, {"post_id": post_id}).records
@@ -293,8 +287,7 @@ def delete_post_service(driver, post_id, username):
         )
         driver.execute_query(
             """
-            MATCH (p:Post)
-                WHERE id(p) = $post_id
+            MATCH (p:Post {id:$post_id})
             DELETE p
             """,
             {"post_id": post_id}

@@ -149,7 +149,7 @@ def find_k_successors(K):
             break
     return successors
 
-system_entities_list = []
+system_entities_set = set()
 
 MULTICAST_GROUP_DISCOVERY = os.environ.get('MULTICAST_GROUP_DISCOVERY', '')
 DISCOVERY_PORT = int(os.environ.get('DISCOVERY_PORT', ''))
@@ -192,8 +192,7 @@ def listen_for_chord_updates():
         data, addr = sock.recvfrom(1024)
         message = data.decode()
         print("Received message: ",message)
-        if not (message.split(",")[0], message.split(",")[1], message.split(",")[2]) in system_entities_list:
-            update_entities_list(message.split(",")[0], message.split(",")[1], message.split(",")[2])
+        update_entities_list(message.split(",")[0],message.split(",")[1],message.split(",")[2])
 
 def send_chord_update(message):
     multicast_group = (MULTICAST_GROUP_DATA, DATA_PORT)
@@ -207,33 +206,40 @@ def send_local_system_entities_copy():
             db_data = fetch_graph_data()
             for node_info in db_data["nodes"]:
                 try:
-                    if "Gym" in node_info['labels'] or "User" in node_info['labels'] or "Post" in node_info['labels']:
+                    if "Gym" in node_info['labels'] or "User" in node_info['labels']:
                         entity_type = "Gym" if "Gym" in node_info['labels'] else "User"
-                        if not (entity_type, node_info['properties']['email'], node_info['properties']['id']) in system_entities_list:
-                            update_entities_list(entity_type, node_info['properties']['email'], node_info['properties']['id'])
-                            print(f"sending: {entity_type},{node_info['properties']['email']},{node_info['properties']['id']}")
-                            send_chord_update(f"{entity_type},{node_info['properties']['email']},{node_info['properties']['id']}")
+                        update_entities_list(entity_type, node_info['properties']['email'], node_info['properties']['id'])
                     if "Post" in node_info['labels']:
-                        if not ("Post", node_info['properties']['email'], node_info['properties']['id']) in system_entities_list:
-                            update_entities_list("Post", node_info['properties']['email'], node_info['properties']['id'])
-                            print(f"sending: Post,{node_info['properties']['email']},{node_info['properties']['id']}")
-                            send_chord_update(f"Post,{node_info['properties']['email']},{node_info['properties']['id']}")
+                        update_entities_list("Post", None ,node_info['properties']['id'])
                 except:
                   continue
         except Exception as e:
             pass
         time.sleep(STABILIZE_INTERVAL)
 
+def normalize_email(email):
+    # Convert the string "None" to the actual None value.
+    return None if email == "None" else email
+
 def update_entities_list(entity_type, email, id):
-    # Append the new entry as a string
-    system_entities_list.append((entity_type, email, id))
+    new_entry = (entity_type, normalize_email(email), id)
+    
+    # Check if the entry is new
+    if new_entry not in system_entities_set:
+        system_entities_set.add(new_entry)
+        
+        folder_path = os.path.join(os.getcwd(), "src", "chord")
+        file_path = os.path.join(folder_path, "system_entities_set.txt")
 
-    folder_path = os.path.join(os.getcwd(), "src", "chord")
-    file_path = os.path.join(folder_path, "system_entities_list.txt")
+        # Ensure the folder exists
+        os.makedirs(folder_path, exist_ok=True)
 
-    # Ensure the folder exists, create it if not
-    os.makedirs(folder_path, exist_ok=True)
+        # Write updated data to file
+        with open(file_path, "w") as file:
+            for entity in system_entities_set:
+                file.write(f"{entity[0]}: {entity[1]} {entity[2]}\n")
 
-    with open(file_path, "w") as file:
-        for entity in system_entities_list:
-            file.write(f"{entity[0]}: {entity[1]} {entity[2]}\n")
+        # Only send update if it was newly added
+        send_chord_update(f"{entity_type},{email},{id}")
+
+

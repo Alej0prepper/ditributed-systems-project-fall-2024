@@ -79,10 +79,8 @@ def comment(driver, caption, media, username, answered_comment_id=None, commente
     
     if commented_post_id:
         query = """
-            MATCH (a: Comment)
-                WHERE id(a) = $new_comment_id 
-            MATCH (p:Post)
-                WHERE id(p) = $commented_post_id
+            MATCH (a: Comment {id:$new_comment_id})
+            MATCH (p:Post {id:$commented_post_id})
             CREATE (p) -[:Has]-> (a)
         """
 
