@@ -1228,8 +1228,8 @@ if __name__ == '__main__':
     threading.Thread(target=check_predecessor, daemon=True).start()
     threading.Thread(target=listen_for_chord_updates, daemon=True).start()
     threading.Thread(target=chord_logic.send_local_system_entities_copy, daemon=True).start()
-    #threading.Thread(target=chord_logic.announce_node_to_router, daemon=True).start()
-    #threading.Thread(target=replicate_to_owners, daemon=True).start()
+    threading.Thread(target=chord_logic.announce_node_to_router, daemon=True).start()
+    threading.Thread(target=replicate_to_owners, daemon=True).start()
     
 
     app.run(
