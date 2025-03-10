@@ -55,7 +55,7 @@ def replicate_to_owners(driver=None):
             owners_data = dict()
 
             for edge in edges:
-                get_relation_start_node(edge["id"])
+                get_relation_start_node(driver, edge["id"])
                 """ if edge['start'] is None or edge['end'] is None:
                     continue
                 successor = chord_logic.find_successor(get_hash(edge["start"] if not edge['start'] is None else driver))
