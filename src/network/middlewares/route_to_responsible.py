@@ -39,9 +39,35 @@ def getAllPosts():
             responsible_node = chord.find_successor(get_hash(entity[2]))
             endpoint = f"http://{responsible_node['ip']}:{responsible_node['port']}/posts/{entity[2]}"
             response = requests.get(endpoint)
+            print("Post:",response.json())
             post = response.json()["post"]
-            posts.append(post)
+            if post != "{}":
+                posts.append(post)
     return posts
+
+def getAllQuotes():
+    quotes = []
+    for entity in chord.system_entities_set:
+        if entity[0] == "Post":
+            responsible_node = chord.find_successor(get_hash(entity[2]))
+            endpoint = f"http://{responsible_node['ip']}:{responsible_node['port']}/quotes/{entity[2]}"
+            response = requests.get(endpoint)
+            quote = response.json()["quote"]
+            if quote != "{}":
+                quotes.append(quote)
+    return quotes
+
+def getAllReposts():
+    reposts = []
+    for entity in chord.system_entities_set:
+        if entity[0] == "Post":
+            responsible_node = chord.find_successor(get_hash(entity[2]))
+            endpoint = f"http://{responsible_node['ip']}:{responsible_node['port']}/reposts/{entity[2]}"
+            response = requests.get(endpoint)
+            repost = response.json()["repost"]
+            if repost != "{}":
+                reposts.append(repost)
+    return reposts
     
 def getAllUserPosts(userId):
     user_posts = []
@@ -77,6 +103,12 @@ def route_to_responsible(routing_key=None):
 
             elif local_routing_key == "getAllUsers":
                 users = getAllUsers()
+                return func(users)
+            elif local_routing_key == "getAllQuotes":
+                users = getAllQuotes()
+                return func(users)
+            elif local_routing_key == "getAllReposts":
+                users = getAllReposts()
                 return func(users)
             elif local_routing_key == "getAllGyms":
                 gyms = getAllGyms()

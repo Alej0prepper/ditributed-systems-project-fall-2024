@@ -259,6 +259,38 @@ def get_all_user_posts(posts):
         return jsonify({"posts":posts}), 200
     return jsonify({"error"}), 500
 
+
+@app.route('/quotes',methods=['GET'])
+@route_to_responsible(routing_key="getAllQuotes")
+def get_all_user_quotes(quotes):
+    """
+    Get all user quotes endpoint.
+    
+    Returns:
+        200: JSON with users
+        500: JSON with error if users fetch had an error
+    """
+
+    if quotes:
+        return jsonify({"quotes":quotes}), 200
+    return jsonify({"error"}), 500
+
+@app.route('/reposts',methods=['GET'])
+@route_to_responsible(routing_key="getAllReposts")
+def get_all_user_reposts(reposts):
+    """
+    Get all user reposts endpoint.
+    
+    Returns:
+        200: JSON with users
+        500: JSON with error if users fetch had an error
+    """
+
+    if reposts:
+        return jsonify({"reposts":reposts}), 200
+    return jsonify({"error"}), 500
+
+
 @app.route('/gyms/<id>',methods=['GET'])
 @route_to_responsible(routing_key=None)
 def get_gym_by_id(id):
@@ -977,14 +1009,20 @@ def get_post_by_id(id):
         return jsonify({"error": "Post ID is required"}), 404
     
     post = get_post_by_id_controller(post_id)
-    post_dict = convert_node_to_dict(post)
-    if not post:
+    
+    if post is None:
         return jsonify({"error": "Post not found"}), 404
+    
+    if isinstance(post, dict):
+        return jsonify({"post":{}}), 200
+    
+    post_dict = convert_node_to_dict(post)
+    
     publisher = get_publisher_by_post_id_controller(post_id)
     publisher_dict = convert_node_to_dict(publisher)
     post_dict["userId"] = publisher_dict["id"]
     
-    return jsonify({"posts":post_dict}), 200
+    return jsonify({"post":post_dict}), 200
 
 @app.route('/posts/user/<id>', methods=['GET'])
 @route_to_responsible(routing_key="getAllUserPosts")
@@ -1048,22 +1086,6 @@ def get_followers_by_user(id):
             return jsonify({"error": error}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 @app.route('/replicate', methods=['POST'])
