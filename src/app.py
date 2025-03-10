@@ -1,37 +1,27 @@
-import secrets
-import os
-import threading
-import chord.node as chord
-import json
-import uuid
 import base64
+import chord.node as chord
+import chord.protocol_logic as chord_logic
+import chord.replication as replicate_to_owners
+import chord.routes as chord_routes
+import chord.protocol_logic as chord_protocol_logic
 import json
+import os
+import secrets
+import threading
+import uuid
+from flask import Flask, request, jsonify, session, send_from_directory
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
-from flask import Flask, request, jsonify, session, send_from_directory
-from network.controllers.users import delete_user_account, get_users_by_search_term, login_user, register_user
-from network.controllers.posts import create_post, repost_existing_post, quote_existing_post, delete_post, get_post_by_id_controller, get_post_by_user_id_controller, get_user_by_post_id_controller, get_publisher_by_post_id_controller, get_quote_by_id_controller, get_repost_by_id_controller
-from network.controllers.users import follow_account
-from network.controllers.users import unfollow_user, get_follows_by_user_id_controller
 from network.controllers.comments import create_comment_answer, create_post_comment
+from network.controllers.gyms import add_gym_controller, delete_gym_controller, get_gyms_by_search_term, get_gym_by_id_controller, get_logged_gym_controller, login_gym, update_gym_controller
+from network.controllers.posts import create_post, delete_post, get_post_by_id_controller, get_post_by_user_id_controller, get_quote_by_id_controller, get_repost_by_id_controller, get_user_by_post_id_controller, get_publisher_by_post_id_controller, quote_existing_post, repost_existing_post, get_quotes_count_by_post_id_controller, get_reposts_count_by_post_id_controller
 from network.controllers.reactions import react_to_a_comment, react_to_a_post
-from network.controllers.gyms import add_gym_controller, delete_gym_controller
-from network.controllers.trains_in import trains_in, add_training_styles, remove_training_styles
-from network.controllers.gyms import login_gym
-from network.controllers.users import update_user_account
-from network.controllers.gyms import get_gyms_by_search_term
-from chord.routes import chord_routes
-from chord.protocol_logic import check_predecessor, stabilize
+from network.controllers.trains_in import add_training_styles, remove_training_styles, trains_in
+from network.controllers.users import delete_user_account, follow_account, get_follows_by_user_id_controller, get_logged_user_controller, get_user_by_id_controller, get_users_by_search_term, login_user, register_user, unfollow_user, update_user_account
 from network.middlewares.route_to_responsible import route_to_responsible
-from network.controllers.users import get_user_by_id_controller
-from network.controllers.gyms import get_gym_by_id_controller, update_gym_controller
-from network.controllers.users import get_logged_user_controller,get_followers_by_user_id_controller
-from network.controllers.gyms import get_logged_gym_controller
-from chord.protocol_logic import listen_for_chord_updates
-import chord.protocol_logic as chord_logic
 from network.middlewares.use_db_connection import use_db_connection
-from chord.replication import replicate_to_owners
 from common_utils.utils import convert_node_to_dict
+
 
 
 app = Flask(__name__)
@@ -1102,6 +1092,55 @@ def get_repost_by_id(id):
     return jsonify({"repost":repost_dict}), 200
 
 
+@app.route('/quotes/post/<id>', methods=['GET'])
+@route_to_responsible(routing_key=None)
+def get_quotes_count_by_post(id):
+    """
+    Get the count of quotes for a given post by its ID.
+
+    Accepts GET request
+
+    Returns:
+        200: JSON with the count of quotes if found
+        404: JSON with error message if post ID is missing or post not found
+        500: JSON with error message if retrieval fails
+    """
+    post_id = id
+    if not post_id:
+        return jsonify({"error": "Post ID is required"}), 404
+    
+    # Llamar al servicio get_quotes_count_by_post_id para obtener la cantidad de citas
+    quote_count, success, error_message = get_quotes_count_by_post_id_controller(post_id)
+
+    if success:
+        return jsonify({"quote_count": quote_count}), 200
+    else:
+        return jsonify({"error": error_message}), 500
+
+@app.route('/reposts/post/<id>', methods=['GET'])
+@route_to_responsible(routing_key=None)
+def get_reposts_count_by_post(id):
+    """
+    Get the count of reposts for a given post by its ID.
+
+    Accepts GET request
+
+    Returns:
+        200: JSON with the count of reposts if found
+        404: JSON with error message if post ID is missing or post not found
+        500: JSON with error message if retrieval fails
+    """
+    post_id = id
+    if not post_id:
+        return jsonify({"error": "Post ID is required"}), 404
+    
+    # Llamar al servicio get_reposts_count_by_post_id para obtener la cantidad de reposts
+    repost_count, success, error_message = get_reposts_count_by_post_id_controller(post_id)
+
+    if success:
+        return jsonify({"repost_count": repost_count}), 200
+    else:
+        return jsonify({"error": error_message}), 500
 
 
 
