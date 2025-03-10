@@ -994,6 +994,7 @@ def get_posts_by_user_id(posts):
 
     :return: JSON response with the user's posts, or an error message if applicable.
     """
+    
     return jsonify({"posts":posts}), 200
     
 

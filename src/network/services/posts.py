@@ -205,15 +205,23 @@ def repost(driver, reposted_post_id: int, username, email, media=None, caption=N
     return reposted_post_id, True, None
 
 def get_post_by_id(driver, post_id):
-
-    post = driver.execute_query(
-        """
+    query = """
         MATCH (p:Post {id: $post_id})
-        RETURN p
-        """,
-        {"post_id": post_id}
-    ).records
-    return post[0]["p"] if post else None
+        OPTIONAL MATCH (p)<-[:Quote]-(q)
+        RETURN p, COUNT(q) AS quote_count
+    """
+    result = driver.execute_query(query, {"post_id": post_id}).records
+    
+    if result:
+        post = result[0]["p"]
+        quote_count = result[0]["quote_count"]
+        
+        if quote_count > 0:
+            return dict
+        return post
+    else:
+        return None
+
 
 def get_posts_by_user_id(driver, user_id):
 
