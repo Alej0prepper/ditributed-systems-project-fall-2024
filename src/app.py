@@ -223,9 +223,10 @@ def get_all_users(users):
         200: JSON with users
         500: JSON with error if users fetch had an error
     """
-    if not users is None:
+
+    if users:
         return jsonify({"users": users}), 200
-    return jsonify({"error": "Can't retreive posts"}), 500
+    return jsonify({"error"}), 500
 
 @app.route('/users/<id>',methods=['GET'])
 @route_to_responsible(routing_key=None)
@@ -356,10 +357,10 @@ def repost(id):
         201: JSON with success message if repost successful
         500: JSON with error message if repost fails or post ID missing
     """
-    reposted_post_id = id
+    reposted_post_id = int(id)
     if not reposted_post_id:
         return jsonify({"error": "Reposted post ID is required"}), 500
-    reposted_post_id = reposted_post_id
+    reposted_post_id = int(reposted_post_id)
     _, ok, error = repost_existing_post(reposted_post_id)
     if ok:
         return jsonify({"message": f"Post reposted successfully."}), 201
@@ -383,14 +384,14 @@ def quote(id):
         500: JSON with error message if quote fails or required fields missing
     """
     data = request.form
-    quoted_post_id = id
+    quoted_post_id = int(id)
     media = data.get("media")
     caption = data.get("caption")
     if not quoted_post_id:
         return jsonify({"error": "Quoted post ID is required"}), 500
     if not media and not caption:
         return jsonify({"error": "Media or caption is required"}), 500
-    quoted_post_id = quoted_post_id
+    quoted_post_id = int(quoted_post_id)
    
     _, ok, error = quote_existing_post(quoted_post_id, media, caption)
     if ok:
@@ -410,9 +411,10 @@ def remove_post(id):
         200: JSON with success message if deletion successfull
         500: JSON with error message if deletion fails or post ID missing
     """
-    post_id = id
+    post_id = int(id)
     if not post_id:
         return jsonify({"error": "Post ID is required"}), 500
+    post_id = int(post_id)
     _, ok, error = delete_post(post_id)
     if not ok:
         return jsonify({"error": error}), 500 
@@ -569,9 +571,11 @@ def react_post(id):
     reaction = data.get("reaction")
     post_id = id
     if not reaction:
-        return jsonify({"error": "Reaction is required"}), 400
+        return jsonify({"error": "Reaction is required"}), 500
     if not post_id:
-        return jsonify({"error": "Post ID is required"}), 400
+        return jsonify({"error": "Post ID is required"}), 500
+    if reaction == "":
+       return delete_reaction_controller(reacted_post_id = post_id)
     _, ok, error = react_to_a_post(reaction, post_id)
     if ok:
         return jsonify({"message": "Reaction sent"}), 201
@@ -594,6 +598,8 @@ def react_comment(id):
     data = request.form
     reaction = data.get("reaction")
     comment_id = id
+    if reaction == "":
+        return delete_reaction_controller(reacted_comment_id = comment_id)
     if not reaction or not comment_id:
         return jsonify({"error": "Reaction and comment ID are required"}), 500
     _, ok, error = react_to_a_comment(reaction, comment_id)
@@ -621,7 +627,7 @@ def comment(id):
     data = request.form
     caption = data.get("caption")
     media = data.get("media")
-    post_id = id
+    post_id = int(id)
     if not caption and not media:
         return jsonify({"error": "Caption or media is required"}), 500
     if not post_id:
@@ -651,7 +657,7 @@ def answer(id):
     data = request.form
     caption = data.get("caption")
     media = data.get("media")
-    comment_id = id
+    comment_id = int(id)
     if not caption and not media:
         return jsonify({"error": "Caption or media is required"}), 500
     if not comment_id:
@@ -691,8 +697,11 @@ def create_gym(id=str(uuid.uuid4())):
     username = data.get("username")
     email = data.get("email")
     
+    print("Receiving request in create gym")
+
     if email in [email if entity == "Gym" else None for entity, email, id in chord_logic.system_entities_set]:
         return jsonify({"error": "There is another gym using that email"}), 400
+
 
     location = data.get("location") 
     if isinstance(location, str): 
@@ -973,9 +982,9 @@ def get_post_by_id(id):
         return jsonify({"error": "Post not found"}), 404
     publisher = get_publisher_by_post_id_controller(post_id)
     publisher_dict = convert_node_to_dict(publisher)
-    post_dict["publisherId"] = publisher_dict["id"]
+    post_dict["userId"] = publisher_dict["id"]
     
-    return jsonify({"post":post_dict}), 200
+    return jsonify({"posts":post_dict}), 200
 
 @app.route('/posts/user/<id>', methods=['GET'])
 @route_to_responsible(routing_key="getAllUserPosts")
@@ -1038,6 +1047,22 @@ def get_followers_by_user(id):
             return jsonify({"error": error}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 @app.route('/replicate', methods=['POST'])

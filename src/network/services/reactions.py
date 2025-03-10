@@ -109,14 +109,15 @@ def react_to_a_comment_service(driver, reaction_type, username, reacted_comment_
     # Crea la nueva reacción
     query = """
         MATCH (u:User{username: $username})
-        MATCH (c:Comment)
-            WHERE id(c) = $reacted_comment_id
-        CREATE (u) -[:Reacted_to {reaction_type: $reaction_type}]-> (c)
+        MATCH (c:Comment{id:$reacted_comment_id})
+           
+        CREATE (u) -[:Reacted_to {reaction_type: $reaction_type, id: $id}]-> (c)
     """
     params = {
         "username": username,
         "reaction_type": reaction_type,
-        "reacted_comment_id": reacted_comment_id
+        "reacted_comment_id": reacted_comment_id,
+        "id": str(uuid.uuid4())
     }
     driver.execute_query(query, params)
     return None, True, None
@@ -154,7 +155,7 @@ def react_to_a_post_service(driver, reaction_type, username, reacted_post_id):
     if not user_exists or not post_exists:
         return None, False, "User or Post not found or creation failed"
 
-    # Si ya existe una reacción del mismo tipo, elimina la reacción existente
+    # Si ya existe una reacción, elimina la reacción existente
     if reaction_exist(driver, username, None, reacted_post_id):
         delete_reaction(driver, username, None, reacted_post_id)
 
@@ -162,12 +163,13 @@ def react_to_a_post_service(driver, reaction_type, username, reacted_post_id):
     query = """
         MATCH (u:User{username: $username})
         MATCH (p:Post {id:$reacted_post_id})
-        CREATE (p) -[:Reacted_by {reaction_type: $reaction_type}]-> (u)
+        CREATE (p) -[:Reacted_by {reaction_type: $reaction_type,id: $id}]-> (u)
     """
     params = {
         "username": username,
         "reaction_type": reaction_type,
-        "reacted_post_id": reacted_post_id
+        "reacted_post_id": reacted_post_id,
+        "id": str(uuid.uuid4())
     }
     driver.execute_query(query, params)
     return None, True, None
