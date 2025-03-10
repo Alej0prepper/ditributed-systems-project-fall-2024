@@ -13,8 +13,8 @@ from network.controllers.users import delete_user_account, get_users_by_search_t
 from network.controllers.posts import create_post, repost_existing_post, quote_existing_post, delete_post, get_post_by_id_controller, get_post_by_user_id_controller, get_user_by_post_id_controller, get_publisher_by_post_id_controller, get_quote_by_id_controller, get_repost_by_id_controller,get_quotes_count_by_post_id_controller,get_reposts_count_by_post_id_controller
 from network.controllers.users import follow_account
 from network.controllers.users import unfollow_user, get_follows_by_user_id_controller
-from network.controllers.comments import create_comment_answer, create_post_comment
-from network.controllers.reactions import react_to_a_comment, react_to_a_post
+from network.controllers.comments import create_comment_answer, create_post_comment, get_comments_controller
+from network.controllers.reactions import react_to_a_comment, react_to_a_post, get_reactions_count_by_id_controller
 from network.controllers.gyms import add_gym_controller, delete_gym_controller
 from network.controllers.trains_in import trains_in, add_training_styles, remove_training_styles
 from network.controllers.gyms import login_gym
@@ -384,7 +384,7 @@ def quote(id):
         500: JSON with error message if quote fails or required fields missing
     """
     data = request.form
-    quoted_post_id = int(id)
+    quoted_post_id = id
     media = data.get("media")
     caption = data.get("caption")
     if not quoted_post_id:
@@ -627,7 +627,7 @@ def comment(id):
     data = request.form
     caption = data.get("caption")
     media = data.get("media")
-    post_id = int(id)
+    post_id = id
     if not caption and not media:
         return jsonify({"error": "Caption or media is required"}), 500
     if not post_id:
@@ -1157,11 +1157,45 @@ def get_reposts_count_by_post(id):
 
 
 
+@app.route('/reactions/<id>',methods = ['GET'])
+def get_reactions_count_endpoint(id):
+    entity_id = id
+    try:
+        if entity_id is None:
+            return jsonify({"error": "El parámetro 'id' es obligatorio."}), 400
+        
+        # Llamar al servicio para obtener el número de reacciones
+        reaction_count = get_reactions_count_by_id_controller(entity_id)
+        return jsonify({"reaction_count": reaction_count})
+        if reaction_count is None:
+            return jsonify({"error": "Entidad no encontrada o no tiene reacciones."}), 404
+
+    except Exception as e:
+        # Si ocurre un error, devolver un mensaje adecuado
+        return jsonify({"error": str(e)}), 400
 
 
+@app.route('/comments/<id>', methods = ["GET"])
+def get_comments_endpoint(id):
+    # Obtener el ID de la entidad desde la URL
+    entity_id = id
 
+    # Validar que se haya pasado un ID de entidad
+    if not entity_id:
+        return jsonify({"error": "entity_id parameter is required"}), 400
 
+    # Llamar a la función `get_comments` que definimos previamente
+    comments,success,error = get_comments_controller(entity_id)
+    if not success:
+        return jsonify({"error":error})
+    if comments is None:
+        return jsonify({"error": "Entity not found or invalid type"}), 404
+    
+    for comment in comments:
+        comment['datetime'] = comment['datetime'].isoformat()
 
+    # Retornar la lista de comentarios en formato JSON
+    return jsonify(comments)
 
 
 

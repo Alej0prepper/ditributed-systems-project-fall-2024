@@ -1,3 +1,4 @@
+import uuid
 def react(driver, reaction_type,username , reacted_comment_id = None, reacted_post_id = None) :
     if(reacted_comment_id):
         react_comment(driver,reaction_type,username,reacted_comment_id)
@@ -173,3 +174,48 @@ def react_to_a_post_service(driver, reaction_type, username, reacted_post_id):
     }
     driver.execute_query(query, params)
     return None, True, None
+
+def get_reactions_count_by_id(driver, entity_id):
+    """
+    Retorna el número de reacciones de una entidad (comentario o post) dado su ID.
+    
+    :param driver: Controlador de Neo4j
+    :param entity_id: ID de la entidad (post o comentario)
+    :return: Tupla (count, success, error)
+    """
+    # Verificar si es comentario
+    query_comment_check = """
+        MATCH (c:Comment {id: $entity_id})
+        RETURN COUNT(c) AS entity_exists
+    """
+    result = driver.execute_query(query_comment_check, {"entity_id": entity_id})
+    records = result[0]  # Acceder a los registros correctamente
+    
+    if records and records[0]["entity_exists"] > 0:
+        # Contar reacciones para comentario
+        query_reactions = """
+            MATCH (:Comment {id: $entity_id})-[:Reacted_by]->(u:User)
+            RETURN COUNT(u) AS count
+        """
+        reaction_result = driver.execute_query(query_reactions, {"entity_id": entity_id})
+        return reaction_result[0][0]["count"], True, None
+
+    # Verificar si es post
+    query_post_check = """
+        MATCH (p:Post {id: $entity_id})
+        RETURN COUNT(p) AS entity_exists
+    """
+    result = driver.execute_query(query_post_check, {"entity_id": entity_id})
+    records = result[0]
+    
+    if records and records[0]["entity_exists"] > 0:
+        # Contar reacciones para post
+        query_reactions = """
+            MATCH (:Post {id: $entity_id})-[:Reacted_by]->(u:User)
+            RETURN COUNT(u) AS count
+        """
+        reaction_result = driver.execute_query(query_reactions, {"entity_id": entity_id})
+        return reaction_result[0][0]["count"], True, None
+
+    # Si no encuentra ninguna entidad
+    return None, False, "Entidad no encontrada"
