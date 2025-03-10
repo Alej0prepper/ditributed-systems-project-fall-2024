@@ -58,7 +58,6 @@ def hash_password(password: str) -> bytes:
 def verify_password(plain_password: str, hashed_password: bytes) -> bool:
     return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password)
 
-@use_db_connection
 def get_gyms_by_search_term(gyms, query):
     return get_gyms_by_search_term_service(gyms, query)
 

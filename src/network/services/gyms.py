@@ -147,14 +147,12 @@ def get_gym_by_username(driver, username):
 def get_gyms_by_search_term_service(gyms, query):
     try:
         if len(gyms) > 0:
-            gyms = [gym["u"]._properties for gym in gyms]
-            for gym in gyms:
-                del gym["password"]
+            gyms = [gym for gym in gyms if query.lower() in gym["name"].lower() or query.lower() in gym["username"].lower()]
             return gyms,True,None
         else:
             return [],True,None 
     except Exception as e:
-        return [],False,e
+        return [],False,str(e)
 
 def get_all_gyms_service(driver):
     try:
