@@ -3,11 +3,12 @@ import jwt
 import datetime
 
 SECRET_KEY = os.getenv('SECRET_KEY', '')
-def generate_token(username, email):
+def generate_token(id, username, email):
     """
     Generates a JWT token for the logged-in user.
     """
     payload = {
+        'id': id,
         'username': username,
         'email': email,
         'exp': datetime.datetime.now() + datetime.timedelta(hours=1)  # Token expires in 1 hour

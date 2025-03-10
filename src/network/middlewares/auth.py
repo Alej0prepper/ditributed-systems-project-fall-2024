@@ -14,6 +14,7 @@ def needs_authentication(func):
         if user_data is None:
             return None, False, "Invalid or expired token"
 
+        session["id"] =  user_data["id"]
         session["username"] =  user_data["username"]
         session["email"] =  user_data["email"]
         
