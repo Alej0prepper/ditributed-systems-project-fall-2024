@@ -1,9 +1,10 @@
-from flask import session, request
+import flask
 from network.middlewares.token import validate_token
+from database.connection import session
 
 def needs_authentication(func):
     def wrapper(*args, **kwargs):
-        token = request.headers.get("Authorization")
+        token = flask.request.headers.get("Authorization")
         
         if token is None:
             return None, False, "Token is missing"
@@ -14,9 +15,9 @@ def needs_authentication(func):
         if user_data is None:
             return None, False, "Invalid or expired token"
 
-        session["id"] =  user_data["id"]
-        session["username"] =  user_data["username"]
-        session["email"] =  user_data["email"]
+        flask.session["id"] =  user_data["id"]
+        flask.session["username"] =  user_data["username"]
+        flask.session["email"] =  user_data["email"]
         
         return func(*args, **kwargs)
     return wrapper
