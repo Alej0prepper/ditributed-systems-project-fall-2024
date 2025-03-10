@@ -1102,7 +1102,7 @@ def get_repost_by_id(id):
     return jsonify({"repost":repost_dict}), 200
 
 
-@app.route('/quote/post/<id>', methods=['GET'])
+@app.route('/quotes/post/<id>', methods=['GET'])
 @route_to_responsible(routing_key=None)
 def get_quotes_count_by_post(id):
     """
