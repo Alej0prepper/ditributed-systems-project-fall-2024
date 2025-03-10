@@ -75,7 +75,7 @@ def getAllReposts():
                 if repost != dict():
                     reposts.append(repost)
             except Exception as e:
-                print('getAllQuotes exception:', str(e))
+                print('getAllReposts exception:', str(e))
     return reposts
     
 def getAllUserPosts(userId):

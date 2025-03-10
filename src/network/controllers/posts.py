@@ -1,7 +1,7 @@
 from network.middlewares.auth import needs_authentication
 from network.middlewares.use_db_connection import use_db_connection
 from flask import session
-from network.services.posts import post, repost, delete_post_service, get_post_by_id, get_posts_by_user_id, get_user_by_post_id, get_publisher_by_post_id, get_quote_by_id, get_repost_by_id
+from network.services.posts import post, repost, delete_post_service, get_post_by_id, get_posts_by_user_id, get_user_by_post_id, get_publisher_by_post_id, get_quote_by_id, get_repost_by_id, get_quotes_count_by_post_id, get_reposts_count_by_post_id
 
 @use_db_connection
 @needs_authentication
@@ -44,7 +44,7 @@ def get_user_by_post_id_controller(post_id,driver = None):
 @use_db_connection
 def get_publisher_by_post_id_controller(post_id,driver=None):
     return get_publisher_by_post_id(driver,post_id)
-    
+
 @use_db_connection
 def get_quote_by_id_controller(quote_id,driver=None):
     return get_quote_by_id(driver,quote_id)
@@ -52,3 +52,11 @@ def get_quote_by_id_controller(quote_id,driver=None):
 @use_db_connection
 def get_repost_by_id_controller(respost_id,driver=None):
     return get_repost_by_id(driver,respost_id)
+
+@use_db_connection
+def get_quotes_count_by_post_id_controller(post_id, driver= None):
+    return get_quotes_count_by_post_id(post_id,driver)
+
+@use_db_connection
+def get_reposts_count_by_post_id_controller(post_id, driver=None):
+    return get_reposts_count_by_post_id(driver,post_id)
