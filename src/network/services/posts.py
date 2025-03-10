@@ -235,15 +235,16 @@ def get_quote_by_id(driver, quote_id):
         quoted = result[0]["q"]
         
         if quote_count == 0:
-            return dict
+            return [dict(), dict()], True, None
         return [{quote,quoted}],True,None
     else:
         return None,False,"quote did'nt found"
+    
 def get_repost_by_id(driver, repost_id):
     query = """
         MATCH (p:Post {id: $repost_id})
         OPTIONAL MATCH (u)-[:Reposts]->(p)
-        RETURN p, COUNT(q) AS quote_count,q
+        RETURN p
     """
     result = driver.execute_query(query,{"repost_id": repost_id}).records
 
@@ -251,7 +252,7 @@ def get_repost_by_id(driver, repost_id):
         reposted = result[0]["p"]
         return reposted,True,None
     else:
-        return None,False,"repost did'nt found"
+        return None,False,"repost didn't found"
 
 def get_posts_by_user_id(driver, user_id):
 
