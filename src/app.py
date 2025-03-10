@@ -1099,7 +1099,7 @@ def get_quote_by_id(id):
     quote_info, _, _ = get_quote_by_id_controller(quote_id)
 
     if quote_info is None:
-        return jsonify({"quote": {}})
+        return jsonify({"quote": {}, "quoted":{}})
     quote = quote_info["quote"]
     quoted = quote_info["quoted"]
 
@@ -1107,16 +1107,20 @@ def get_quote_by_id(id):
         return jsonify({"error": "Quote not found"}), 404
     
     if isinstance(quote, dict):
-        return jsonify({"quote": {}}), 200
+        return jsonify({"quote": {}, "quoted":{}}), 200
     
     quote_dict = convert_node_to_dict(quote)
+    quoted_dict = convert_node_to_dict(quoted)
     if not quote:
         return jsonify({"error": "quote not found"}), 404
-    publisher = get_publisher_by_post_id_controller(quote_id)
-    publisher_dict = convert_node_to_dict(publisher)
-    quote_dict["publisherId"] = publisher_dict["id"]
+    quote_publisher = get_publisher_by_post_id_controller(quote_id)
+    quoted_publisher = get_publisher_by_post_id_controller(quoted_dict["id"])
+    quote_publisher_dict = convert_node_to_dict(quote_publisher)
+    quoted_publisher_dict = convert_node_to_dict(quoted_publisher)
+    quote_dict["publisherId"] = quote_publisher_dict["id"]
+    quoted_dict["publisherId"] = quoted_publisher_dict["id"]
     
-    return jsonify({"quote":quote_dict}), 200
+    return jsonify({"quote":quote_dict, "quoted": quoted_dict}), 200
 
 @app.route('/reposts/<id>')
 def get_repost_by_id(id):
@@ -1172,7 +1176,7 @@ def get_quotes_count_by_post(id):
     quote_count, success, error_message = get_quotes_count_by_post_id_controller(post_id)
 
     if success:
-        return jsonify({"quote_count": quote_count}), 200
+        return jsonify({"quotes_count": quote_count}), 200
     else:
         return jsonify({"error": error_message}), 500
 
@@ -1199,7 +1203,7 @@ def get_reposts_count_by_post(id):
     repost_count, success, error_message = get_reposts_count_by_post_id_controller(post_id)
 
     if success:
-        return jsonify({"repost_count": repost_count}), 200
+        return jsonify({"reposts_count": repost_count}), 200
     else:
         return jsonify({"error": error_message}), 500
 

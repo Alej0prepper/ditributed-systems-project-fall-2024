@@ -55,7 +55,7 @@ def get_repost_by_id_controller(respost_id,driver=None):
 
 @use_db_connection
 def get_quotes_count_by_post_id_controller(post_id, driver= None):
-    return get_quotes_count_by_post_id(post_id,driver)
+    return get_quotes_count_by_post_id(driver, post_id)
 
 @use_db_connection
 def get_reposts_count_by_post_id_controller(post_id, driver=None):

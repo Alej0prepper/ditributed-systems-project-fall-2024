@@ -363,7 +363,7 @@ def get_quotes_count_by_post_id(driver, post_id):
     """
     # Consulta para obtener la cantidad de citas relacionadas con el post
     query = """
-        MATCH (p:Post {id: $post_id})-[:Quotes]->(q:Post)
+        MATCH (p:Post)-[:Quotes]->(q:Post {id: $post_id})
         RETURN COUNT(q) AS quote_count
     """
     
@@ -386,7 +386,7 @@ def get_reposts_count_by_post_id(driver, post_id):
     """
     # Consulta para obtener la cantidad de reposts relacionados con el post
     query = """
-        MATCH (p:Post {id: $post_id})<-[:Reposts]-(r:Post)
+        MATCH (p:Post {id: $post_id})<-[:Reposts]-(r)
         RETURN COUNT(r) AS repost_count
     """
     

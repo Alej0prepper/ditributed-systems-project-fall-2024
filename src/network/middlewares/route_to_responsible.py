@@ -55,6 +55,7 @@ def getAllQuotes():
             endpoint = f"http://{responsible_node['ip']}:{responsible_node['port']}/quotes/{entity[2]}"
             try:
                 response = requests.get(endpoint)
+                print("Quote:", response.json())
                 quote = response.json()["quote"]
                 quoted = response.json()["quoted"]
                 if quote != dict() and quoted != dict():
