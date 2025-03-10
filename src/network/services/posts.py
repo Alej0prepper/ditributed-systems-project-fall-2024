@@ -208,42 +208,43 @@ def get_post_by_id(driver, post_id):
     query = """
         MATCH (p:Post {id: $post_id})
         MATCH (p)-[:Quotes]->(q)
-        RETURN p, COUNT(q) AS quote_count
+        RETURN p
     """
     result = driver.execute_query(query, {"post_id": post_id}).records
 
-    if result:
-        post = result[0]["p"]
-        quote_count = result[0]["quote_count"]
-
-        if quote_count > 0:
-            return dict()
+    if len(result) == 0:
+        query = """
+            MATCH (p:Post {id: $post_id})
+            RETURN p
+        """
+        post = driver.execute_query(query, {"post_id": post_id}).records[0]["p"]
         return post
     else:
-        return None
+        return dict()
+    
 def get_quote_by_id(driver, quote_id):
     query = """
         MATCH (p:Post {id: $quote_id})
-        OPTIONAL MATCH (p)-[:Quote]->(q)
+        MATCH (p)-[:Quotes]->(q)
         RETURN p, COUNT(q) AS quote_count,q
     """
     result = driver.execute_query(query, {"quote_id": quote_id}).records
-    
-    if result:
+    if len(result) > 0:
         quote = result[0]["p"]
         quote_count = result[0]["quote_count"]
         quoted = result[0]["q"]
+
         
         if quote_count == 0:
-            return [dict(), dict()], True, None
-        return [{quote,quoted}],True,None
+            return {"quote":dict(), "quoted":dict()}, True, None
+        return {"quote":quote,"quoted":quoted},True,None
     else:
-        return None,False,"quote did'nt found"
+        return None,False,"quote not found"
     
 def get_repost_by_id(driver, repost_id):
     query = """
         MATCH (p:Post {id: $repost_id})
-        OPTIONAL MATCH (u)-[:Reposts]->(p)
+        MATCH (u)-[:Reposts]->(p)
         RETURN p
     """
     result = driver.execute_query(query,{"repost_id": repost_id}).records
@@ -252,7 +253,7 @@ def get_repost_by_id(driver, repost_id):
         reposted = result[0]["p"]
         return reposted,True,None
     else:
-        return None,False,"repost didn't found"
+        return None,False,"repost not found"
 
 def get_posts_by_user_id(driver, user_id):
 
