@@ -982,7 +982,7 @@ def get_post_by_id(id):
         return jsonify({"error": "Post not found"}), 404
     publisher = get_publisher_by_post_id_controller(post_id)
     publisher_dict = convert_node_to_dict(publisher)
-    post_dict["userId"] = publisher_dict["id"]
+    post_dict["publisherId"] = publisher_dict["id"]
     
     return jsonify({"post":post_dict}), 200
 
