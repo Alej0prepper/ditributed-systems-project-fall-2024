@@ -32,6 +32,7 @@ import chord.protocol_logic as chord_logic
 from network.middlewares.use_db_connection import use_db_connection
 from chord.replication import replicate_to_owners
 from common_utils.utils import convert_node_to_dict
+from network.services.posts import quote
 
 
 app = Flask(__name__)
@@ -221,12 +222,11 @@ def get_all_users(users):
     
     Returns:
         200: JSON with users
-        500: JSON with error if users fetch had an error
     """
 
     if users:
         return jsonify({"users": users}), 200
-    return jsonify({"error": "users error"}), 500
+    return jsonify({"users": []}), 200
 
 @app.route('/users/<id>',methods=['GET'])
 @route_to_responsible(routing_key=None)
@@ -257,7 +257,7 @@ def get_all_user_posts(posts):
 
     if posts:
         return jsonify({"posts":posts}), 200
-    return jsonify({"error"}), 500
+    return jsonify({"post": []}), 200
 
 
 @app.route('/quotes',methods=['GET'])
@@ -272,9 +272,8 @@ def get_all_user_quotes(quotes):
     """
 
     if quotes:
-        print("Quotes:",quotes)
-        return jsonify({"quotes":quotes}), 200
-    return jsonify({"error"}), 500
+        return jsonify({"quotes":[{"quote":quote, "quoted":quoted} for [quote, quoted] in quotes]}), 200
+    return jsonify({"quotes": []}), 200
 
 @app.route('/reposts', methods=['GET'])
 @route_to_responsible(routing_key="getAllReposts")
@@ -284,12 +283,11 @@ def get_all_user_reposts(reposts):
     
     Returns:
         200: JSON with users
-        500: JSON with error if users fetch had an error
     """
 
     if reposts:
         return jsonify({"reposts":reposts}), 200
-    return jsonify({"error"}), 500
+    return jsonify({"reposts": []}), 200
 
 
 @app.route('/gyms/<id>',methods=['GET'])
@@ -417,14 +415,14 @@ def quote(id):
         500: JSON with error message if quote fails or required fields missing
     """
     data = request.form
-    quoted_post_id = int(id)
+    quoted_post_id = id
     media = data.get("media")
     caption = data.get("caption")
     if not quoted_post_id:
         return jsonify({"error": "Quoted post ID is required"}), 500
     if not media and not caption:
         return jsonify({"error": "Media or caption is required"}), 500
-    quoted_post_id = int(quoted_post_id)
+    quoted_post_id = quoted_post_id
    
     _, ok, error = quote_existing_post(quoted_post_id, media, caption)
     if ok:
@@ -1104,7 +1102,12 @@ def get_quote_by_id(id):
     if not quote_id:
         return jsonify({"error": "Quote ID is required"}), 404
     
-    [quote, quoted], _, _ = get_quote_by_id_controller(quote_id)
+    quote_info, _, _ = get_quote_by_id_controller(quote_id)
+
+    if quote_info is None:
+        return jsonify({"quote": {}})
+    quote = quote_info["quote"]
+    quoted = quote_info["quoted"]
 
     if quote is None:
         return jsonify({"error": "Quote not found"}), 404
@@ -1149,12 +1152,9 @@ def get_repost_by_id(id):
         return jsonify({"repost": repost}), 200
     
     repost_dict = convert_node_to_dict(repost)
-
-    
-    
     publisher = get_publisher_by_post_id_controller(repost_id)
     publisher_dict = convert_node_to_dict(publisher)
-    repost_dict["userId"] = publisher_dict["id"]
+    repost_dict["publisherId"] = publisher_dict["id"]
     
     return jsonify({"repost":repost_dict}), 200
 
@@ -1228,8 +1228,8 @@ if __name__ == '__main__':
     threading.Thread(target=check_predecessor, daemon=True).start()
     threading.Thread(target=listen_for_chord_updates, daemon=True).start()
     threading.Thread(target=chord_logic.send_local_system_entities_copy, daemon=True).start()
-    threading.Thread(target=chord_logic.announce_node_to_router, daemon=True).start()
-    threading.Thread(target=replicate_to_owners, daemon=True).start()
+    #threading.Thread(target=chord_logic.announce_node_to_router, daemon=True).start()
+    #threading.Thread(target=replicate_to_owners, daemon=True).start()
     
 
     app.run(
