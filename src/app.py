@@ -10,11 +10,11 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from flask import Flask, request, jsonify, session, send_from_directory
 from network.controllers.users import delete_user_account, get_users_by_search_term, login_user, register_user
-from network.controllers.posts import create_post, repost_existing_post, quote_existing_post, delete_post, get_post_by_id_controller, get_post_by_user_id_controller, get_user_by_post_id_controller, get_publisher_by_post_id_controller, get_quote_by_id_controller, get_repost_by_id_controller
+from network.controllers.posts import create_post, repost_existing_post, quote_existing_post, delete_post, get_post_by_id_controller, get_post_by_user_id_controller, get_user_by_post_id_controller, get_publisher_by_post_id_controller, get_quote_by_id_controller, get_repost_by_id_controller,get_quotes_count_by_post_id_controller,get_reposts_count_by_post_id_controller
 from network.controllers.users import follow_account
 from network.controllers.users import unfollow_user, get_follows_by_user_id_controller
-from network.controllers.comments import create_comment_answer, create_post_comment
-from network.controllers.reactions import react_to_a_comment, react_to_a_post
+from network.controllers.comments import create_comment_answer, create_post_comment, get_comments_controller
+from network.controllers.reactions import react_to_a_comment, react_to_a_post, get_reactions_count_by_id_controller
 from network.controllers.gyms import add_gym_controller, delete_gym_controller
 from network.controllers.trains_in import trains_in, add_training_styles, remove_training_styles
 from network.controllers.gyms import login_gym
@@ -658,7 +658,7 @@ def comment(id):
     data = request.form
     caption = data.get("caption")
     media = data.get("media")
-    post_id = int(id)
+    post_id = id
     if not caption and not media:
         return jsonify({"error": "Caption or media is required"}), 500
     if not post_id:
@@ -1008,15 +1008,9 @@ def get_post_by_id(id):
         return jsonify({"error": "Post ID is required"}), 404
     
     post = get_post_by_id_controller(post_id)
-    
-    if post is None:
-        return jsonify({"error": "Post not found"}), 404
-    
-    if isinstance(post, dict):
-        return jsonify({"post":{}}), 200
-    
     post_dict = convert_node_to_dict(post)
-    
+    if not post:
+        return jsonify({"error": "Post not found"}), 404
     publisher = get_publisher_by_post_id_controller(post_id)
     publisher_dict = convert_node_to_dict(publisher)
     post_dict["publisherId"] = publisher_dict["id"]
@@ -1116,18 +1110,15 @@ def get_quote_by_id(id):
         return jsonify({"quote": {}}), 200
     
     quote_dict = convert_node_to_dict(quote)
-    quoted_dict = convert_node_to_dict(quoted)
-
-    quote_publisher = get_publisher_by_post_id_controller(quote_id)
-    quoted_publisher = get_publisher_by_post_id_controller(quote_dict["id"])
-    publisher_dict = convert_node_to_dict(quote_publisher)
-    quoted_publisher_dict = convert_node_to_dict(quoted_publisher)
-    quote_dict["publisherId"] = publisher_dict["id"]
-    quoted_dict["publisherId"] = quoted_publisher_dict["id"]
+    if not quote:
+        return jsonify({"error": "quote not found"}), 404
+    publisher = get_publisher_by_post_id_controller(quote_id)
+    publisher_dict = convert_node_to_dict(publisher)
+    quote_dict["userId"] = publisher_dict["id"]
     
-    return jsonify({"quote":quote_dict, "quoted": quoted_dict}), 200
+    return jsonify({"quote":quote_dict}), 200
 
-@app.route('/reposts/<id>')
+@app.route('/repostes/<id>')
 def get_repost_by_id(id):
     """
     Get a repost by its ID endpoint.
@@ -1143,31 +1134,113 @@ def get_repost_by_id(id):
     if not repost_id:
         return jsonify({"error": "repost ID is required"}), 404
     
-    repost, _, _ = get_repost_by_id_controller(repost_id)
-
-    if repost is None:
+    repost = get_repost_by_id_controller(repost_id)
+    repost_dict = convert_node_to_dict(repost)
+    if not repost:
         return jsonify({"error": "repost not found"}), 404
-    
     if isinstance(repost, dict):
         return jsonify({"repost": repost}), 200
-    
-    repost_dict = convert_node_to_dict(repost)
     publisher = get_publisher_by_post_id_controller(repost_id)
     publisher_dict = convert_node_to_dict(publisher)
-    repost_dict["publisherId"] = publisher_dict["id"]
+    repost_dict["userId"] = publisher_dict["id"]
     
     return jsonify({"repost":repost_dict}), 200
 
 
+@app.route('/quotes/post/<id>', methods=['GET'])
+@route_to_responsible(routing_key=None)
+def get_quotes_count_by_post(id):
+    """
+    Get the count of quotes for a given post by its ID.
+
+    Accepts GET request
+
+    Returns:
+        200: JSON with the count of quotes if found
+        404: JSON with error message if post ID is missing or post not found
+        500: JSON with error message if retrieval fails
+    """
+    post_id = id
+    if not post_id:
+        return jsonify({"error": "Post ID is required"}), 404
+    
+    # Llamar al servicio get_quotes_count_by_post_id para obtener la cantidad de citas
+    quote_count, success, error_message = get_quotes_count_by_post_id_controller(post_id)
+
+    if success:
+        return jsonify({"quote_count": quote_count}), 200
+    else:
+        return jsonify({"error": error_message}), 500
+
+
+
+@app.route('/reposts/post/<id>', methods=['GET'])
+@route_to_responsible(routing_key=None)
+def get_reposts_count_by_post(id):
+    """
+    Get the count of reposts for a given post by its ID.
+
+    Accepts GET request
+
+    Returns:
+        200: JSON with the count of reposts if found
+        404: JSON with error message if post ID is missing or post not found
+        500: JSON with error message if retrieval fails
+    """
+    post_id = id
+    if not post_id:
+        return jsonify({"error": "Post ID is required"}), 404
+    
+    # Llamar al servicio get_reposts_count_by_post_id para obtener la cantidad de reposts
+    repost_count, success, error_message = get_reposts_count_by_post_id_controller(post_id)
+
+    if success:
+        return jsonify({"repost_count": repost_count}), 200
+    else:
+        return jsonify({"error": error_message}), 500
 
 
 
 
+@app.route('/reactions/<id>',methods = ['GET'])
+def get_reactions_count_endpoint(id):
+    entity_id = id
+    try:
+        if entity_id is None:
+            return jsonify({"error": "El parámetro 'id' es obligatorio."}), 400
+        
+        # Llamar al servicio para obtener el número de reacciones
+        reaction_count = get_reactions_count_by_id_controller(entity_id)
+        return jsonify({"reaction_count": reaction_count})
+        if reaction_count is None:
+            return jsonify({"error": "Entidad no encontrada o no tiene reacciones."}), 404
+
+    except Exception as e:
+        # Si ocurre un error, devolver un mensaje adecuado
+        return jsonify({"error": str(e)}), 400
 
 
+@app.route('/comments/<id>', methods = ["GET"])
+def get_comments_endpoint(id):
+    # Obtener el ID de la entidad desde la URL
+    entity_id = id
 
+    # Validar que se haya pasado un ID de entidad
+    if not entity_id:
+        return jsonify({"error": "entity_id parameter is required"}), 400
 
+    # Llamar a la función `get_comments` que definimos previamente
+    comments,success,error = get_comments_controller(entity_id)
+    if not success:
+        return jsonify({"error":error})
+    if comments is None:
+        return jsonify({"error": "Entity not found or invalid type"}), 404
+    
+    for comment in comments:
+        comment['datetime'] = comment['datetime'].isoformat()
 
+    # Retornar la lista de comentarios en formato JSON
+    return jsonify(comments)
 
 
 

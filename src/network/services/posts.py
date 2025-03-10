@@ -353,3 +353,48 @@ def delete_post_service(driver, post_id, username):
         return None, True, None
     return None, False, "Action not allowed, must be post's owner"
 
+def get_quotes_count_by_post_id(driver, post_id):
+    """
+    Obtiene la cantidad de citas (quotes) de un post dado su ID.
+    
+    :param driver: Conexión al grafo de Neo4j.
+    :param post_id: ID del post cuya cantidad de citas se quiere obtener.
+    :return: Cantidad de citas del post y el éxito de la operación.
+    """
+    # Consulta para obtener la cantidad de citas relacionadas con el post
+    query = """
+        MATCH (p:Post {id: $post_id})-[:Quotes]->(q:Post)
+        RETURN COUNT(q) AS quote_count
+    """
+    
+    result = driver.execute_query(query, {"post_id": post_id}).records
+
+    if result:
+        # Devolver el número de citas encontradas
+        quote_count = result[0]["quote_count"]
+        return quote_count, True, None  # Se devuelve la cantidad de citas, éxito y sin error
+    else:
+        return 0, True, None  # En caso de no encontrar citas, devolver 0
+
+def get_reposts_count_by_post_id(driver, post_id):
+    """
+    Obtiene la cantidad de reposts de un post dado su ID.
+    
+    :param driver: Conexión al grafo de Neo4j.
+    :param post_id: ID del post cuya cantidad de reposts se quiere obtener.
+    :return: Cantidad de reposts del post y el éxito de la operación.
+    """
+    # Consulta para obtener la cantidad de reposts relacionados con el post
+    query = """
+        MATCH (p:Post {id: $post_id})<-[:Reposts]-(r:Post)
+        RETURN COUNT(r) AS repost_count
+    """
+    
+    result = driver.execute_query(query, {"post_id": post_id}).records
+
+    if result:
+        # Devolver el número de reposts encontrados
+        repost_count = result[0]["repost_count"]
+        return repost_count, True, None  # Se devuelve la cantidad de reposts, éxito y sin error
+    else:
+        return 0, True, None  # En caso de no encontrar reposts, devolver 0
