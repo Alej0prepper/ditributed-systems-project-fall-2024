@@ -10,7 +10,7 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from flask import Flask, request, jsonify, session, send_from_directory
 from network.controllers.users import delete_user_account, get_users_by_search_term, login_user, register_user
-from network.controllers.posts import create_post, repost_existing_post, quote_existing_post, delete_post, get_post_by_id_controller, get_post_by_user_id_controller, get_user_by_post_id_controller, get_publisher_by_post_id_controller
+from network.controllers.posts import create_post, repost_existing_post, quote_existing_post, delete_post, get_post_by_id_controller, get_post_by_user_id_controller, get_user_by_post_id_controller, get_publisher_by_post_id_controller, get_quote_by_id_controller, get_repost_by_id_controller
 from network.controllers.users import follow_account
 from network.controllers.users import unfollow_user, get_follows_by_user_id_controller
 from network.controllers.comments import create_comment_answer, create_post_comment
@@ -1049,9 +1049,57 @@ def get_followers_by_user(id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/quotes/<id>', methods = ['GET'])
+def get_quote_by_id(id):
+    """
+    Get a quote by its ID endpoint.
 
+    Accepts GET request
 
+    Returns:
+        200: JSON with the post if found
+        404: JSON with error message if post ID is missing or post not found
+        500: JSON with error message if retrieval fails
+    """
+    quote_id = id
+    if not quote_id:
+        return jsonify({"error": "Quote ID is required"}), 404
+    
+    quote = get_quote_by_id_controller(quote_id)
+    quote_dict = convert_node_to_dict(quote)
+    if not quote:
+        return jsonify({"error": "quote not found"}), 404
+    publisher = get_publisher_by_post_id_controller(quote_id)
+    publisher_dict = convert_node_to_dict(publisher)
+    quote_dict["userId"] = publisher_dict["id"]
+    
+    return jsonify({"quote":quote_dict}), 200
 
+@app.route('repostes/<id>')
+def get_repost_by_id(id):
+    """
+    Get a repost by its ID endpoint.
+
+    Accepts GET request
+
+    Returns:
+        200: JSON with the post if found
+        404: JSON with error message if post ID is missing or post not found
+        500: JSON with error message if retrieval fails
+    """
+    repost_id = id
+    if not respost_id:
+        return jsonify({"error": "repost ID is required"}), 404
+    
+    repost = get_repost_by_id_controller(repost_id)
+    repost_dict = convert_node_to_dict(repost)
+    if not respost:
+        return jsonify({"error": "repost not found"}), 404
+    publisher = get_publisher_by_post_id_controller(repost_id)
+    publisher_dict = convert_node_to_dict(publisher)
+    respost_dict["userId"] = publisher_dict["id"]
+    
+    return jsonify({"repost":repost_dict}), 200
 
 
 
