@@ -545,7 +545,9 @@ def get_gyms(gyms):
     query = request.args.get("query")
     if not query:
         return jsonify({"error": "Query is required"}), 500    
+    
     if query == "": return jsonify({"gyms": []}), 200
+    
     gyms, ok, error = get_gyms_by_search_term(gyms, query)
     if ok:
         return jsonify({"gyms": gyms}), 200
