@@ -984,7 +984,7 @@ def get_post_by_id(id):
     publisher_dict = convert_node_to_dict(publisher)
     post_dict["userId"] = publisher_dict["id"]
     
-    return jsonify({"posts":post_dict}), 200
+    return jsonify({"post":post_dict}), 200
 
 @app.route('/posts/user/<id>', methods=['GET'])
 @route_to_responsible(routing_key="getAllUserPosts")
