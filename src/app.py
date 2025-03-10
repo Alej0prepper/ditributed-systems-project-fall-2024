@@ -1205,7 +1205,6 @@ def get_reposts_count_by_post(id):
 
 
 
-
 @app.route('/reactions/<id>',methods = ['GET'])
 def get_reactions_count_endpoint(id):
     entity_id = id
@@ -1245,7 +1244,6 @@ def get_comments_endpoint(id):
 
     # Retornar la lista de comentarios en formato JSON
     return jsonify({"comments":comments})
-
 
 
 @app.route('/replicate', methods=['POST'])
