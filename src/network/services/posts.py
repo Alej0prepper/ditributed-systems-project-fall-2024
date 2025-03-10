@@ -243,7 +243,7 @@ def get_repost_by_id(driver, repost_id):
     query = """
         MATCH (p:Post {id: $repost_id})
         OPTIONAL MATCH (u)-[:Reposts]->(p)
-        RETURN p, COUNT(q) AS quote_count,q
+        RETURN p
     """
     result = driver.execute_query(query,{"repost_id": repost_id}).records
 
@@ -373,7 +373,7 @@ def get_quotes_count_by_post_id(driver, post_id):
         return quote_count, True, None  # Se devuelve la cantidad de citas, éxito y sin error
     else:
         return 0, True, None  # En caso de no encontrar citas, devolver 0
-        
+
 def get_reposts_count_by_post_id(driver, post_id):
     """
     Obtiene la cantidad de reposts de un post dado su ID.
