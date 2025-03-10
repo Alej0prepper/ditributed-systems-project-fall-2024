@@ -55,16 +55,15 @@ def replicate_to_owners(driver=None):
             owners_data = dict()
 
             for edge in edges:
-                get_relation_start_node(driver, edge["id"])
-                """ if edge['start'] is None or edge['end'] is None:
-                    continue
-                successor = chord_logic.find_successor(get_hash(edge["start"] if not edge['start'] is None else driver))
+                if edge['start'] is None :
+                    start = get_relation_start_node(driver, edge["id"])
+                successor = chord_logic.find_successor(get_hash(edge["start"] if not edge["start"] is None else start["id"]))
                 successor_ip = successor["ip"]
 
                 if successor_ip in owners_data.keys():
                     owners_data[successor_ip].append(serialize_data(edge))
                 else:
-                    owners_data[successor_ip] = [serialize_data(edge)] """
+                    owners_data[successor_ip] = [serialize_data(edge)]
 
             for succ_ip, succ_port in owners_data.keys():
                 
@@ -86,13 +85,13 @@ def replicate_to_owners(driver=None):
 
 def get_relation_start_node(driver, relation_id):
     node = driver.execute_query(
-    """
-        MATCH (u) -[r {id: $relation_id}]-> (m)
-        RETURN u
-    """ ,
-    {"relation_id": relation_id}
-    )
-    print(node)
+        """
+            MATCH (n) -[r {id: $relation_id}]-> (m)
+            RETURN n as node
+        """,
+        {"relation_id": relation_id}
+    ).records[0]["node"]
+    print("Node:",node)
 
 def replicate_to_k_successors(data):
     # Find `k` successors in the Chord ring

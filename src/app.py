@@ -216,7 +216,7 @@ def get_all_users(users):
 
     if users:
         return jsonify({"users": users}), 200
-    return jsonify({"error"}), 500
+    return jsonify({"error": "users error"}), 500
 
 @app.route('/users/<id>',methods=['GET'])
 @route_to_responsible(routing_key=None)
@@ -248,6 +248,39 @@ def get_all_user_posts(posts):
     if posts:
         return jsonify({"posts":posts}), 200
     return jsonify({"error"}), 500
+
+
+@app.route('/quotes',methods=['GET'])
+@route_to_responsible(routing_key="getAllQuotes")
+def get_all_user_quotes(quotes):
+    """
+    Get all user quotes endpoint.
+    
+    Returns:
+        200: JSON with users
+        500: JSON with error if users fetch had an error
+    """
+
+    if quotes:
+        print("Quotes:",quotes)
+        return jsonify({"quotes":quotes}), 200
+    return jsonify({"error"}), 500
+
+@app.route('/reposts', methods=['GET'])
+@route_to_responsible(routing_key="getAllReposts")
+def get_all_user_reposts(reposts):
+    """
+    Get all user reposts endpoint.
+    
+    Returns:
+        200: JSON with users
+        500: JSON with error if users fetch had an error
+    """
+
+    if reposts:
+        return jsonify({"reposts":reposts}), 200
+    return jsonify({"error"}), 500
+
 
 @app.route('/gyms/<id>',methods=['GET'])
 @route_to_responsible(routing_key=None)
@@ -967,9 +1000,15 @@ def get_post_by_id(id):
         return jsonify({"error": "Post ID is required"}), 404
     
     post = get_post_by_id_controller(post_id)
-    post_dict = convert_node_to_dict(post)
-    if not post:
+    
+    if post is None:
         return jsonify({"error": "Post not found"}), 404
+    
+    if isinstance(post, dict):
+        return jsonify({"post":{}}), 200
+    
+    post_dict = convert_node_to_dict(post)
+    
     publisher = get_publisher_by_post_id_controller(post_id)
     publisher_dict = convert_node_to_dict(publisher)
     post_dict["publisherId"] = publisher_dict["id"]
@@ -1055,17 +1094,27 @@ def get_quote_by_id(id):
     if not quote_id:
         return jsonify({"error": "Quote ID is required"}), 404
     
-    quote = get_quote_by_id_controller(quote_id)
-    quote_dict = convert_node_to_dict(quote)
-    if not quote:
-        return jsonify({"error": "quote not found"}), 404
-    publisher = get_publisher_by_post_id_controller(quote_id)
-    publisher_dict = convert_node_to_dict(publisher)
-    quote_dict["userId"] = publisher_dict["id"]
-    
-    return jsonify({"quote":quote_dict}), 200
+    [quote, quoted], _, _ = get_quote_by_id_controller(quote_id)
 
-@app.route('repostes/<id>')
+    if quote is None:
+        return jsonify({"error": "Quote not found"}), 404
+    
+    if isinstance(quote, dict):
+        return jsonify({"quote": {}}), 200
+    
+    quote_dict = convert_node_to_dict(quote)
+    quoted_dict = convert_node_to_dict(quoted)
+
+    quote_publisher = get_publisher_by_post_id_controller(quote_id)
+    quoted_publisher = get_publisher_by_post_id_controller(quote_dict["id"])
+    publisher_dict = convert_node_to_dict(quote_publisher)
+    quoted_publisher_dict = convert_node_to_dict(quoted_publisher)
+    quote_dict["publisherId"] = publisher_dict["id"]
+    quoted_dict["publisherId"] = quoted_publisher_dict["id"]
+    
+    return jsonify({"quote":quote_dict, "quoted": quoted_dict}), 200
+
+@app.route('/reposts/<id>')
 def get_repost_by_id(id):
     """
     Get a repost by its ID endpoint.
@@ -1078,16 +1127,24 @@ def get_repost_by_id(id):
         500: JSON with error message if retrieval fails
     """
     repost_id = id
-    if not respost_id:
+    if not repost_id:
         return jsonify({"error": "repost ID is required"}), 404
     
-    repost = get_repost_by_id_controller(repost_id)
-    repost_dict = convert_node_to_dict(repost)
-    if not respost:
+    repost, _, _ = get_repost_by_id_controller(repost_id)
+
+    if repost is None:
         return jsonify({"error": "repost not found"}), 404
+    
+    if isinstance(repost, dict):
+        return jsonify({"repost": repost}), 200
+    
+    repost_dict = convert_node_to_dict(repost)
+
+    
+    
     publisher = get_publisher_by_post_id_controller(repost_id)
     publisher_dict = convert_node_to_dict(publisher)
-    respost_dict["userId"] = publisher_dict["id"]
+    repost_dict["userId"] = publisher_dict["id"]
     
     return jsonify({"repost":repost_dict}), 200
 
