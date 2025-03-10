@@ -140,7 +140,7 @@ def quote(driver, media, caption, username, email, quoted_post_id):
     :param quoted_post_id: ID del post citado.
     :return: ID del nuevo post.
     """
-    new_post_id, _, _ = post(driver, None, media, caption, username, email)
+    new_post_id, _, _ = post(driver, media, caption, username, email)
     update_post(driver, new_post_id, media, caption, quoted_post_id)
     return new_post_id
 

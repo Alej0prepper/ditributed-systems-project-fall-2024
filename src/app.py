@@ -359,7 +359,7 @@ def repost(id):
     reposted_post_id = id
     if not reposted_post_id:
         return jsonify({"error": "Reposted post ID is required"}), 500
-    reposted_post_id = int(reposted_post_id)
+    reposted_post_id = reposted_post_id
     _, ok, error = repost_existing_post(reposted_post_id)
     if ok:
         return jsonify({"message": f"Post reposted successfully."}), 201
@@ -390,7 +390,7 @@ def quote(id):
         return jsonify({"error": "Quoted post ID is required"}), 500
     if not media and not caption:
         return jsonify({"error": "Media or caption is required"}), 500
-    quoted_post_id = int(quoted_post_id)
+    quoted_post_id = quoted_post_id
    
     _, ok, error = quote_existing_post(quoted_post_id, media, caption)
     if ok:
@@ -413,7 +413,6 @@ def remove_post(id):
     post_id = id
     if not post_id:
         return jsonify({"error": "Post ID is required"}), 500
-    post_id = int(post_id)
     _, ok, error = delete_post(post_id)
     if not ok:
         return jsonify({"error": error}), 500 
