@@ -46,20 +46,6 @@ def comment(driver, caption, media, username,user_id, answered_comment_id=None, 
             return None, False, "Post not found."
 
     new_comment_id = create_comment_node(driver, caption, media,user_id)
-
-    # query = """
-    #         MATCH (u:User {username: $username}) 
-    #         MATCH (c:Comment {id: $new_comment_id})
-    #         CREATE (u) -[:Comments{id:$comment_relation_id}]-> (c)
-    #     """
-
-    # params = {
-    #     "username": username,
-    #     "new_comment_id": new_comment_id,
-    #     "comment_relation_id": str(uuid.uuid4())
-    # }
-
-    # driver.execute_query(query, params)
     
     if answered_comment_id:
         query = """
