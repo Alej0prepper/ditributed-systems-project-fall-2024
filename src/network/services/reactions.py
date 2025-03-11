@@ -1,4 +1,6 @@
 import uuid
+from datetime import datetime
+
 def react(driver, reaction_type,username , reacted_comment_id = None, reacted_post_id = None) :
     if(reacted_comment_id):
         react_comment(driver,reaction_type,username,reacted_comment_id)
@@ -71,15 +73,15 @@ def delete_reaction(driver, username, reacted_comment_id=  None, reacted_post_id
         raise Exception("ERROR: Reacted_comment_id and Reacted_post_id can't be None at the same time")     
 
 
-def react_to_a_comment_service(driver, reaction_type, username, reacted_comment_id):
+def react_to_a_comment_service(driver, reaction_type, username,et, reacted_comment_id):
     # Primero, verifica si el usuario y el comentario existen
     user_exists = driver.execute_query(
-        "MATCH (u:User {username: $username}) RETURN u", 
+        "MATCH (u {username: $username}) RETURN u", 
         {"username": username}
     ).records
 
     comment_exists = driver.execute_query(
-        "MATCH (c:Comment) WHERE id(c) = $reacted_comment_id RETURN c", 
+        "MATCH (c:Comment{id:$reacted_comment_id})  RETURN c", 
         {"reacted_comment_id": reacted_comment_id}
     ).records
     if not user_exists and not comment_exists:
@@ -87,8 +89,10 @@ def react_to_a_comment_service(driver, reaction_type, username, reacted_comment_
     # Si no existe el usuario, crea un shadow de él
     if not user_exists:
         driver.execute_query(
-            "CREATE (u:User {username: $username})",
-            {"username": username}
+            "CREATE (u:$et {username: $username})",
+            {"username": username,
+             "et":et
+            }
         )
         user_exists = True  # Después de crearlos
 
@@ -109,25 +113,26 @@ def react_to_a_comment_service(driver, reaction_type, username, reacted_comment_
 
     # Crea la nueva reacción
     query = """
-        MATCH (u:User{username: $username})
-        MATCH (c:Comment{id:$reacted_comment_id})
-           
-        CREATE (u) -[:Reacted_to {reaction_type: $reaction_type, id: $id}]-> (c)
+    MATCH (u:User{username: $username})
+    MATCH (c:Comment{id:$reacted_comment_id})
+    CREATE (u) -[:Reacts {reaction_type: $reaction_type, id: $id, timestamp: $timestamp}]-> (c)
     """
     params = {
         "username": username,
         "reaction_type": reaction_type,
         "reacted_comment_id": reacted_comment_id,
-        "id": str(uuid.uuid4())
-    }
+        "id": str(uuid.uuid4()),
+        "timestamp": datetime.now().isoformat()  # Agrega el timestamp actual
+    }   
+
     driver.execute_query(query, params)
     return None, True, None
 
 
-def react_to_a_post_service(driver, reaction_type, username, reacted_post_id):
+def react_to_a_post_service(driver, reaction_type, username,et, reacted_post_id):
     # Primero, verifica si el usuario y el post existen
     user_exists = driver.execute_query(
-        "MATCH (u:User {username: $username}) RETURN u", 
+        "MATCH (u {username: $username}) RETURN u", 
         {"username": username}
     ).records
 
@@ -140,8 +145,10 @@ def react_to_a_post_service(driver, reaction_type, username, reacted_post_id):
     # Si no existe el usuario, crea un shadow de él
     if not user_exists:
         driver.execute_query(
-            "CREATE (u:User {username: $username})",
-            {"username": username}
+            "CREATE (u:$et {username: $username})",
+            {"username": username,
+            "et": et
+            }
         )
         user_exists = True  # Después de crearlo
 
@@ -162,60 +169,80 @@ def react_to_a_post_service(driver, reaction_type, username, reacted_post_id):
 
     # Crea la nueva reacción
     query = """
-        MATCH (u:User{username: $username})
-        MATCH (p:Post {id:$reacted_post_id})
-        CREATE (p) -[:Reacted_by {reaction_type: $reaction_type,id: $id}]-> (u)
+    MATCH (u:User{username: $username})
+    MATCH (p:Post {id:$reacted_post_id})
+    CREATE (p) <-[:Reacts {reaction_type: $reaction_type, id: $id, timestamp: $timestamp}]-(u)
     """
     params = {
         "username": username,
         "reaction_type": reaction_type,
         "reacted_post_id": reacted_post_id,
-        "id": str(uuid.uuid4())
+        "id": str(uuid.uuid4()),
+        "timestamp": datetime.now().isoformat()  # Agrega el timestamp actual
     }
+
     driver.execute_query(query, params)
     return None, True, None
 
-def get_reactions_count_by_id(driver, entity_id):
+def get_reactions_by_entity_id(driver, entity_id):
     """
-    Retorna el número de reacciones de una entidad (comentario o post) dado su ID.
+    Retorna las reacciones de una entidad (post o comentario) con su estructura real de relaciones
     
-    :param driver: Controlador de Neo4j
-    :param entity_id: ID de la entidad (post o comentario)
-    :return: Tupla (count, success, error)
+    :param driver: Instancia del driver de Neo4j
+    :param entity_id: UUID de la entidad
+    :return: Tupla (datos, éxito, error)
     """
-    # Verificar si es comentario
-    query_comment_check = """
-        MATCH (c:Comment {id: $entity_id})
-        RETURN COUNT(c) AS entity_exists
-    """
-    result = driver.execute_query(query_comment_check, {"entity_id": entity_id})
-    records = result[0]  # Acceder a los registros correctamente
-    
-    if records and records[0]["entity_exists"] > 0:
-        # Contar reacciones para comentario
-        query_reactions = """
-            MATCH (:Comment {id: $entity_id})-[:Reacted_by]->(u:User)
-            RETURN COUNT(u) AS count
+    try:
+        # 1. Determinar tipo de entidad
+        type_query = """
+            MATCH (entity {id: $entity_id})
+            WHERE entity:Post OR entity:Comment
+            RETURN labels(entity)[0] AS entity_type
         """
-        reaction_result = driver.execute_query(query_reactions, {"entity_id": entity_id})
-        return reaction_result[0][0]["count"], True, None
+        type_result = driver.execute_query(type_query, {"entity_id": entity_id})
+        
+        if not type_result[0]:
+            return None, False, "Entidad no encontrada"
+        
+        entity_type = type_result[0][0]["entity_type"]
 
-    # Verificar si es post
-    query_post_check = """
-        MATCH (p:Post {id: $entity_id})
-        RETURN COUNT(p) AS entity_exists
-    """
-    result = driver.execute_query(query_post_check, {"entity_id": entity_id})
-    records = result[0]
-    
-    if records and records[0]["entity_exists"] > 0:
-        # Contar reacciones para post
-        query_reactions = """
-            MATCH (:Post {id: $entity_id})-[:Reacted_by]->(u:User)
-            RETURN COUNT(u) AS count
-        """
-        reaction_result = driver.execute_query(query_reactions, {"entity_id": entity_id})
-        return reaction_result[0][0]["count"], True, None
+        # 2. Consulta específica según tipo de relación
+        if entity_type == "Comment":
+            query = """
+                MATCH (u:User)-[r:Reacted_to]->(c:Comment {id: $entity_id})
+                RETURN u.id AS user_id, u.username AS username, r.reaction_type AS reaction_type, r.id AS reaction_id, r.timestamp AS timestamp
+                ORDER BY r.timestamp DESC
+            """
+        else:  # Post
+            query = """
+                MATCH (p:Post {id: $entity_id})-[r:Reacted_by]->(u:User)
+                RETURN u.id AS user_id, u.username AS username, r.reaction_type AS reaction_type, r.id AS reaction_id, r.timestamp AS timestamp
+                ORDER BY r.timestamp DESC
+            """
+        
+        # 3. Ejecutar y formatear resultados
+        result = driver.execute_query(query, {"entity_id": entity_id})
+        
+        reactions = []
+        for record in result[0]:
+            reaction_data = {
+                "userId": record["user_id"],
+                "username": record["username"],
+                "reaction": record["reaction_type"],
+                "reactionId": record["reaction_id"],
+                "timestamp": record["timestamp"]
+            }
+            
+            reactions.append({
+                "id": f"reaction_{len(reactions)}",  # Un ID temporal para cada reacción
+                **reaction_data  # Fusiona las claves y valores de reaction_data
+            })
+        print(reactions)
+        return reactions, True, None
 
-    # Si no encuentra ninguna entidad
-    return None, False, "Entidad no encontrada"
+    except Exception as e:
+        print(f"Error en get_reactions_by_entity_id: {str(e)}")
+        return None, False, "Error interno del servidor"
+        
+
+

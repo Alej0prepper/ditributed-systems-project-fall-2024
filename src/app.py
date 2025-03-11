@@ -14,7 +14,7 @@ from network.controllers.posts import create_post, repost_existing_post, quote_e
 from network.controllers.users import follow_account
 from network.controllers.users import unfollow_user, get_follows_by_user_id_controller
 from network.controllers.comments import create_comment_answer, create_post_comment, get_comments_controller
-from network.controllers.reactions import react_to_a_comment, react_to_a_post, get_reactions_count_by_id_controller
+from network.controllers.reactions import react_to_a_comment, react_to_a_post, get_reactions_by_entity_id_controller
 from network.controllers.gyms import add_gym_controller, delete_gym_controller
 from network.controllers.trains_in import trains_in, add_training_styles, remove_training_styles
 from network.controllers.gyms import login_gym
@@ -1206,17 +1206,17 @@ def get_reposts_count_by_post(id):
 
 
 @app.route('/reactions/<id>',methods = ['GET'])
-def get_reactions_count_endpoint(id):
+def get_reactions_by_entity_id_endpoint(id):
     entity_id = id
     try:
         if entity_id is None:
             return jsonify({"error": "El parámetro 'id' es obligatorio."}), 400
         
         # Llamar al servicio para obtener el número de reacciones
-        reaction_count , _, _= get_reactions_count_by_id_controller(entity_id)
-        if reaction_count is None:
-            return jsonify({"error": "Entidad no encontrada o no tiene reacciones."}), 404
-        return jsonify({"reaction_count": reaction_count})
+        reaction_list ,success ,error = get_reactions_by_entity_id_controller(entity_id)
+        if not success :
+            return jsonify({"error": error})
+        return jsonify(reaction_list)
 
     except Exception as e:
         # Si ocurre un error, devolver un mensaje adecuado
