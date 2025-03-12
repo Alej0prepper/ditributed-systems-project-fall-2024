@@ -42,11 +42,8 @@ sudo docker network connect $NETWORK_NAME $NEO4J_CONTAINER || echo "Neo4j contai
         --restart always \
         --network $NETWORK_NAME \
         -e NEO4J_AUTH=$NEO4J_AUTH \
-        -v $NEO4J_DATA_PATH:/data \
-        -v $NEO4J_LOGS_PATH:/logs \
-        -v $NEO4J_IMPORT_PATH:/var/lib/neo4j/import \
-        -p 7475:7474 \
-        -p 7688:7687 \
+        -p 7474:7474 \
+        -p 7687:7687 \
         $NEO4J_IMAGE
     echo "Neo4j is ready! ✅"
 

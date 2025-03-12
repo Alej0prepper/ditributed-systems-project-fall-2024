@@ -19,8 +19,9 @@ def quote_existing_post(reposted_post_id:id, media, caption, driver=None):
     return repost(driver, reposted_post_id, session["username"],session["email"], media, caption)
 
 @use_db_connection
+@needs_authentication
 def delete_post(post_id, driver=None):
-    return delete_post_service(driver, post_id, session["username"],session["email"])
+    return delete_post_service(driver, post_id, session["id"])
 
 @use_db_connection
 def get_post_by_id_controller(post_id, driver=None):

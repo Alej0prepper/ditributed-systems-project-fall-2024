@@ -39,64 +39,111 @@ def find_successor(key):
             return response.json()
         except requests.RequestException:
             return chord.current_node.successor
+
         
 def stabilize():
     while True:
+        print("\n[STABILIZE] Running stabilization process...")
         time.sleep(STABILIZE_INTERVAL)
+
         try:
-            # 1. Get current state snapshot
+            # 1. Get current state
             with chord.current_node.lock:
-                successor = chord.current_node.successor.copy() if chord.current_node.successor else None
                 node_id = chord.current_node.id
                 local_state = chord.current_node.to_dict()
-            
-            # 2. Check successor's predecessor
-            if successor:
+                successor_info = chord.current_node.successor
+
+            print(f"[STABILIZE] Current successor: {successor_info}")
+
+            successor = None
+
+            # 2. Validate if current successor is still alive
+            if successor_info and successor_info["ip"] != local_state["ip"]:
                 try:
-                    # Get successor's state
                     response = requests.get(
-                        f"http://{successor['ip']}:{successor['port']}/state"
+                        f"http://{successor_info['ip']}:{successor_info['port']}/state", timeout=5
                     )
-                    successor_state = response.json()
-                    successor_predecessor = successor_state.get("predecessor")
-
-                    # Verify if successor's predecessor is alive and valid
-                    if successor_predecessor:
-                        # Check if the predecessor is actually alive
-                        try:
-                            requests.get(
-                                f"http://{successor_predecessor['ip']}:{successor_predecessor['port']}/state"
-                            )
-                            predecessor_alive = True
-                        except requests.RequestException:
-                            predecessor_alive = False
-
-                        # Update successor only if predecessor is alive and in range
-                        if predecessor_alive and is_between(successor_predecessor['id'], node_id, successor['id']):
-                            with chord.current_node.lock:
-                                chord.current_node.successor = successor_predecessor
-                                print(f"Updated successor to live node {successor_predecessor['id']}")
-
-                    # Notify successor even if predecessor check fails
-                    requests.post(
-                        f"http://{successor['ip']}:{successor['port']}/notify",
-                        json=local_state,
-                    )
-
-                except requests.RequestException as e:
-                    print(f"Successor {successor['id']} unreachable: {str(e)}")
+                    if response.status_code == 200:
+                        print(f"[STABILIZE] Successor {successor_info['id']} is alive.")
+                        successor = response.json()
+                    else:
+                        print(f"[STABILIZE] Successor {successor_info['id']} is unresponsive.")
+                        with chord.current_node.lock:
+                            chord.current_node.successor = None
+                except requests.RequestException:
+                    print(f"[STABILIZE] Error contacting successor {successor_info['id']}. Marking as None.")
                     with chord.current_node.lock:
                         chord.current_node.successor = None
 
-            # 3. Update finger table
+            # 3. Fallback: Find a new successor if needed
+            if not successor:
+                print("[STABILIZE] No valid successor. Searching for a new one...")
+                for offset in range(1, 2**M):  # Scan the ring for a new successor
+                    fallback_key = (node_id + offset) % (2**M)
+                    fallback_candidate = find_successor(fallback_key)
+
+                    if fallback_candidate and fallback_candidate["ip"] != local_state["ip"]:
+                        with chord.current_node.lock:
+                            chord.current_node.successor = fallback_candidate
+                        successor = fallback_candidate
+                        print(f"[STABILIZE] New successor found: {fallback_candidate.get('id')}")
+                        break
+                if not successor:
+                    print("[STABILIZE] No valid successor found. Node is isolated.")
+
+            # 4. Validate the successor’s predecessor
+            if successor:
+                try:
+                    successor_predecessor = successor.get("predecessor")
+                    if successor_predecessor:
+                        print(f"[STABILIZE] Successor's predecessor: {successor_predecessor}")
+
+                        # Check if predecessor is alive
+                        predecessor_alive = False
+                        try:
+                            pred_response = requests.get(
+                                f"http://{successor_predecessor['ip']}:{successor_predecessor['port']}/state", timeout=2
+                            )
+                            if pred_response.status_code == 200:
+                                predecessor_alive = True
+                        except requests.RequestException:
+                            predecessor_alive = False
+
+                        # Update successor if the predecessor is a better option
+                        if predecessor_alive and is_between(successor_predecessor['id'], node_id, successor['id']):
+                            with chord.current_node.lock:
+                                chord.current_node.successor = successor_predecessor
+                            successor = successor_predecessor
+                            print(f"[STABILIZE] Updated successor to {successor_predecessor.get('id')}")
+
+                    # Notify successor about this node
+                    requests.post(
+                        f"http://{successor['ip']}:{successor['port']}/notify",
+                        json=local_state,
+                        timeout=2
+                    )
+                    print(f"[STABILIZE] Notified successor {successor['id']}")
+
+                except requests.RequestException as e:
+                    print(f"[STABILIZE] Error checking successor's predecessor: {e}")
+                    with chord.current_node.lock:
+                        chord.current_node.successor = None
+
+            # 5. Update the finger table
+            print("[STABILIZE] Updating finger table...")
             for i in range(M):
                 start = (node_id + 2**i) % (2**M)
                 finger_entry = find_successor(start)
                 with chord.current_node.lock:
                     chord.current_node.finger[i] = finger_entry
 
+            print("[STABILIZE] Stabilization complete.")
+
         except Exception as e:
-            print(f"Stabilization error: {str(e)}")
+            print(f"[STABILIZE] Unexpected error: {e}")
+
+
+
 
 def check_predecessor():
     while True:
@@ -191,7 +238,6 @@ def listen_for_chord_updates():
     while True:
         data, addr = sock.recvfrom(1024)
         message = data.decode()
-        print("Received message: ",message)
         update_entities_list(message.split(",")[0],message.split(",")[1],message.split(",")[2])
 
 def send_chord_update(message):

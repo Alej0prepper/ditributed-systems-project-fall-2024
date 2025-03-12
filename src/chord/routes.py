@@ -22,6 +22,7 @@ def join_network():
     try:
         data = request.json
         bootstrap = data
+
         
         # Get successor from bootstrap node
         response = requests.post(
@@ -29,16 +30,15 @@ def join_network():
             json={"key": chord.current_node.id}
         )
         successor = response.json()
+
+        if successor and successor["id"] == chord.current_node.to_dict()['id']:
+            successor = successor["successor"]
         
         
         # Set initial state
         with chord.current_node.lock:
             chord.current_node.successor = successor
-            # If successor is self (single-node network), set predecessor to self
-            if successor['id'] == chord.current_node.id:
-                chord.current_node.predecessor = chord.current_node.to_dict()
-            else:
-                chord.current_node.predecessor = None
+            chord.current_node.predecessor = None
 
             # Notify successor only if it's not self
             if successor['id'] != chord.current_node.id:
@@ -96,7 +96,7 @@ def chord_gui():
 
 @chord_routes.route('/state', methods=['GET'])
 def get_state():
-    print(chord.current_node.predecessor["id"] if chord.current_node.predecessor else None, chord.current_node.id, chord.current_node.successor["id"] if chord.current_node.successor else None)
+    print(chord.current_node.to_dict()['predecessor']['id'] if chord.current_node.to_dict()['predecessor'] else None, chord.current_node.id, chord.current_node.to_dict()['successor']['id'] if chord.current_node.to_dict()['successor'] else None)
     return jsonify(chord.current_node.to_dict())
 
 @chord_routes.route('/network_size', methods=['GET'])

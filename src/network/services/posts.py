@@ -311,24 +311,22 @@ def get_publisher_by_post_id(driver, post_id):
 
 
 
-def delete_post_service(driver, post_id, username):
+def delete_post_service(driver, post_id, user_id):
     if get_post_by_id(driver, post_id) == None: return None, False, "Post not found."
       
     user_is_owner = len(driver.execute_query(
             """
-            MATCH (n:Post)
-                WHERE id(n) = $post_id
-            MATCH (s:User {username: $username}) -[r:Posts]-> (n)  
+            MATCH (n:Post {id: $post_id})
+            MATCH (s {id: $user_id}) -[r:Posts]-> (n)  
             RETURN r
             """,
-            {"post_id": post_id, "username": username}
+            {"post_id": post_id, "user_id": user_id}
     ).records) > 0
 
     if user_is_owner:
         driver.execute_query(
             """
-            MATCH (n:Post)
-                WHERE id(n) = $post_id
+            MATCH (n:Post {id:$post_id})
             MATCH (n) -[r]-> (s)
             DELETE r
             """,
@@ -336,8 +334,7 @@ def delete_post_service(driver, post_id, username):
         )
         driver.execute_query(
             """
-            MATCH (n:Post)
-                WHERE id(n) = $post_id
+            MATCH (n:Post {id:$post_id})
             MATCH (s) -[r]-> (n)
             DELETE r
             """,

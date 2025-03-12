@@ -160,6 +160,8 @@ def route_to_responsible(routing_key=None):
             # Retrieve self-identity
             self_id = chord_node.current_node.to_dict()["id"]
 
+            print("Responsible node:",responsible_node if not (responsible_node["id"] == self_id or local_routing_key is None) else "this one")
+
             if responsible_node["id"] == self_id or local_routing_key is None:
                 return func(*args, **kwargs)
             else:
