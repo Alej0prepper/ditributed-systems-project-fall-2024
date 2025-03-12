@@ -1008,6 +1008,10 @@ def get_post_by_id(id):
         return jsonify({"error": "Post ID is required"}), 404
     
     post = get_post_by_id_controller(post_id)
+
+    if isinstance(post, dict):
+        return jsonify({"post": post}), 200
+
     post_dict = convert_node_to_dict(post)
     if not post:
         return jsonify({"error": "Post not found"}), 404
@@ -1257,9 +1261,8 @@ def deserialize_data(data):
     json_deserialized_data = data.copy()
     if "password" in json_deserialized_data.get("properties", {}):
         try:
-            json_deserialized_data["properties"]["password"] = base64.b64decode(
-                json_deserialized_data["properties"]["password"]
-            ).decode("utf-8")
+            if "password" in data['properties'] and isinstance(data['properties']['password'], str):
+                json_deserialized_data['properties']['password'] = base64.b64decode(data['properties']['password'])
         except Exception:
             pass 
     return json_deserialized_data
@@ -1269,153 +1272,110 @@ def deserialize_data(data):
 def replicate_graph(driver=None):
     # Receive replicated graph data and store it in Neo4j.
     data = request.get_json()
-    print("Receiving to replicate:",data)
 
     if not data or ("nodes" not in data and "relationships" not in data):
         return jsonify({"error": "Invalid or inexistent graph"}), 400
     
     with chord.current_node.lock:
-        try:
-            with driver.session() as session:
-                print("Starting replication")
+        host_ip = chord.current_node.to_dict()["ip"]
+    try:
+        with driver.session() as session:
+            print("Starting replication")
+            graph_data = fetch_graph_data()  # Expects a dict with key "nodes"
+            is_new_node = len(graph_data["nodes"]) == 0
 
-                host_ip = chord.current_node.to_dict()["ip"]
-                valid_labels = {"User", "Gym", "Post", "Comment"}
-                
-                if "nodes" in data.keys():
-                    # Step 1: Find the first valid incoming node (has an id and at least one valid label)
-                    incoming_node_candidate = None
+            valid_labels = {"User", "Gym", "Post", "Comment"}
+            
+            if "nodes" in data.keys():
+                # Step 1: Find the first valid incoming node (has an id and at least one valid label)
+                incoming_node_candidate = None
+                for node in data.get("nodes", []):
+                    if node.get("id") and "labels" in node:
+                        if any(label in valid_labels for label in node["labels"]):
+                            incoming_node_candidate = node
+                            break
+
+                if not incoming_node_candidate:
+                    return jsonify({"error": "No valid incoming node found"}), 400
+
+                # Step 2: Determine the successor for the candidate node
+                incoming_successor = chord_logic.find_successor(get_hash(incoming_node_candidate["id"]))
+
+                if incoming_successor["ip"] == host_ip:
+                    if not is_new_node:
+                        return jsonify({"message": "Everything up to date"}), 200
                     for node in data.get("nodes", []):
-                        if node.get("id") and "labels" in node:
-                            if any(label in valid_labels for label in node["labels"]):
-                                incoming_node_candidate = node
-                                break
-
-                    if not incoming_node_candidate:
-                        return jsonify({"error": "No valid incoming node found"}), 400
-
-                    # Step 2: Determine the successor for the candidate node
-                    incoming_successor = chord_logic.find_successor(get_hash(incoming_node_candidate["id"]))
-
-
-                    if incoming_successor["ip"] == host_ip:
-                        if len(graph_data["nodes"]) > 0:
-                            return jsonify({"message": "Everything up to date"}), 200
-                        for node in data.get("nodes", []):
-                            node = deserialize_data(node)
-                            session.execute_write(lambda tx: tx.run(
-                                f"""
-                                MERGE (n:{node['labels'][0]} {{id: $id}})
-                                ON CREATE SET n = $properties
-                                ON MATCH SET n += $properties
-                                RETURN n
-                                """,
-                                id=node["id"], properties=node["properties"]
-                            ))
-
-                    # Step 3: Fetch current graph data from the database.
-                    graph_data = fetch_graph_data()  # Expects a dict with key "nodes"
-
-                    if incoming_successor["ip"] == host_ip:
-                        if len(graph_data["nodes"]) > 0:
-                            return jsonify({"message": "Everything up to date"}), 200
-                        for node in data.get("nodes", []):
-                            node = deserialize_data(node)
-                            session.execute_write(lambda tx: tx.run(
-                                f"""
-                                MERGE (n:{node['labels'][0]} {{id: $id}})
-                                ON CREATE SET n = $properties
-                                ON MATCH SET n += $properties
-                                RETURN n
-                                """,
-                                id=node["id"], properties=node["properties"]
-                            ))
-                        return jsonify({"message": "Graph replicated successfully"}), 200
-
-
-                    ids_to_delete = []
-                    for db_node in graph_data.get("nodes", []):
-                        # Check that the node has an id and a valid label.
-                        if db_node.get("id") and "labels" in db_node:
-                            if any(label in valid_labels for label in db_node["labels"]):
-                                # If this node's successor matches the incoming node's successor, mark it for deletion.
-                                if chord_logic.find_successor(get_hash(db_node["id"])) == incoming_successor:
-                                    ids_to_delete.append(db_node["id"])
-                    # Delete all matching nodes in one .
-                    if ids_to_delete:
-                        session.execute_write(lambda tx: tx.run(
-                            """
-                            MATCH (n) WHERE n.id IN $ids
-                            DETACH DELETE n
-                            """,
-                            {"ids": ids_to_delete}
-                        ))
-                    # After deletion, create the incoming nodes.
-                    for node in data.get("nodes", []):
-                        if "password" in node.get("properties", {}):
-                            node["properties"]["password"] = base64.b64decode(node["properties"]["password"])
+                        node = deserialize_data(node)
                         session.execute_write(lambda tx: tx.run(
                             f"""
-                                MERGE (n:{node['labels'][0]} {{id: $id}})
-                                ON CREATE SET n = $properties
-                                ON MATCH SET n += $properties
-                                RETURN n
+                            MERGE (n:{node['labels'][0]} {{id: $id}})
+                            ON CREATE SET n = $properties
+                            ON MATCH SET n += $properties
+                            RETURN n
                             """,
                             id=node["id"], properties=node["properties"]
                         ))
 
-                
-                if "relationships" in data.keys():
-                    # Compute the common responsible once for all incoming relationships.
-                    common_edge_successor = chord_logic.find_successor(get_hash(data["relationships"][0]["start"]))
-                    
-                    
-
-                    # Fetch current relationships from the database.
-                    graph_data = fetch_graph_data()  # Expecting a dict with key "relationships"
-                    # If the common responsible is the current host, no replication is needed unless the node is new.
-                    if common_edge_successor["ip"] == host_ip:
-                        if graph_data["nodes"] == 0:
-                            return jsonify({"message": "Everything up to date"}), 200
-                        for relationship in data["relationships"]:
-                            rel_type = relationship["type"]
-                            query = f"""
-                                MATCH (a {{id: $start}}), (b {{id: $end}})
-                                MERGE (a)-[r:{rel_type}]->(b)
-                                ON CREATE SET r = $properties
-                                ON MATCH SET r += $properties
-                                RETURN r
-                            """
-                            session.execute_write(lambda tx: tx.run(
-                                query,
-                                {
-                                    "start": relationship["start"],
-                                    "end": relationship["end"],
-                                    "properties": relationship["properties"]
-                                }
-                            ))
-                        return jsonify({"message": "Graph replicated successfully"}), 200
-                            
-                    ids_to_delete = []
-                    
-                    for db_rel in graph_data.get("relationships", []):
-                        # Verify the relationship has a start and an id.
-                        if db_rel.get("start") and db_rel.get("id"):
-                            # Compare the DB relationship's start responsible with the common responsible.
-                            if chord_logic.find_successor(get_hash(db_rel["start"]))["ip"] == common_edge_successor["ip"]:
-                                ids_to_delete.append(db_rel["id"])
-                    
-                    # Delete all matching relationships in one go.
-                    if ids_to_delete:
+                if incoming_successor["ip"] == host_ip:
+                    if not is_new_node:
+                        return jsonify({"message": "Everything up to date"}), 200
+                    for node in data.get("nodes", []):
+                        node = deserialize_data(node)
                         session.execute_write(lambda tx: tx.run(
-                            """
-                            MATCH ()-[r]->() WHERE r.id IN $ids
-                            DETACH DELETE r
+                            f"""
+                            MERGE (n:{node['labels'][0]} {{id: $id}})
+                            ON CREATE SET n = $properties
+                            ON MATCH SET n += $properties
+                            RETURN n
                             """,
-                            {"ids": ids_to_delete}
+                            id=node["id"], properties=node["properties"]
                         ))
-                    
-                    # After deletion, create all incoming relationships.
+                    return jsonify({"message": "Graph replicated successfully"}), 200
+
+
+                ids_to_delete = []
+                for db_node in graph_data.get("nodes", []):
+                    # Check that the node has an id and a valid label.
+                    if db_node.get("id") and "labels" in db_node:
+                        if any(label in valid_labels for label in db_node["labels"]):
+                            # If this node's successor matches the incoming node's successor, mark it for deletion.
+                            if chord_logic.find_successor(get_hash(db_node["id"])) == incoming_successor:
+                                ids_to_delete.append(db_node["id"])
+                # Delete all matching nodes in one .
+                if ids_to_delete:
+                    session.execute_write(lambda tx: tx.run(
+                        """
+                        MATCH (n) WHERE n.id IN $ids
+                        DETACH DELETE n
+                        """,
+                        {"ids": ids_to_delete}
+                    ))
+                # After deletion, create the incoming nodes.
+                for node in data.get("nodes", []):
+                    if "password" in node.get("properties", {}):
+                        node["properties"]["password"] = base64.b64decode(node["properties"]["password"])
+                    session.execute_write(lambda tx: tx.run(
+                        f"""
+                            MERGE (n:{node['labels'][0]} {{id: $id}})
+                            ON CREATE SET n = $properties
+                            ON MATCH SET n += $properties
+                            RETURN n
+                        """,
+                        id=node["id"], properties=node["properties"]
+                    ))
+
+            
+            if "relationships" in data.keys():
+                # Compute the common responsible once for all incoming relationships.
+                common_edge_successor = chord_logic.find_successor(get_hash(data["relationships"][0]["start"]))
+                
+
+                # Fetch current relationships from the database.
+                graph_data = fetch_graph_data()  # Expecting a dict with key "relationships"
+                # If the common responsible is the current host, no replication is needed unless the node is new.
+                if common_edge_successor["ip"] == host_ip:
+                    if graph_data["nodes"] == 0:
+                        return jsonify({"message": "Everything up to date"}), 200
                     for relationship in data["relationships"]:
                         rel_type = relationship["type"]
                         query = f"""
@@ -1433,12 +1393,51 @@ def replicate_graph(driver=None):
                                 "properties": relationship["properties"]
                             }
                         ))
+                    return jsonify({"message": "Graph replicated successfully"}), 200
+                        
+                ids_to_delete = []
+                
+                for db_rel in graph_data.get("relationships", []):
+                    # Verify the relationship has a start and an id.
+                    if db_rel.get("start") and db_rel.get("id"):
+                        # Compare the DB relationship's start responsible with the common responsible.
+                        if chord_logic.find_successor(get_hash(db_rel["start"]))["ip"] == common_edge_successor["ip"]:
+                            ids_to_delete.append(db_rel["id"])
+                
+                # Delete all matching relationships in one go.
+                if ids_to_delete:
+                    session.execute_write(lambda tx: tx.run(
+                        """
+                        MATCH ()-[r]->() WHERE r.id IN $ids
+                        DETACH DELETE r
+                        """,
+                        {"ids": ids_to_delete}
+                    ))
+                
+                # After deletion, create all incoming relationships.
+                for relationship in data["relationships"]:
+                    rel_type = relationship["type"]
+                    query = f"""
+                        MATCH (a {{id: $start}}), (b {{id: $end}})
+                        MERGE (a)-[r:{rel_type}]->(b)
+                        ON CREATE SET r = $properties
+                        ON MATCH SET r += $properties
+                        RETURN r
+                    """
+                    session.execute_write(lambda tx: tx.run(
+                        query,
+                        {
+                            "start": relationship["start"],
+                            "end": relationship["end"],
+                            "properties": relationship["properties"]
+                        }
+                    ))
 
 
-            return jsonify({"message": "Graph replicated successfully"}), 200
-        except Exception as e:
-            print("Error replicating graph:", e)
-            return jsonify({"error": str(e)}), 500
+        return jsonify({"message": "Graph replicated successfully"}), 200
+    except Exception as e:
+        print("Error replicating graph:", e)
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
 

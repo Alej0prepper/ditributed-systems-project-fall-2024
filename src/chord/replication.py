@@ -7,6 +7,7 @@ import chord.node as chord
 from database.fetchData import fetch_graph_data
 from chord.node import get_hash
 from network.middlewares.use_db_connection import use_db_connection
+import random
 
 K = 2  # Number of replicas of each node
 
@@ -89,7 +90,7 @@ def replicate_to_owners(driver=None):
         except Exception as e:
             print(f"Replication error: {e}")
 
-        time.sleep(10)
+        time.sleep(random.randint(5, 25))
 
 def get_node_relation(driver, username):
     relation = driver.execute_query(

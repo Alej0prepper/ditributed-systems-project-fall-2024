@@ -17,33 +17,32 @@ def find_successor(key):
         if not chord.current_node.successor:
             return chord.current_node.to_dict()
         
-        if is_between(key, chord.current_node.id, chord.current_node.successor['id'], inclusive=True):
-            return chord.current_node.successor
+    if is_between(key, chord.current_node.id, chord.current_node.successor['id'], inclusive=True):
+        return chord.current_node.successor
+        
+    closest = chord.current_node.to_dict()
+    for i, entry in enumerate(reversed(chord.current_node.finger)):
+        if entry and is_between(entry['id'], chord.current_node.id, key):
+            # Verify if the finger entry is alive
+            try:
+                requests.get(f"http://{entry['ip']}:{entry['port']}/state")
+                closest = entry
+                break
+            except requests.RequestException:
+                continue  # Skip dead nodes
             
-        closest = chord.current_node.to_dict()
-        for i, entry in enumerate(reversed(chord.current_node.finger)):
-            if entry and is_between(entry['id'], chord.current_node.id, key):
-                # Verify if the finger entry is alive
-                try:
-                    requests.get(f"http://{entry['ip']}:{entry['port']}/state")
-                    closest = entry
-                    break
-                except requests.RequestException:
-                    continue  # Skip dead nodes
-                
-        try:
-            response = requests.post(
-                f"http://{closest['ip']}:{closest['port']}/find_successor",
-                json={"key": key}
-            )
-            return response.json()
-        except requests.RequestException:
-            return chord.current_node.successor
+    try:
+        response = requests.post(
+            f"http://{closest['ip']}:{closest['port']}/find_successor",
+            json={"key": key}
+        )
+        return response.json()
+    except requests.RequestException:
+        return chord.current_node.successor
 
         
 def stabilize():
     while True:
-        print("\n[STABILIZE] Running stabilization process...")
         time.sleep(STABILIZE_INTERVAL)
 
         try:
@@ -53,7 +52,6 @@ def stabilize():
                 local_state = chord.current_node.to_dict()
                 successor_info = chord.current_node.successor
 
-            print(f"[STABILIZE] Current successor: {successor_info}")
 
             successor = None
 
@@ -64,20 +62,16 @@ def stabilize():
                         f"http://{successor_info['ip']}:{successor_info['port']}/state", timeout=5
                     )
                     if response.status_code == 200:
-                        print(f"[STABILIZE] Successor {successor_info['id']} is alive.")
                         successor = response.json()
                     else:
-                        print(f"[STABILIZE] Successor {successor_info['id']} is unresponsive.")
                         with chord.current_node.lock:
                             chord.current_node.successor = None
                 except requests.RequestException:
-                    print(f"[STABILIZE] Error contacting successor {successor_info['id']}. Marking as None.")
                     with chord.current_node.lock:
                         chord.current_node.successor = None
 
             # 3. Fallback: Find a new successor if needed
             if not successor:
-                print("[STABILIZE] No valid successor. Searching for a new one...")
                 for offset in range(1, 2**M):  # Scan the ring for a new successor
                     fallback_key = (node_id + offset) % (2**M)
                     fallback_candidate = find_successor(fallback_key)
@@ -86,17 +80,13 @@ def stabilize():
                         with chord.current_node.lock:
                             chord.current_node.successor = fallback_candidate
                         successor = fallback_candidate
-                        print(f"[STABILIZE] New successor found: {fallback_candidate.get('id')}")
                         break
-                if not successor:
-                    print("[STABILIZE] No valid successor found. Node is isolated.")
 
             # 4. Validate the successor’s predecessor
             if successor:
                 try:
                     successor_predecessor = successor.get("predecessor")
                     if successor_predecessor:
-                        print(f"[STABILIZE] Successor's predecessor: {successor_predecessor}")
 
                         # Check if predecessor is alive
                         predecessor_alive = False
@@ -114,30 +104,24 @@ def stabilize():
                             with chord.current_node.lock:
                                 chord.current_node.successor = successor_predecessor
                             successor = successor_predecessor
-                            print(f"[STABILIZE] Updated successor to {successor_predecessor.get('id')}")
 
                     # Notify successor about this node
                     requests.post(
                         f"http://{successor['ip']}:{successor['port']}/notify",
-                        json=local_state,
-                        timeout=2
+                        json=local_state
                     )
-                    print(f"[STABILIZE] Notified successor {successor['id']}")
 
                 except requests.RequestException as e:
-                    print(f"[STABILIZE] Error checking successor's predecessor: {e}")
                     with chord.current_node.lock:
                         chord.current_node.successor = None
 
             # 5. Update the finger table
-            print("[STABILIZE] Updating finger table...")
             for i in range(M):
                 start = (node_id + 2**i) % (2**M)
                 finger_entry = find_successor(start)
                 with chord.current_node.lock:
                     chord.current_node.finger[i] = finger_entry
 
-            print("[STABILIZE] Stabilization complete.")
 
         except Exception as e:
             print(f"[STABILIZE] Unexpected error: {e}")
@@ -238,13 +222,18 @@ def listen_for_chord_updates():
     while True:
         data, addr = sock.recvfrom(1024)
         message = data.decode()
-        update_entities_list(message.split(",")[0],message.split(",")[1],message.split(",")[2])
+        print(f"Received {message}")
+        try:
+            update_entities_list(message.split(",")[0],message.split(",")[1],message.split(",")[2])
+        except:
+          pass
 
 def send_chord_update(message):
     multicast_group = (MULTICAST_GROUP_DATA, DATA_PORT)
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) as sock:
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
         sock.sendto(message.encode(), multicast_group)
+        print(f"Sent: {message}")
 
 def send_local_system_entities_copy():
     while True:
@@ -257,11 +246,12 @@ def send_local_system_entities_copy():
                         update_entities_list(entity_type, node_info['properties']['email'], node_info['properties']['id'])
                     if "Post" in node_info['labels']:
                         update_entities_list("Post", None ,node_info['properties']['id'])
-                except:
-                  continue
+                except Exception as e:
+                    print("Exception ocurred sending entities update: ",str(e))
         except Exception as e:
+            print("Exception ocurred sending entities update: ",str(e))
             pass
-        time.sleep(STABILIZE_INTERVAL)
+        time.sleep(2)
 
 def normalize_email(email):
     # Convert the string "None" to the actual None value.

@@ -217,8 +217,11 @@ def get_post_by_id(driver, post_id):
             MATCH (p:Post {id: $post_id})
             RETURN p
         """
-        post = driver.execute_query(query, {"post_id": post_id}).records[0]["p"]
-        return post
+        post = driver.execute_query(query, {"post_id": post_id}).records
+        if len(post) > 0:
+            post = post[0]["p"]
+            return post
+        return dict()
     else:
         return dict()
     

@@ -80,8 +80,9 @@ def get_gym_by_id_service(driver,id):
         {"id": id}
     )
     
-    if result:
-        gym_node_info = result[0][0][0]
+    if len(result.records) > 0:
+        result = result.records[0]
+        gym_node_info = result["g"]
         del gym_node_info._properties["password"]
         return dict(gym_node_info._properties),True,None  
     

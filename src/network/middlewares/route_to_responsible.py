@@ -8,6 +8,7 @@ import chord.node as chord_node
 import inspect
 import chord.protocol_logic as chord_logic
 from chord.node import get_hash
+import time
 
 
 def getAllUsers():
@@ -24,11 +25,20 @@ def getAllUsers():
 def getAllGyms():
     gyms = []
     for entity in chord.system_entities_set:
+        print(f"Entity in all gyms: {entity}")
+
         if entity[0] == "Gym":
             responsible_node = chord.find_successor(get_hash(entity[2]))
             endpoint = f"http://{responsible_node['ip']}:{responsible_node['port']}/gyms/{entity[2]}"
             response = requests.get(endpoint)
-            gym = response.json()["gym"]
+            print(f"Entity in all gyms: {entity}")
+            print(f"Endpoint: {endpoint}")
+            print(f"Responsible node: {responsible_node['id']}")
+            try:
+                gym = response.json()["gym"]
+            except Exception as e:
+              print(f"Received gym: {response.json()}")
+              continue
             gyms.append(gym)
     return gyms
 
@@ -86,104 +96,76 @@ def getAllUserPosts(userId):
         if post['publisherId'] == userId:
             user_posts.append(post)
     return user_posts
-
 def route_to_responsible(routing_key=None):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            # Determine the routing key
-            local_routing_key = routing_key  # Default to the decorator argument
+            local_routing_key = routing_key or (
+                request.view_args.get("id") or 
+                request.args.get("id") or 
+                request.form.get("id") or 
+                request.form.get("userId")
+            )
 
-            # If the function is called with a parameter that overrides the routing key, use it
-            if local_routing_key is None:
-                local_routing_key = (
-                    request.view_args.get("id")  # Route parameters
-                    or request.args.get("id")    # Query parameters
-                    or request.form.get("id")
-                    or request.form.get("userId")
-                )
-
-            # If still None, try to get from function defaults
             if local_routing_key is None:
                 signature = inspect.signature(func)
                 bound_args = signature.bind_partial(*args, **kwargs)
                 bound_args.apply_defaults()
                 local_routing_key = bound_args.arguments.get("id")
+            if local_routing_key in ["getAllUsers", "getAllQuotes", "getAllReposts", "getAllGyms", "getAllPosts", "getAllUserPosts"]:
+                handlers = {
+                    "getAllUsers": getAllUsers,
+                    "getAllQuotes": getAllQuotes,
+                    "getAllReposts": getAllReposts,
+                    "getAllGyms": getAllGyms,
+                    "getAllPosts": getAllPosts,
+                    "getAllUserPosts": lambda: getAllUserPosts(request.view_args.get("id")),
+                }
+                return func(handlers[local_routing_key]())
 
-
-            elif local_routing_key == "getAllUsers":
-                users = getAllUsers()
-                return func(users)
-            elif local_routing_key == "getAllQuotes":
-                quotes = getAllQuotes()
-                return func(quotes)
-            elif local_routing_key == "getAllReposts":
-                reposts = getAllReposts()
-                return func(reposts)
-            elif local_routing_key == "getAllGyms":
-                gyms = getAllGyms()
-                return func(gyms)
-            elif local_routing_key == "getAllPosts":
-                posts = getAllPosts()
-                return func(posts)
-            elif local_routing_key == "getAllUserPosts":
-                posts = getAllUserPosts(request.view_args.get("id"))
-                return func(posts)
-            elif local_routing_key == "me":
+            if local_routing_key == "me":
                 auth_header = request.headers.get("Authorization")
-
                 if auth_header == "null":
                     return jsonify({"error": "No token was provided"}), 401
-                
                 payload = validate_token(auth_header)
                 local_routing_key = payload.get("id")
+
             elif local_routing_key == "login":
                 email = request.form.get("email")
-
                 filtered_entities = [entity for entity in chord_logic.system_entities_set if entity[1] == email]
-                
-                # Get the first coincidence by email in entities' emails
-                if(len(filtered_entities) > 0):
-                    local_routing_key = filtered_entities[0][1]
-                else: 
-                    local_routing_key = None
+                print(filtered_entities, chord_logic.system_entities_set)
+                local_routing_key = filtered_entities[0][1] if filtered_entities else None
 
             if local_routing_key is None:
                 return jsonify({"error": "Invalid routing key"}), 400
 
-
             key = chord_node.get_hash(local_routing_key)
-
-            # Determine the responsible node in the Chord ring
             responsible_node = chord.find_successor(key)
-
-            # Retrieve self-identity
             self_id = chord_node.current_node.to_dict()["id"]
-
-            print("Responsible node:",responsible_node if not (responsible_node["id"] == self_id or local_routing_key is None) else "this one")
 
             if responsible_node["id"] == self_id or local_routing_key is None:
                 return func(*args, **kwargs)
-            else:
-                # Forward the request to the responsible node
-                target_url = f"http://{responsible_node['ip']}:{responsible_node['port']}{request.full_path}"
+
+            target_url = f"http://{responsible_node['ip']}:{responsible_node['port']}{request.full_path}"
+            max_retries = 3
+            retry_delay = 1  # Initial delay in seconds
+
+            for attempt in range(max_retries):
                 try:
                     method = request.method.lower()
                     headers = {k: v for k, v in request.headers.items() if k.lower() != "host"}
 
                     if request.is_json:
-                        # Handle JSON data
                         json_data = request.get_json(silent=True)
                         response = getattr(requests, method)(
-                            target_url,
-                            headers=headers,
-                            json=json_data
+                            target_url, headers=headers, json=json_data
                         )
                     else:
                         # Handle form data
                         form_data = request.form  # Keep as ImmutableMultiDict to preserve multi-values
                         form_data = form_data.to_dict()  # Convert to dict if modification is needed
-                        form_data["id"] = local_routing_key  # Add your parameter
+                        if routing_key != "login":
+                            form_data["id"] = local_routing_key
 
                         # Ensure the correct Content-Type for form data
                         headers = {k: v for k, v in request.headers.items() if k.lower() != "host"}
@@ -199,18 +181,20 @@ def route_to_responsible(routing_key=None):
                             data=form_data  # Use `data` for form-urlencoded
                         )
 
+                    if response.status_code == 502 and attempt < max_retries - 1:
+                        time.sleep(retry_delay)
+                        retry_delay * 2  # Exponential backoff
+                        continue
+
                     return response.content, response.status_code, dict(response.headers)
 
                 except requests.exceptions.RequestException as e:
-                    return jsonify({
-                        "error": "Failed to forward request to responsible node",
-                        "details": str(e)
-                    }), 502
-                except Exception as e:
-                    return jsonify({
-                        "error": "Internal server error during request forwarding",
-                        "details": str(e)
-                    }), 500
+                    if attempt == max_retries - 1:
+                        return jsonify({"error": "Failed to forward request", "details": str(e)}), 502
+
+                time.sleep(retry_delay)
+
+            return jsonify({"error": "Failed after retries"}), 502
 
         return wrapper
     return decorator
